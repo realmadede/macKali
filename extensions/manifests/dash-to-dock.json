@@ -1,0 +1,34 @@
+{
+  "name": "Dash to Dock",
+  "uuid": "dash-to-dock@micxgx.gmail.com",
+  "uuid_verified": true,
+  "official_source": {
+    "repository": "https://github.com/micheleg/dash-to-dock",
+    "gnome_extensions_url": "https://extensions.gnome.org/extension/307/dash-to-dock/",
+    "author": "micheleg"
+  },
+  "supported_gnome_versions": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51"
+  ],
+  "versions_verified": true,
+  "installation_method": "gnome_extensions_cli",
+  "enabled_presets": [
+    "minimal",
+    "balanced",
+    "full"
+  ],
+  "settings_schema": "org.gnome.shell.extensions.dash-to-dock",
+  "known_conflicts": [
+    "dash-to-panel@jderose9.github.com",
+    "ubuntu-dock@ubuntu.com"
+  ],
+  "installation_status": "planned",
+  "notes": "Essential component for macOS dock styling (bottom, centered, autohide, icon zooming). In Debian/Kali repositories, packaged as gnome-shell-extension-dashtodock.",
+  "unverified_fields": []
+}

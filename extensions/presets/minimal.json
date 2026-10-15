@@ -1,0 +1,48 @@
+{
+  "id": "minimal",
+  "name": "macKali Minimal",
+  "description": "Clean and lightweight macOS look with minimal resource footprint. Includes WhiteSur cursors, macOS-style bottom centered dock, and window controls on the left.",
+  "target_user": "Users seeking a clean macOS aesthetic without heavy GPU shaders or complex visual effects.",
+  "status": "Phase 1 - Cursor theme and configuration schemas ready; automated extension installation planned for Phase 2.",
+  "components": {
+    "cursors": {
+      "theme": "WhiteSur-cursors",
+      "status": "ready",
+      "source": "themes/cursors"
+    },
+    "gtk_theme": {
+      "theme": "WhiteSur-Light / WhiteSur-Dark",
+      "status": "planned_phase_2",
+      "source": "themes/gtk"
+    },
+    "shell_theme": {
+      "theme": "WhiteSur-Shell",
+      "status": "planned_phase_2",
+      "source": "themes/shell"
+    },
+    "icon_theme": {
+      "theme": "WhiteSur-Icons",
+      "status": "planned_phase_2",
+      "source": "themes/icons"
+    },
+    "wallpapers": {
+      "collection": "macOS Wallpapers",
+      "status": "planned_phase_2",
+      "source": "themes/wallpapers"
+    },
+    "extensions": [
+      {
+        "uuid": "dash-to-dock@micxgx.gmail.com",
+        "name": "Dash to Dock",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/dash-to-dock.json",
+        "config_template": "config/dock/dash-to-dock.dconf"
+      }
+    ],
+    "settings": {
+      "wm_preferences": "config/gnome/01-wm-preferences.dconf",
+      "desktop_interface": "config/gnome/00-interface.dconf",
+      "dock": "config/dock/dash-to-dock.dconf"
+    }
+  }
+}

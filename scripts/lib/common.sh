@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# macKali Common Shell Functions Library
+
+# Color codes
+COLOR_RESET="\033[0m"
+COLOR_BOLD="\033[1m"
+COLOR_GREEN="\033[32m"
+COLOR_YELLOW="\033[33m"
+COLOR_RED="\033[31m"
+COLOR_BLUE="\033[34m"
+COLOR_CYAN="\033[36m"
+
+log_info() {
+  echo -e "${COLOR_BLUE}[INFO]${COLOR_RESET} $*"
+}
+
+log_success() {
+  echo -e "${COLOR_GREEN}[OK]${COLOR_RESET} $*"
+}
+
+log_warn() {
+  echo -e "${COLOR_YELLOW}[WARN]${COLOR_RESET} $*"
+}
+
+log_error() {
+  echo -e "${COLOR_RED}[ERROR]${COLOR_RESET} $*" >&2
+}
+
+log_step() {
+  echo -e "${COLOR_BOLD}${COLOR_CYAN}==>${COLOR_RESET} ${COLOR_BOLD}$*${COLOR_RESET}"
+}
+
+# Command existence check
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Detect Distribution
+detect_os() {
+  OS_ID="unknown"
+  OS_NAME="Unknown Linux"
+  OS_VERSION="unknown"
+
+  if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
+    source /etc/os-release
+    OS_ID="${ID:-unknown}"
+    OS_NAME="${NAME:-Linux}"
+    OS_VERSION="${VERSION_ID:-$VERSION}"
+  elif has_cmd lsb_release; then
+    OS_ID="$(lsb_release -si | tr '[:upper:]' '[:lower:]')"
+    OS_NAME="$(lsb_release -sd)"
+    OS_VERSION="$(lsb_release -sr)"
+  fi
+}
+
+# Detect Desktop Environment
+detect_de() {
+  DE_NAME="unknown"
+  if [ -n "$XDG_CURRENT_DESKTOP" ]; then
+    DE_NAME="$XDG_CURRENT_DESKTOP"
+  elif [ -n "$DESKTOP_SESSION" ]; then
+    DE_NAME="$DESKTOP_SESSION"
+  fi
+}
+
+# Detect GNOME Shell Version
+detect_gnome_version() {
+  GNOME_VERSION="not_detected"
+  GNOME_MAJOR_VERSION="0"
+
+  if has_cmd gnome-shell; then
+    local raw_ver
+    raw_ver="$(gnome-shell --version 2>/dev/null || true)"
+    # Extract version string e.g. "50.3" or "46.1"
+    GNOME_VERSION="$(echo "$raw_ver" | awk '{print $3}')"
+    # Major version before the first dot
+    GNOME_MAJOR_VERSION="$(echo "$GNOME_VERSION" | cut -d'.' -f1)"
+  fi
+}
+
+# Detect Session Type
+detect_session_type() {
+  SESSION_TYPE="${XDG_SESSION_TYPE:-unknown}"
+}
+
+# Check if running as root
+check_not_root() {
+  if [ "$EUID" -eq 0 ]; then
+    log_warn "Running entire script as root is NOT recommended."
+    log_warn "macKali adheres to user-level configuration standards."
+    log_warn "Please run as a standard user; sudo will be requested only when strictly necessary."
+  fi
+}

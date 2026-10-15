@@ -1,0 +1,63 @@
+{
+  "id": "balanced",
+  "name": "macKali Balanced (Recommended)",
+  "description": "The quintessential modern macOS desktop experience. Includes WhiteSur cursors, macOS dock, frosted glass blur on panel/overview, and classic genie lamp minimize animations.",
+  "target_user": "Everyday Kali Linux desktop users wanting authentic macOS appearance and smooth animation polish without extreme 3D overhead.",
+  "status": "Phase 1 - Cursor theme and configuration schemas ready; automated extension installation planned for Phase 2.",
+  "components": {
+    "cursors": {
+      "theme": "WhiteSur-cursors",
+      "status": "ready",
+      "source": "themes/cursors"
+    },
+    "gtk_theme": {
+      "theme": "WhiteSur-Light / WhiteSur-Dark",
+      "status": "planned_phase_2",
+      "source": "themes/gtk"
+    },
+    "shell_theme": {
+      "theme": "WhiteSur-Shell",
+      "status": "planned_phase_2",
+      "source": "themes/shell"
+    },
+    "icon_theme": {
+      "theme": "WhiteSur-Icons",
+      "status": "planned_phase_2",
+      "source": "themes/icons"
+    },
+    "wallpapers": {
+      "collection": "macOS Wallpapers (Day/Night Dynamic)",
+      "status": "planned_phase_2",
+      "source": "themes/wallpapers"
+    },
+    "extensions": [
+      {
+        "uuid": "dash-to-dock@micxgx.gmail.com",
+        "name": "Dash to Dock",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/dash-to-dock.json",
+        "config_template": "config/dock/dash-to-dock.dconf"
+      },
+      {
+        "uuid": "blur-my-shell@aunetx",
+        "name": "Blur my Shell",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/blur-my-shell.json",
+        "config_template": null
+      },
+      {
+        "uuid": "compiz-alike-magic-lamp-effect@hermes83.github.com",
+        "name": "Compiz alike magic lamp effect",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/compiz-alike-magic-lamp-effect.json",
+        "config_template": "config/animations/magic-lamp.dconf"
+      }
+    ],
+    "settings": {
+      "wm_preferences": "config/gnome/01-wm-preferences.dconf",
+      "desktop_interface": "config/gnome/00-interface.dconf",
+      "dock": "config/dock/dash-to-dock.dconf",
+      "magic_lamp": "config/animations/magic-lamp.dconf"
+    }
+  }
+}

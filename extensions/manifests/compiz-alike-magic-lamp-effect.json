@@ -1,0 +1,32 @@
+{
+  "name": "Compiz alike magic lamp effect",
+  "uuid": "compiz-alike-magic-lamp-effect@hermes83.github.com",
+  "uuid_verified": true,
+  "official_source": {
+    "repository": "https://github.com/hermes83/compiz-alike-magic-lamp-effect",
+    "gnome_extensions_url": "https://extensions.gnome.org/extension/3740/compiz-alike-magic-lamp-effect/",
+    "author": "hermes83"
+  },
+  "supported_gnome_versions": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51"
+  ],
+  "versions_verified": true,
+  "installation_method": "gnome_extensions_cli",
+  "enabled_presets": [
+    "balanced",
+    "full"
+  ],
+  "settings_schema": "org.gnome.shell.extensions.com.github.hermes83.compiz-alike-magic-lamp-effect",
+  "known_conflicts": [
+    "other-window-animation-extensions"
+  ],
+  "installation_status": "planned",
+  "notes": "Classic macOS genie minimize and restore window animation.",
+  "unverified_fields": []
+}

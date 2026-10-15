@@ -1,0 +1,79 @@
+{
+  "id": "full",
+  "name": "macKali Full (Nostalgia & 3D Effects)",
+  "description": "The complete macOS aesthetic combined with classic Compiz 3D desktop effects: WhiteSur cursors, macOS dock, frosted glass blur, genie lamp animations, wobbly windows, and the 3D desktop workspace cube.",
+  "target_user": "Power users with dedicated 3D acceleration seeking maximum visual flair and nostalgic Compiz physics on Kali Linux.",
+  "status": "Phase 1 - Cursor theme and configuration schemas ready; automated extension installation planned for Phase 2.",
+  "components": {
+    "cursors": {
+      "theme": "WhiteSur-cursors",
+      "status": "ready",
+      "source": "themes/cursors"
+    },
+    "gtk_theme": {
+      "theme": "WhiteSur-Light / WhiteSur-Dark",
+      "status": "planned_phase_2",
+      "source": "themes/gtk"
+    },
+    "shell_theme": {
+      "theme": "WhiteSur-Shell",
+      "status": "planned_phase_2",
+      "source": "themes/shell"
+    },
+    "icon_theme": {
+      "theme": "WhiteSur-Icons",
+      "status": "planned_phase_2",
+      "source": "themes/icons"
+    },
+    "wallpapers": {
+      "collection": "macOS Wallpapers (Day/Night Dynamic)",
+      "status": "planned_phase_2",
+      "source": "themes/wallpapers"
+    },
+    "extensions": [
+      {
+        "uuid": "dash-to-dock@micxgx.gmail.com",
+        "name": "Dash to Dock",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/dash-to-dock.json",
+        "config_template": "config/dock/dash-to-dock.dconf"
+      },
+      {
+        "uuid": "blur-my-shell@aunetx",
+        "name": "Blur my Shell",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/blur-my-shell.json",
+        "config_template": null
+      },
+      {
+        "uuid": "compiz-alike-magic-lamp-effect@hermes83.github.com",
+        "name": "Compiz alike magic lamp effect",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/compiz-alike-magic-lamp-effect.json",
+        "config_template": "config/animations/magic-lamp.dconf"
+      },
+      {
+        "uuid": "compiz-windows-effect@hermes83.github.com",
+        "name": "Compiz windows effect",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/compiz-windows-effect.json",
+        "config_template": "config/animations/compiz-windows.dconf"
+      },
+      {
+        "uuid": "desktop-cube@schneegans.github.com",
+        "name": "Desktop Cube",
+        "status": "planned_phase_2",
+        "manifest": "extensions/manifests/desktop-cube.json",
+        "config_template": "config/animations/desktop-cube.dconf"
+      }
+    ],
+    "settings": {
+      "wm_preferences": "config/gnome/01-wm-preferences.dconf",
+      "desktop_interface": "config/gnome/00-interface.dconf",
+      "dock": "config/dock/dash-to-dock.dconf",
+      "magic_lamp": "config/animations/magic-lamp.dconf",
+      "compiz_windows": "config/animations/compiz-windows.dconf",
+      "desktop_cube": "config/animations/desktop-cube.dconf"
+    }
+  }
+}

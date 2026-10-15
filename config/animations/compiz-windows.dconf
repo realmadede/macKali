@@ -1,0 +1,5 @@
+[org/gnome/shell/extensions/com/github/hermes83/compiz-windows-effect]
+friction=3.5
+spring-k=8.0
+mass=100
+speedup-factor-snapping=1.0

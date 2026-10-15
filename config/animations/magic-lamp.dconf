@@ -1,0 +1,4 @@
+[org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect]
+effect-time=400
+unminimize-effect-time=400
+support-multi-monitors=true

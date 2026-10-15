@@ -1,0 +1,8 @@
+[org/gnome/desktop/interface]
+cursor-theme='WhiteSur-cursors'
+cursor-size=24
+icon-theme='WhiteSur-Icons'
+gtk-theme='WhiteSur-Dark'
+color-scheme='prefer-dark'
+font-antialiasing='rgba'
+font-hinting='slight'

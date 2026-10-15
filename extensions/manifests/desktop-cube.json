@@ -1,0 +1,31 @@
+{
+  "name": "Desktop Cube",
+  "uuid": "desktop-cube@schneegans.github.com",
+  "uuid_verified": true,
+  "official_source": {
+    "repository": "https://github.com/Schneegans/Desktop-Cube",
+    "gnome_extensions_url": "https://extensions.gnome.org/extension/4648/desktop-cube/",
+    "author": "Simon Schneegans"
+  },
+  "supported_gnome_versions": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51"
+  ],
+  "versions_verified": true,
+  "installation_method": "gnome_extensions_cli",
+  "enabled_presets": [
+    "full"
+  ],
+  "settings_schema": "org.gnome.shell.extensions.desktop-cube",
+  "known_conflicts": [
+    "workspace-switcher-mods"
+  ],
+  "installation_status": "planned",
+  "notes": "Classic Compiz 3D desktop cube animation for multi-workspace navigation.",
+  "unverified_fields": []
+}

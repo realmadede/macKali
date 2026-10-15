@@ -58,6 +58,7 @@ test_shell_syntax() {
     "$REPO_ROOT/install.sh"
     "$REPO_ROOT/build.sh"
     "$REPO_ROOT/scripts/install.sh"
+    "$REPO_ROOT/scripts/tui-installer.sh"
     "$REPO_ROOT/scripts/extensions-manager.sh"
     "$REPO_ROOT/scripts/appearance.sh"
     "$REPO_ROOT/scripts/compat-check.sh"
@@ -79,7 +80,7 @@ test_shell_syntax() {
   done
   return 0
 }
-run_test "Shell scripts syntax check (bash -n across all 15 scripts)" test_shell_syntax
+run_test "Shell scripts syntax check (bash -n across all 16 scripts)" test_shell_syntax
 
 # Test 2: JSON Syntax Validation
 test_json_syntax() {
@@ -117,6 +118,7 @@ run_test "Extension manifest schema compliance" test_schema_compliance
 test_cli_help() {
   "$REPO_ROOT/install.sh" --help >/dev/null
   "$REPO_ROOT/scripts/install.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/tui-installer.sh" --help >/dev/null
   "$REPO_ROOT/scripts/extensions-manager.sh" --help >/dev/null
   "$REPO_ROOT/scripts/appearance.sh" --help >/dev/null
   "$REPO_ROOT/scripts/backup.sh" --help >/dev/null
@@ -333,6 +335,110 @@ test_safe_recovery_audit() {
   return 0
 }
 run_test "Safe recovery audit & user settings preservation" test_safe_recovery_audit
+
+# Test 23: TUI installer script syntax and executable permissions
+test_tui_syntax_and_perms() {
+  [ -x "$REPO_ROOT/scripts/tui-installer.sh" ] || return 1
+  bash -n "$REPO_ROOT/scripts/tui-installer.sh" || return 1
+  return 0
+}
+run_test "Phase 4A: TUI script syntax and executable permissions" test_tui_syntax_and_perms
+
+# Test 24: Backend selection and plain-terminal fallback
+test_tui_backend_selection() {
+  # 1. Force plain mode
+  local out_plain
+  out_plain="$(TUI_BACKEND=plain "$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --dry-run 2>&1)"
+  echo "$out_plain" | grep -q "UI Backend:  plain" || return 1
+
+  # 2. Test missing backend graceful fallback (e.g. invalid or non-installed backend)
+  local out_fallback
+  out_fallback="$(TUI_BACKEND=dialog "$REPO_ROOT/scripts/tui-installer.sh" --non-interactive --dry-run 2>&1 || true)"
+  echo "$out_fallback" | grep -q "plain-terminal mode" || echo "$out_fallback" | grep -q "UI Backend:" || return 1
+  return 0
+}
+run_test "Phase 4A: Backend selection and plain-terminal fallback" test_tui_backend_selection
+
+# Test 25: Preset selection and option forwarding (Dry-run execution)
+test_tui_preset_forwarding() {
+  # Test minimal preset forwarding
+  local out_min
+  out_min="$("$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --preset minimal --dry-run 2>&1)"
+  echo "$out_min" | grep -q "Preset Tier:       minimal" || return 1
+  echo "$out_min" | grep -q "macKali Minimal" || return 1
+
+  # Test full preset forwarding
+  local out_full
+  out_full="$("$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --preset full --dry-run 2>&1)"
+  echo "$out_full" | grep -q "Preset Tier:       full" || return 1
+  echo "$out_full" | grep -q "macKali Full" || return 1
+  return 0
+}
+run_test "Phase 4A: Preset selection and option forwarding (minimal & full dry-runs)" test_tui_preset_forwarding
+
+# Test 26: User cancellation before modifications
+test_tui_cancellation() {
+  # 1. Cancellation at welcome step
+  local out_cancel_welcome
+  out_cancel_welcome="$(printf "n\n" | "$REPO_ROOT/scripts/tui-installer.sh" --plain 2>&1)"
+  echo "$out_cancel_welcome" | grep -q "cancelled by user" || return 1
+
+  # 2. Cancellation at confirmation step
+  local out_cancel_confirm
+  out_cancel_confirm="$(printf "y\n2\n1\ny\nn\n" | "$REPO_ROOT/scripts/tui-installer.sh" --plain 2>&1)"
+  echo "$out_cancel_confirm" | grep -q "cancelled by user" || return 1
+  return 0
+}
+run_test "Phase 4A: Clean user cancellation before desktop modifications" test_tui_cancellation
+
+# Test 27: Backup default and confirmation handling
+test_tui_backup_handling() {
+  # Verify backup is enabled by default
+  local out_def
+  out_def="$("$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --dry-run 2>&1)"
+  echo "$out_def" | grep -q "Safety Backup:     Yes" || return 1
+
+  # Verify --no-backup disables backup in plan
+  local out_nobackup
+  out_nobackup="$("$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --no-backup --dry-run 2>&1)"
+  echo "$out_nobackup" | grep -q "Safety Backup:     No" || return 1
+  return 0
+}
+run_test "Phase 4A: Backup default (Enabled) and --no-backup override" test_tui_backup_handling
+
+# Test 28: Correct display & handling of extension compatibility
+test_tui_compat_display() {
+  local output
+  output="$("$REPO_ROOT/scripts/tui-installer.sh" --plain --non-interactive --dry-run 2>&1)"
+  echo "$output" | grep -q "Universal Components" || return 1
+  echo "$output" | grep -q "Shell & Extension Components Status" || return 1
+  echo "$output" | grep -q "macKali Safety Guarantees" || return 1
+  return 0
+}
+run_test "Phase 4A: Compatibility and safety report display in wizard" test_tui_compat_display
+
+# Test 29: Preservation of existing CLI interface
+test_existing_cli_preserved() {
+  # Verify root install.sh legacy usage works
+  "$REPO_ROOT/install.sh" --help >/dev/null || return 1
+  "$REPO_ROOT/install.sh" --check >/dev/null || return 1
+
+  # Verify scripts/install.sh non-interactive CLI flags work
+  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null || return 1
+  "$REPO_ROOT/scripts/install.sh" --preset minimal --dry-run >/dev/null || return 1
+  return 0
+}
+run_test "Phase 4A: Preservation of existing non-interactive CLI interfaces" test_existing_cli_preserved
+
+# Test 30: Root interactive entry point (./install.sh --interactive)
+test_root_interactive_entry() {
+  local output
+  output="$("$REPO_ROOT/install.sh" --interactive --plain --non-interactive --preset balanced --dry-run 2>&1)"
+  echo "$output" | grep -q "Welcome to the macKali Desktop Customization Wizard" || return 1
+  echo "$output" | grep -q "macKali Customization Completed Successfully" || return 1
+  return 0
+}
+run_test "Phase 4A: Root interactive entry point (./install.sh --interactive)" test_root_interactive_entry
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

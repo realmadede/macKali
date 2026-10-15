@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: Kali Linux | GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
-[![Status: Phase 3 Complete](https://img.shields.io/badge/Status-Phase%203%20Complete-green.svg)](#)
+[![Status: Phase 4A Complete](https://img.shields.io/badge/Status-Phase%204A%20Complete-green.svg)](#)
 [![macKali CI](https://github.com/realmadede/macKali/actions/workflows/ci.yml/badge.svg)](https://github.com/realmadede/macKali/actions/workflows/ci.yml)
 
 macKali transforms the GNOME desktop environment on Kali Linux into a refined, high-performance macOS-like desktop experience. Built on the foundation of the macOS-inspired **WhiteSur cursor theme**, macKali provides a modular framework supporting both automated presets and manual installation.
@@ -28,10 +28,11 @@ macKali is engineered for Kali Linux Rolling and modern GNOME releases:
 
 ---
 
-## Project Status: Phase 3 (GNOME Extensions & Dock Integration)
+## Project Status: Phase 4A (Interactive TUI Installer)
 
 This repository provides a complete macOS visual appearance and desktop extension integration suite for Kali Linux:
 
+- **Interactive Terminal Wizard** ([`scripts/tui-installer.sh`](scripts/tui-installer.sh)): Guided terminal interface with `whiptail`/`dialog` support and ANSI fallback, environment inspection, safety backup toggles, and instant recovery instructions.
 - **Modular Extension Manager** ([`scripts/extensions-manager.sh`](scripts/extensions-manager.sh)): Inspect compatibility, query metadata, download verified release bundles from `extensions.gnome.org` (EGO), and manage lifecycle states.
 - **macOS Dock Layout Engine**: Centered bottom layout, intelligent autohide, 48px icons, dynamic transparency, and dots indicators via Dash to Dock—with strict preservation of user favorite applications and Kali security launchers.
 - **Verified GNOME 50.3 Wayland Support**: All 5 target extensions (Dash to Dock, Blur My Shell, Magic Lamp, Compiz Windows Effect, Desktop Cube) regression tested and verified compatible with GNOME 50.
@@ -67,6 +68,7 @@ macKali/
 │   ├── compat-check.sh # System detection and extension compatibility checker
 │   ├── install.sh      # Central macKali installer engine
 │   ├── restore.sh      # Rollback utility
+│   ├── tui-installer.sh # Interactive terminal customization wizard
 │   ├── uninstall.sh    # Safe asset removal utility
 │   └── lib/common.sh   # Shared shell logging and detection library
 ├── themes/             # Visual theme packages
@@ -84,7 +86,17 @@ macKali/
 
 ## Quickstart & Installation
 
-### 1. Check System Compatibility
+### 1. Interactive Terminal Wizard (Recommended)
+Run the guided terminal customization wizard with environment detection, preset picker, and safety confirmation:
+
+```bash
+./install.sh --interactive
+# or
+./scripts/install.sh -i
+```
+*Automatically uses `whiptail` or `dialog` if present, with a clean ANSI plain-terminal fallback.*
+
+### 2. Check System Compatibility
 Inspect your Kali Linux environment, GNOME Shell version, and tool availability without altering any settings:
 
 ```bash
@@ -93,7 +105,7 @@ Inspect your Kali Linux environment, GNOME Shell version, and tool availability 
 ./install.sh --check
 ```
 
-### 2. Install WhiteSur Cursors (Backward-Compatible)
+### 3. Install WhiteSur Cursors (Backward-Compatible)
 Installs the precompiled cursor theme to `~/.local/share/icons/WhiteSur-cursors`:
 
 ```bash
@@ -105,8 +117,8 @@ For system-wide installation across all users:
 sudo ./install.sh --system
 ```
 
-### 3. Automated Customization Installer
-Run the macKali installer with safety backup and preset selection:
+### 4. Non-Interactive Preset Installation
+Run the macKali installer non-interactively with safety backup and preset selection:
 
 ```bash
 ./scripts/install.sh --preset balanced --backup
@@ -217,8 +229,14 @@ See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual rec
   - Blur My Shell frosted glass overview styling
   - Compiz wobbly windows & magic lamp genie animations (opt-in)
   - Experimental Desktop Cube 3D transition integration
-  - Automated tests (16 tests in `tests/run-tests.sh`)
-- [ ] **Phase 4: Interactive TUI Installer & Static Website**
+  - Dynamic forward-compatible 4-tier GNOME evaluation engine
+- [ ] **Phase 4: Interactive TUI Installer & Static Showcase Website**
+  - [x] **Phase 4A: Interactive Terminal Customization Wizard**
+    - Guided interactive wizard (`scripts/tui-installer.sh`, `./install.sh --interactive`)
+    - Dynamic UI backend selection (`whiptail`, `dialog`, ANSI plain-terminal fallback)
+    - Dynamic preset loading, safety backup defaults, component selection
+    - Comprehensive test suite expansion (30 automated tests in `tests/run-tests.sh`)
+  - [ ] **Phase 4B: Modern Static Website & Showcase Portal**
 
 ---
 

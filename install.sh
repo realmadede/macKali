@@ -7,6 +7,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # If invoked with macKali specific options, delegate to appropriate script
 case "$1" in
+  --interactive|-i)
+    shift
+    exec "$SCRIPT_DIR/scripts/tui-installer.sh" "$@"
+    ;;
   --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
     ;;
@@ -26,6 +30,7 @@ case "$1" in
     echo "  $0 --uninstall      Uninstall WhiteSur cursors"
     echo ""
     echo "macKali Modular Customization Usage:"
+    echo "  $0 --interactive, -i Run the interactive terminal customization wizard (TUI)"
     echo "  $0 --check          Check system and GNOME extension compatibility"
     echo "  $0 --preset <name>  Run macKali installer with preset (minimal, balanced, full)"
     echo "  $0 --backup         Create desktop backup before installing"

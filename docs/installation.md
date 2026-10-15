@@ -19,9 +19,31 @@ This document covers both the **Automated** and **Manual** workflows for deployi
 
 ---
 
-## Workflow 1: Automated Installation
+## Workflow 1: Interactive Terminal Wizard (Recommended)
 
-The automated installer is driven by `scripts/install.sh` (or the top-level `./install.sh` wrapper).
+macKali includes a dedicated interactive terminal customization wizard (`scripts/tui-installer.sh`) designed to make installation effortless, safe, and transparent:
+
+```bash
+./install.sh --interactive
+# or
+./scripts/install.sh -i
+```
+
+### Key Wizard Capabilities
+- **Adaptive UI Backends**: Seamlessly uses `whiptail` or `dialog` for high-quality dialog boxes if available, and gracefully falls back to an ANSI plain-terminal interface if neither is installed.
+- **Environment Detection**: Detects your Linux distribution, desktop environment, GNOME Shell version, and session type (Wayland or X11) at startup.
+- **Dynamic 4-Tier Compatibility Check**: Evaluates GNOME extensions dynamically against your running GNOME Shell version without artificial version limits.
+- **Guided Preset Selection**: Choose from `minimal`, `balanced` (recommended), or `full` presets with clear, dynamic descriptions read directly from preset manifests.
+- **Granular Customization**: Toggle Dark/Light color schemes, WhiteSur cursors, 4K wallpapers, extensions, and optional 3D effects (Magic Lamp, Compiz Windows, Desktop Cube).
+- **Default Safety Backups**: Automatically enables timestamped `dconf` configuration backups before any changes are made.
+- **Dry-Run & Clean Cancellation**: Test the entire flow with `--dry-run`, or cancel at any step before execution to exit with zero system changes.
+- **Instant Recovery Summary**: Displays actionable rollback commands (`./scripts/restore.sh`, `./scripts/extensions-manager.sh --dock-revert`, and emergency TTY shortcuts).
+
+---
+
+## Workflow 2: Automated Non-Interactive Installation
+
+For scripting, automation, or direct CLI usage, macKali provides non-interactive flags via `scripts/install.sh` (or the top-level `./install.sh` wrapper).
 
 ### Step 1: Run Compatibility Check
 Verify that your OS version, GNOME Shell release, and system utilities meet requirements:
@@ -64,7 +86,7 @@ To install only the cursors:
 
 ---
 
-## Workflow 2: Manual Installation
+## Workflow 3: Manual Installation
 
 If you prefer to inspect and apply components individually without automation scripts:
 

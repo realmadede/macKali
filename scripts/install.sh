@@ -40,6 +40,10 @@ print_banner() {
 # Parse options
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --interactive|-i)
+      shift
+      exec "$SCRIPT_DIR/tui-installer.sh" "$@"
+      ;;
     --check)
       ACTION="check"
       shift
@@ -97,6 +101,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $0 [OPTIONS]"
       echo ""
       echo "Options:"
+      echo "  -i, --interactive      Run interactive terminal customization wizard (TUI)"
       echo "      --check            Run environment and GNOME compatibility checks"
       echo "      --preset NAME      Select preset (minimal, balanced, full) [default: balanced]"
       echo "      --appearance       Apply macOS appearance (color-scheme, window buttons, wallpapers)"

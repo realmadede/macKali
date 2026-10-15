@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# macKali Test Suite
+# macKali Test Suite (Phase 2: Appearance Foundation & System Integrity)
 # Runs non-destructive unit and integration checks across scripts, manifests, and commands.
 
 set -e
@@ -58,11 +58,15 @@ test_shell_syntax() {
     "$REPO_ROOT/install.sh"
     "$REPO_ROOT/build.sh"
     "$REPO_ROOT/scripts/install.sh"
+    "$REPO_ROOT/scripts/appearance.sh"
     "$REPO_ROOT/scripts/compat-check.sh"
     "$REPO_ROOT/scripts/backup.sh"
     "$REPO_ROOT/scripts/restore.sh"
     "$REPO_ROOT/scripts/uninstall.sh"
     "$REPO_ROOT/scripts/lib/common.sh"
+    "$REPO_ROOT/scripts/providers/wallpaper-provider.sh"
+    "$REPO_ROOT/scripts/providers/gtk-provider.sh"
+    "$REPO_ROOT/scripts/providers/icon-provider.sh"
     "$REPO_ROOT/themes/cursors/build.sh"
     "$REPO_ROOT/themes/cursors/install.sh"
   )
@@ -74,13 +78,13 @@ test_shell_syntax() {
   done
   return 0
 }
-run_test "Shell scripts syntax check (bash -n)" test_shell_syntax
+run_test "Shell scripts syntax check (bash -n across all 14 scripts)" test_shell_syntax
 
 # Test 2: JSON Syntax Validation
 test_json_syntax() {
   python3 -c "
 import json, glob, sys
-files = glob.glob('$REPO_ROOT/extensions/**/*.json', recursive=True)
+files = glob.glob('$REPO_ROOT/extensions/**/*.json', recursive=True) + glob.glob('$REPO_ROOT/themes/**/*.json', recursive=True)
 if not files:
     sys.exit(1)
 for f in files:
@@ -88,7 +92,7 @@ for f in files:
         json.load(fp)
 "
 }
-run_test "JSON syntax validation (all manifests & presets)" test_json_syntax
+run_test "JSON syntax validation (all manifests, presets & providers)" test_json_syntax
 
 # Test 3: Manifest Schema Compliance
 test_schema_compliance() {
@@ -112,9 +116,13 @@ run_test "Extension manifest schema compliance" test_schema_compliance
 test_cli_help() {
   "$REPO_ROOT/install.sh" --help >/dev/null
   "$REPO_ROOT/scripts/install.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/appearance.sh" --help >/dev/null
   "$REPO_ROOT/scripts/backup.sh" --help >/dev/null
   "$REPO_ROOT/scripts/restore.sh" --help >/dev/null
   "$REPO_ROOT/scripts/uninstall.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/providers/wallpaper-provider.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/providers/gtk-provider.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/providers/icon-provider.sh" --help >/dev/null
   "$REPO_ROOT/themes/cursors/install.sh" --help >/dev/null
 }
 run_test "CLI --help flags execution and zero exit codes" test_cli_help
@@ -125,15 +133,43 @@ test_compat_check() {
 }
 run_test "Compatibility checker (scripts/compat-check.sh)" test_compat_check
 
-# Test 6: Dry-run installer command
+# Test 6: Dry-run installer command across presets and appearance flags
 test_dry_run() {
   "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
   "$REPO_ROOT/scripts/install.sh" --preset minimal --dry-run >/dev/null
   "$REPO_ROOT/scripts/install.sh" --preset full --dry-run >/dev/null
+  "$REPO_ROOT/scripts/install.sh" --appearance --dry-run >/dev/null
 }
-run_test "Installer dry-run across all presets (scripts/install.sh --dry-run)" test_dry_run
+run_test "Installer dry-run across all presets and appearance flags" test_dry_run
 
-# Test 7: Isolated Backup and Restore
+# Test 7: Appearance status and preview modes
+test_appearance_preview() {
+  "$REPO_ROOT/scripts/appearance.sh" --status >/dev/null
+  "$REPO_ROOT/scripts/appearance.sh" --preset macos-dark --preview >/dev/null
+  "$REPO_ROOT/scripts/appearance.sh" --preset macos-light --preview >/dev/null
+  "$REPO_ROOT/scripts/appearance.sh" --buttons left --preview >/dev/null
+  "$REPO_ROOT/scripts/appearance.sh" --mode dark --preview >/dev/null
+}
+run_test "Appearance status and preview modes" test_appearance_preview
+
+# Test 8: Wallpaper provider dry-run and file validation
+test_wallpaper_provider() {
+  [ -f "$REPO_ROOT/themes/wallpapers/macOS-macKali-Light.png" ] || return 1
+  [ -f "$REPO_ROOT/themes/wallpapers/macOS-macKali-Dark.png" ] || return 1
+  "$REPO_ROOT/scripts/providers/wallpaper-provider.sh" --bundled --dry-run >/dev/null
+}
+run_test "Wallpaper provider bundled assets and dry-run" test_wallpaper_provider
+
+# Test 9: Theme and Icon providers non-destructive checks
+test_providers_check() {
+  "$REPO_ROOT/scripts/providers/gtk-provider.sh" --check >/dev/null
+  "$REPO_ROOT/scripts/providers/icon-provider.sh" --check >/dev/null
+  "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install --dry-run >/dev/null
+  "$REPO_ROOT/scripts/providers/icon-provider.sh" --install --dry-run >/dev/null
+}
+run_test "GTK and Icon providers non-destructive checks and dry-runs" test_providers_check
+
+# Test 10: Isolated Backup and Restore
 test_backup_restore() {
   local backup_dest="$SANDBOX/backup_test"
   "$REPO_ROOT/scripts/backup.sh" --dest "$backup_dest" >/dev/null
@@ -145,7 +181,7 @@ test_backup_restore() {
 }
 run_test "Isolated backup creation & restore verification" test_backup_restore
 
-# Test 8: Cursor Installation & Uninstallation lifecycle
+# Test 11: Cursor Installation & Uninstallation lifecycle
 test_cursor_lifecycle() {
   # Install
   "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
@@ -158,6 +194,21 @@ test_cursor_lifecycle() {
   [ ! -d "$target" ] || return 1
 }
 run_test "Cursor installation & uninstallation lifecycle" test_cursor_lifecycle
+
+# Test 12: Reentrancy check (Running installation twice does not corrupt settings)
+test_reentrancy() {
+  # Run installer twice with dry-run
+  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
+  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
+  # Run cursor installer twice
+  "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
+  "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
+  local target="$HOME/.local/share/icons/WhiteSur-cursors"
+  [ -d "$target/cursors" ] || return 1
+  # Clean up
+  "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
+}
+run_test "Installer reentrancy and idempotency (no duplication on repeated runs)" test_reentrancy
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

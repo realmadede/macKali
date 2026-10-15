@@ -80,6 +80,28 @@ if [ -d "$SYS_ICON_DIR" ]; then
   fi
 fi
 
+# 2.5 Remove macKali wallpapers and tracked provider assets
+WALLPAPER_DIR="$HOME/.local/share/backgrounds/macKali"
+if [ -d "$WALLPAPER_DIR" ]; then
+  log_info "Removing macKali wallpapers: $WALLPAPER_DIR"
+  rm -rf "$WALLPAPER_DIR"
+  log_success "macKali wallpapers removed."
+fi
+
+# Remove tracked installed files from file-manifest.json
+MANIFEST_FILE="$HOME/.config/macKali/file-manifest.json"
+if [ -f "$MANIFEST_FILE" ] && has_cmd jq; then
+  log_info "Cleaning up tracked files recorded in $MANIFEST_FILE..."
+  mapfile -t TRACKED < <(jq -r '.[]' "$MANIFEST_FILE" 2>/dev/null || true)
+  for item in "${TRACKED[@]}"; do
+    if [ -e "$item" ]; then
+      log_info "Removing tracked item: $item"
+      rm -rf "$item"
+    fi
+  done
+  log_success "Tracked macKali files removed."
+fi
+
 # 3. Settings Restoration: Backup vs System Defaults
 if [ "$RESTORE_BACKUP" = true ]; then
   log_step "Restoring GNOME settings from latest backup..."
@@ -102,6 +124,16 @@ elif [ "$RESET_DEFAULTS" = true ]; then
     log_info "Resetting interface font and theme settings..."
     gsettings reset org.gnome.desktop.interface icon-theme 2>/dev/null || true
     gsettings reset org.gnome.desktop.interface gtk-theme 2>/dev/null || true
+    gsettings reset org.gnome.desktop.interface color-scheme 2>/dev/null || true
+
+    log_info "Resetting desktop background wallpapers..."
+    gsettings reset org.gnome.desktop.background picture-uri 2>/dev/null || true
+    gsettings reset org.gnome.desktop.background picture-uri-dark 2>/dev/null || true
+
+    if gsettings list-schemas | grep -q "org.gnome.shell.extensions.user-theme"; then
+      log_info "Resetting user-theme shell name..."
+      gsettings reset org.gnome.shell.extensions.user-theme name 2>/dev/null || true
+    fi
   fi
 
   if has_cmd dconf; then

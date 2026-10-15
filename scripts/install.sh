@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# macKali Installer Engine (Phase 2: GNOME Appearance Foundation)
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,6 +14,9 @@ PRESET="balanced"
 DRY_RUN=false
 DO_BACKUP=false
 CURSORS_ONLY=false
+APPLY_APPEARANCE=false
+APPEARANCE_MODE="dark"
+APPLY_WALLPAPER=false
 
 # Banner
 print_banner() {
@@ -24,7 +29,7 @@ print_banner() {
   echo " |_|  |_|\__,_|\___|____/     \/   |_|"
   echo -e "${COLOR_RESET}"
   echo -e "${COLOR_BOLD}macKali: macOS Desktop Customization for Kali Linux & GNOME${COLOR_RESET}"
-  echo -e "${COLOR_YELLOW}[Phase 1: Architecture, Presets & Cursor Integration]${COLOR_RESET}"
+  echo -e "${COLOR_GREEN}[Phase 2: GNOME Appearance Foundation]${COLOR_RESET}"
   echo ""
 }
 
@@ -38,6 +43,18 @@ while [[ $# -gt 0 ]]; do
     --preset)
       PRESET="$2"
       shift 2
+      ;;
+    --appearance)
+      APPLY_APPEARANCE=true
+      shift
+      ;;
+    --mode)
+      APPEARANCE_MODE="$2"
+      shift 2
+      ;;
+    --wallpaper)
+      APPLY_WALLPAPER=true
+      shift
       ;;
     --cursors-only)
       CURSORS_ONLY=true
@@ -58,6 +75,9 @@ while [[ $# -gt 0 ]]; do
       echo "Options:"
       echo "      --check            Run environment and GNOME compatibility checks"
       echo "      --preset NAME      Select preset (minimal, balanced, full) [default: balanced]"
+      echo "      --appearance       Apply macOS appearance (color-scheme, window buttons, wallpapers)"
+      echo "      --mode [dark|light] Set appearance color mode [default: dark]"
+      echo "      --wallpaper        Apply bundled 4K macOS Light & Dark wallpapers"
       echo "      --cursors-only     Install only the WhiteSur cursor theme"
       echo "      --backup           Create a timestamped backup before installation"
       echo "      --dry-run          Preview installation operations without modifying system"
@@ -111,21 +131,20 @@ fi
 
 log_step "Selected Preset: $(jq -r '.name' "$PRESET_FILE")"
 echo "  Description: $(jq -r '.description' "$PRESET_FILE")"
-echo "  Phase 1 Status: $(jq -r '.status' "$PRESET_FILE")"
 echo ""
 
-# Report Phase 1 Scope Clearly
+# Report Phase 2 Scope Clearly
 echo "------------------------------------------------------------"
-echo "Phase 1 Component Status:"
-echo "  [x] Cursors:      Ready for installation (WhiteSur-cursors)"
-echo "  [ ] GTK Theme:    Planned for Phase 2 (templates in themes/gtk/)"
-echo "  [ ] Shell Theme:  Planned for Phase 2 (templates in themes/shell/)"
-echo "  [ ] Icons:        Planned for Phase 2 (templates in themes/icons/)"
-echo "  [ ] Extensions:   Planned for Phase 2 (manifests in extensions/)"
+echo "Phase 2 Component Status:"
+echo "  [x] Cursors:      Ready & bundled (WhiteSur-cursors)"
+echo "  [x] Wallpapers:   Ready & bundled (4K macOS Light & Dark)"
+echo "  [x] Appearance:   Ready (Dark/Light mode, left traffic lights)"
+echo "  [x] Providers:    Ready (GTK & Icon user-space provider engines)"
+echo "  [ ] Extensions:   Decoupled from Phase 2 (appearance foundation only)"
 echo "------------------------------------------------------------"
 echo ""
 
-# Install Cursors
+# 1. Install Cursors
 log_step "Installing WhiteSur Cursor Theme..."
 if [ "$DRY_RUN" = true ]; then
   log_info "[DRY-RUN] Would execute: $REPO_ROOT/themes/cursors/install.sh"
@@ -133,10 +152,34 @@ else
   "$REPO_ROOT/themes/cursors/install.sh"
 fi
 
+# 2. Apply Wallpaper if requested or in full preset
+if [ "$APPLY_WALLPAPER" = true ] || [ "$APPLY_APPEARANCE" = true ]; then
+  echo ""
+  log_step "Applying macOS 4K Wallpapers..."
+  if [ "$DRY_RUN" = true ]; then
+    "$SCRIPT_DIR/providers/wallpaper-provider.sh" --bundled --dry-run
+  else
+    "$SCRIPT_DIR/providers/wallpaper-provider.sh" --bundled
+  fi
+fi
+
+# 3. Apply Appearance Settings if requested
+if [ "$APPLY_APPEARANCE" = true ]; then
+  echo ""
+  log_step "Configuring macOS Appearance..."
+  PRESET_NAME="macos-dark"
+  [ "$APPEARANCE_MODE" = "light" ] && PRESET_NAME="macos-light"
+  if [ "$DRY_RUN" = true ]; then
+    "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --preview
+  else
+    "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --yes
+  fi
+fi
+
 echo ""
-log_success "macKali Phase 1 installation tasks completed!"
+log_success "macKali installation tasks completed!"
 echo ""
 echo "Next Steps:"
-echo "  - Verify cursor installation with: gsettings get org.gnome.desktop.interface cursor-theme"
-echo "  - Review extension manifests: cat extensions/manifests/*.json"
+echo "  - Check appearance status: ./scripts/appearance.sh --status"
+echo "  - Revert appearance anytime: ./scripts/appearance.sh --revert"
 echo "  - See manual configuration instructions: docs/manual-configuration.md"

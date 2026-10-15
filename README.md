@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: Kali Linux / GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
-[![Status: Phase 1 Architecture](https://img.shields.io/badge/Status-Phase%201%20Complete-green.svg)](#)
+[![Status: Phase 2 Complete](https://img.shields.io/badge/Status-Phase%202%20Complete-green.svg)](#)
 [![macKali CI](https://github.com/realmadede/macKali/actions/workflows/ci.yml/badge.svg)](https://github.com/realmadede/macKali/actions/workflows/ci.yml)
 
 macKali transforms the GNOME desktop environment on Kali Linux into a refined, high-performance macOS-like desktop experience. Built on the foundation of the macOS-inspired **WhiteSur cursor theme**, macKali provides a modular framework supporting both automated presets and manual installation.
@@ -17,15 +17,16 @@ macKali transforms the GNOME desktop environment on Kali Linux into a refined, h
 
 ---
 
-## Project Status: Phase 1
+## Project Status: Phase 2 (GNOME Appearance Foundation)
 
-This repository has transitioned from the original standalone cursor repository into a structured, modular customization suite:
+This repository provides a complete macOS visual appearance foundation for Kali Linux and GNOME environments:
 
-- **Preserved Core**: The complete WhiteSur cursor theme (sources, compilation pipeline, and pre-built dist assets) is 100% functional and backward-compatible.
-- **Architectural Foundation**: Directory layouts for GTK themes, Shell themes, icons, wallpapers, extensions, dconf configs, and automation scripts are established.
-- **Safety & Rollback**: Automatic non-destructive backups (`scripts/backup.sh`) and instant rollback (`scripts/restore.sh`).
-- **Verified Extension Manifests**: Formal JSON schema and verified metadata for Dash to Dock, Desktop Cube, Compiz Windows Effect, Compiz Alike Magic Lamp Effect, and Blur My Shell.
-- **Phase 1 Deliverables Complete**: No desktop settings or extensions are altered without explicit user invocation.
+- **WhiteSur Cursors**: 100% functional build and installation pipeline for X11 & Wayland.
+- **macOS 4K Wallpapers**: Bundled Day & Night high-resolution wallpapers (`themes/wallpapers/`) with automatic light/dark pairing via GNOME `picture-uri` & `picture-uri-dark`.
+- **Appearance Manager Engine** ([`scripts/appearance.sh`](scripts/appearance.sh)): Safely preview, configure, and revert GNOME light/dark color schemes, traffic light window controls, GTK themes, and icon packs with explicit confirmation and per-setting snapshots.
+- **Theme & Icon Providers** ([`scripts/providers/`](scripts/providers/)): Modular user-space installer drivers for WhiteSur GTK and Icon themes.
+- **Libadwaita / GTK4 Compliance**: Respects GNOME upstream standards by using native `color-scheme` negotiation without forcing unstable CSS hacks on libadwaita applications.
+- **Safety & Rollback**: Single-command appearance reversion (`--revert`), full backup/restore, and nuclear purge (`--purge`).
 
 ---
 
@@ -189,12 +190,19 @@ See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual rec
   - Backup and restore utilities
   - Extension manifests schema and presets
   - Complete documentation suite
-- [ ] **Phase 2: Automated Extensions & Themes Implementation**
+- [x] **Phase 2: GNOME Appearance Foundation**
+  - Bundled 4K Light & Dark macOS wallpapers
+  - Master appearance engine (`scripts/appearance.sh`) with per-setting snapshots & rollback
+  - WhiteSur GTK & Shell theme provider (`scripts/providers/gtk-provider.sh`)
+  - WhiteSur Icon theme provider (`scripts/providers/icon-provider.sh`)
+  - Wallpaper provider (`scripts/providers/wallpaper-provider.sh`)
+  - Libadwaita / GTK4 color-scheme native styling
+  - Traffic light window controls toggle
+- [ ] **Phase 3: GNOME Extensions & Desktop Environment Automation**
   - Automated extension installation via GNOME Extensions CLI / GitHub releases
-  - WhiteSur GTK 3 / 4 theme packaging and libadwaita integration
-  - WhiteSur GNOME Shell theme integration
-  - macOS squircle icon pack packaging (with custom Kali tool icons)
-  - Dynamic Day/Night wallpapers with GNOME background XML schedulers
+  - Dash to Dock macOS dock layout application
+  - Compiz wobbly windows & magic lamp genie animations
+  - Blur My Shell frosted glass overview styling
   - Interactive TUI installer wizard
 
 ---

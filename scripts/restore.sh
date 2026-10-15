@@ -101,6 +101,36 @@ if [ -f "$SOURCE_DIR/backup-meta.json" ] && has_cmd jq && has_cmd gsettings; the
     log_info "Restoring GTK theme: $GTK_VAL"
     gsettings set org.gnome.desktop.interface gtk-theme "$GTK_VAL" || true
   fi
+
+  COLOR_VAL="$(jq -r '.color_scheme // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$COLOR_VAL" ] && [ "$COLOR_VAL" != "null" ]; then
+    log_info "Restoring color-scheme: $COLOR_VAL"
+    gsettings set org.gnome.desktop.interface color-scheme "$COLOR_VAL" || true
+  fi
+
+  BUTTONS_VAL="$(jq -r '.button_layout // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$BUTTONS_VAL" ] && [ "$BUTTONS_VAL" != "null" ]; then
+    log_info "Restoring window button-layout: $BUTTONS_VAL"
+    gsettings set org.gnome.desktop.wm.preferences button-layout "$BUTTONS_VAL" || true
+  fi
+
+  LIGHT_WP="$(jq -r '.picture_uri // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$LIGHT_WP" ] && [ "$LIGHT_WP" != "null" ]; then
+    log_info "Restoring light wallpaper: $LIGHT_WP"
+    gsettings set org.gnome.desktop.background picture-uri "$LIGHT_WP" || true
+  fi
+
+  DARK_WP="$(jq -r '.picture_uri_dark // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$DARK_WP" ] && [ "$DARK_WP" != "null" ]; then
+    log_info "Restoring dark wallpaper: $DARK_WP"
+    gsettings set org.gnome.desktop.background picture-uri-dark "$DARK_WP" || true
+  fi
+
+  SHELL_VAL="$(jq -r '.shell_theme // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$SHELL_VAL" ] && [ "$SHELL_VAL" != "null" ] && [ "$SHELL_VAL" != "default" ] && gsettings list-schemas | grep -q "org.gnome.shell.extensions.user-theme"; then
+    log_info "Restoring user-theme shell name: $SHELL_VAL"
+    gsettings set org.gnome.shell.extensions.user-theme name "$SHELL_VAL" || true
+  fi
 fi
 
 log_success "Restoration completed successfully."

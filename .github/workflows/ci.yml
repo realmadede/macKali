@@ -27,8 +27,8 @@ jobs:
 
       - name: Verify shell script permissions & syntax
         run: |
-          chmod +x install.sh build.sh scripts/*.sh themes/cursors/*.sh tests/*.sh
-          bash -n install.sh build.sh scripts/*.sh themes/cursors/*.sh tests/*.sh
+          chmod +x install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
+          bash -n install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
 
       - name: Run automated test suite
         run: |

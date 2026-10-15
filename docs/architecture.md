@@ -44,14 +44,19 @@ macKali/
 │   │   └── full.json
 │   └── README.md
 ├── scripts/                    # Automation and management scripts
+│   ├── appearance.sh           # Master appearance engine (themes, icons, wallpapers, light/dark)
 │   ├── backup.sh               # Timestamped dconf/gsettings backup utility
 │   ├── compat-check.sh         # Non-destructive environment and version checker
 │   ├── install.sh              # Central installer engine
 │   ├── restore.sh              # Rollback and backup restoration tool
 │   ├── uninstall.sh            # Asset removal and cleanup tool
 │   ├── README.md
-│   └── lib/
-│       └── common.sh           # Shared shell helper functions and logging
+│   ├── lib/
+│   │   └── common.sh           # Shared shell helper functions and logging
+│   └── providers/              # Modular asset and provider drivers
+│       ├── gtk-provider.sh     # WhiteSur GTK & Shell user-space installer
+│       ├── icon-provider.sh    # WhiteSur Icon theme user-space installer
+│       └── wallpaper-provider.sh # 4K wallpaper installer and downloader
 └── themes/                     # Visual assets and theme packages
     ├── cursors/                # WhiteSur cursor sources, build scripts, and compiled dist
     │   ├── build.sh            # X11/SVG cursor build compiler
@@ -60,10 +65,20 @@ macKali/
     │   ├── dist/               # Compiled binary xcursors and scalable SVGs
     │   ├── src/                # SVG vectors and hotspot definitions
     │   └── README.md
-    ├── gtk/                    # (Phase 2) GTK 3 & GTK 4 / libadwaita styling
-    ├── icons/                  # (Phase 2) macOS squircle icon packs
-    ├── shell/                  # (Phase 2) GNOME Shell panel and popup themes
-    └── wallpapers/             # (Phase 2) 4K/5K dynamic day/night wallpapers
+    ├── gtk/                    # GTK theme provider manifest and documentation
+    │   ├── theme-provider.json
+    │   └── README.md
+    ├── icons/                  # Icon theme provider manifest and documentation
+    │   ├── icon-provider.json
+    │   └── README.md
+    ├── shell/                  # GNOME Shell theme provider manifest and documentation
+    │   ├── theme-provider.json
+    │   └── README.md
+    └── wallpapers/             # Bundled 4K wallpapers and provider manifest
+        ├── macOS-macKali-Light.png
+        ├── macOS-macKali-Dark.png
+        ├── wallpaper-provider.json
+        └── README.md
 ```
 
 ---

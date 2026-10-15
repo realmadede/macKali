@@ -1,0 +1,21 @@
+{
+  "name": "WhiteSur GNOME Shell Theme Provider",
+  "version": "2024-05-01",
+  "upstream_repository": "https://github.com/vinceliuice/WhiteSur-gtk-theme",
+  "license": "GPL-3.0-or-later",
+  "author": "Vince Liuice",
+  "supported_gnome_versions": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51"
+  ],
+  "target_directory": "~/.local/share/themes",
+  "prerequisite_extension": "user-theme@gnome-shell-extensions.gcampax.github.com",
+  "gsettings_schema": "org.gnome.shell.extensions.user-theme",
+  "gsettings_key": "name",
+  "notes": "Requires the User Theme extension to be active to switch shell themes from ~/.local/share/themes/."
+}

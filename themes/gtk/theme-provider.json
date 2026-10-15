@@ -1,0 +1,29 @@
+{
+  "name": "WhiteSur GTK Theme Provider",
+  "version": "2024-05-01",
+  "upstream_repository": "https://github.com/vinceliuice/WhiteSur-gtk-theme",
+  "license": "GPL-3.0-or-later",
+  "author": "Vince Liuice",
+  "supported_gtk_versions": [
+    "gtk-3.0",
+    "gtk-4.0"
+  ],
+  "target_directory": "~/.local/share/themes",
+  "variants": [
+    "WhiteSur-Light",
+    "WhiteSur-Dark",
+    "WhiteSur-Light-solid",
+    "WhiteSur-Dark-solid"
+  ],
+  "libadwaita_status": {
+    "supported_theming": "color-scheme",
+    "force_css_supported": false,
+    "warning": "Libadwaita applications in GNOME 45-51 do not read gtk-theme from GSettings. Universal styling via ~/.config/gtk-4.0/gtk.css is not recommended on rolling distributions as it can cause UI clipping and visual regressions."
+  },
+  "installation_method": "user_space_git_or_tarball",
+  "dependencies": [
+    "sassc",
+    "optipng",
+    "inkscape"
+  ]
+}

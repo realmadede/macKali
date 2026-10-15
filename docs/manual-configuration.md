@@ -25,7 +25,75 @@ Inherits=WhiteSur-cursors
 
 ---
 
-## 2. Window Manager Buttons & Fonts
+## 2. Light & Dark Appearance Modes
+
+GNOME 42+ and GNOME 45–51 provide native color-scheme negotiation for applications.
+
+### Set Dark Mode (Default macOS Dark Experience)
+```bash
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+```
+
+### Set Light Mode
+```bash
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
+```
+
+### Reset to Default System Scheme
+```bash
+gsettings reset org.gnome.desktop.interface color-scheme
+```
+
+---
+
+## 3. macOS Wallpapers (Light & Dark Pairing)
+
+GNOME automatically uses `picture-uri` when in light mode and `picture-uri-dark` when in dark mode.
+
+### Applying macKali 4K Wallpapers Manually
+```bash
+# 1. Create user backgrounds directory
+mkdir -p ~/.local/share/backgrounds/macKali
+
+# 2. Copy bundled 4K wallpapers
+cp themes/wallpapers/macOS-macKali-Light.png ~/.local/share/backgrounds/macKali/
+cp themes/wallpapers/macOS-macKali-Dark.png ~/.local/share/backgrounds/macKali/
+
+# 3. Configure GNOME background URIs
+gsettings set org.gnome.desktop.background picture-uri "file://$HOME/.local/share/backgrounds/macKali/macOS-macKali-Light.png"
+gsettings set org.gnome.desktop.background picture-uri-dark "file://$HOME/.local/share/backgrounds/macKali/macOS-macKali-Dark.png"
+gsettings set org.gnome.desktop.background picture-options 'zoom'
+```
+
+---
+
+## 4. GTK & Icon Themes
+
+### GTK3 vs GTK4 / Libadwaita Architecture Note
+
+> [!NOTE]
+> - **GTK3 Applications**: Fully support external theming via `org.gnome.desktop.interface gtk-theme`. Setting `WhiteSur-Dark` themes all buttons, menus, headerbars, and controls.
+> - **GTK4 / Libadwaita Applications**: Libadwaita intentionally compiles its own Adwaita stylesheet into the application binary and ignores `gtk-theme`. The official, supported mechanism for libadwaita applications is the `color-scheme` ('prefer-dark' or 'prefer-light').
+> - **Why macKali Avoids Forced CSS Hacks**: Injecting custom CSS into `~/.config/gtk-4.0/gtk.css` often causes layout regressions, text clipping, and crashes across rolling GNOME updates. macKali does not force unsupported CSS overrides on libadwaita.
+
+### Setting GTK Theme Manually
+```bash
+gsettings set org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'
+```
+
+### Setting Icon Theme Manually
+```bash
+gsettings set org.gnome.desktop.interface icon-theme 'WhiteSur-dark'
+```
+
+### Setting Shell Theme (Requires User Theme Extension)
+```bash
+gsettings set org.gnome.shell.extensions.user-theme name 'WhiteSur-Dark'
+```
+
+---
+
+## 5. Window Manager Buttons & Fonts
 
 ### macOS Traffic Lights (Left Side)
 ```bash

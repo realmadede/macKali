@@ -1,0 +1,23 @@
+{
+  "name": "macKali Wallpaper Provider",
+  "version": "1.0.0",
+  "description": "Wallpaper provider supporting bundled macOS 4K backgrounds, custom user image files, and upstream wallpaper URLs.",
+  "license": "GPL-3.0-or-later",
+  "bundled_wallpapers": {
+    "light": "themes/wallpapers/macOS-macKali-Light.png",
+    "dark": "themes/wallpapers/macOS-macKali-Dark.png"
+  },
+  "resolution": "3840x2160 (4K UHD)",
+  "supported_sources": [
+    "bundled",
+    "local_file",
+    "remote_url"
+  ],
+  "gnome_schemas": {
+    "light_uri": "org.gnome.desktop.background picture-uri",
+    "dark_uri": "org.gnome.desktop.background picture-uri-dark",
+    "picture_options": "org.gnome.desktop.background picture-options"
+  },
+  "default_picture_options": "zoom",
+  "notes": "GNOME automatically displays picture-uri when in light mode and picture-uri-dark when in dark mode (color-scheme 'prefer-dark')."
+}

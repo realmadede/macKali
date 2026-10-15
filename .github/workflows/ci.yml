@@ -23,7 +23,7 @@ jobs:
       - name: Install system testing tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y dconf-cli libglib2.0-bin jq
+          sudo apt-get install -y dconf-cli libglib2.0-bin jq dbus-x11
 
       - name: Verify shell script permissions & syntax
         run: |
@@ -32,10 +32,10 @@ jobs:
 
       - name: Run automated test suite
         run: |
-          ./tests/run-tests.sh
+          dbus-run-session -- ./tests/run-tests.sh
 
       - name: Test root entry points
         run: |
           ./install.sh --help
           ./install.sh --check
-          ./install.sh --dry-run
+          dbus-run-session -- ./install.sh --dry-run

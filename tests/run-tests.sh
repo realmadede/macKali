@@ -233,12 +233,13 @@ run_test "Extension manager preset resolution and opt-in dry-runs" test_ext_mgr_
 test_dock_safety() {
   # Verify dock config dry-run executes cleanly
   "$REPO_ROOT/scripts/extensions-manager.sh" --dock-config --dry-run >/dev/null || return 1
-  # Ensure favorite-apps gsettings is preserved and not altered
-  if command -v gsettings >/dev/null 2>&1; then
+  # Ensure favorite-apps gsettings is preserved and not altered if schema is present
+  if command -v gsettings >/dev/null 2>&1 && gsettings list-schemas 2>/dev/null | grep -qx "org.gnome.shell"; then
     local current_favs
     current_favs="$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || true)"
     [ -n "$current_favs" ] || return 1
   fi
+  return 0
 }
 run_test "Dash to Dock layout safety & favorite-apps preservation" test_dock_safety
 

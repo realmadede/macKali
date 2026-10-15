@@ -516,8 +516,12 @@ cmd_dock_config() {
   fi
 
   if [ "$is_installed" = false ]; then
-    log_error "Dash to Dock is not installed. Run with --install dash-to-dock@micxgx.gmail.com first."
-    exit 1
+    if [ "$DRY_RUN" = true ]; then
+      log_info "[DRY-RUN] Dash to Dock not yet installed on this host; would be installed during preset setup."
+    else
+      log_error "Dash to Dock is not installed. Run with --install dash-to-dock@micxgx.gmail.com first."
+      exit 1
+    fi
   fi
 
   local template="$REPO_ROOT/config/dock/dash-to-dock.dconf"

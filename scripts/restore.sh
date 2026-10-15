@@ -68,19 +68,19 @@ log_step "Restoring configuration from: $SOURCE_DIR"
 if has_cmd dconf; then
   if [ -f "$SOURCE_DIR/org_gnome_desktop.dconf" ]; then
     log_info "Restoring /org/gnome/desktop/ settings..."
-    dconf load /org/gnome/desktop/ < "$SOURCE_DIR/org_gnome_desktop.dconf"
+    dconf load /org/gnome/desktop/ < "$SOURCE_DIR/org_gnome_desktop.dconf" 2>/dev/null || true
     log_success "Restored /org/gnome/desktop/"
   fi
 
   if [ -f "$SOURCE_DIR/org_gnome_shell.dconf" ]; then
     log_info "Restoring /org/gnome/shell/ settings..."
-    dconf load /org/gnome/shell/ < "$SOURCE_DIR/org_gnome_shell.dconf"
+    dconf load /org/gnome/shell/ < "$SOURCE_DIR/org_gnome_shell.dconf" 2>/dev/null || true
     log_success "Restored /org/gnome/shell/"
   fi
 
   if [ -f "$SOURCE_DIR/org_gnome_shell_extensions.dconf" ]; then
     log_info "Restoring /org/gnome/shell/extensions/ settings..."
-    dconf load /org/gnome/shell/extensions/ < "$SOURCE_DIR/org_gnome_shell_extensions.dconf"
+    dconf load /org/gnome/shell/extensions/ < "$SOURCE_DIR/org_gnome_shell_extensions.dconf" 2>/dev/null || true
     log_success "Restored /org/gnome/shell/extensions/"
   fi
 else

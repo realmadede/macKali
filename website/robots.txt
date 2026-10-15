@@ -1,0 +1,6 @@
+# macKali static showcase website robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap configuration
+Sitemap: https://realmadede.github.io/macKali/sitemap.xml

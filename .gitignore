@@ -1,0 +1,14 @@
+# Git Ignore for macKali
+
+# Website build output
+website/dist/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Editor and OS files
+.DS_Store
+*.swp
+*.swo
+*~

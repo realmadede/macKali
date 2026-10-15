@@ -71,6 +71,7 @@ test_shell_syntax() {
     "$REPO_ROOT/scripts/providers/icon-provider.sh"
     "$REPO_ROOT/themes/cursors/build.sh"
     "$REPO_ROOT/themes/cursors/install.sh"
+    "$REPO_ROOT/website/build.sh"
   )
   for s in "${scripts[@]}"; do
     if ! bash -n "$s"; then
@@ -80,7 +81,7 @@ test_shell_syntax() {
   done
   return 0
 }
-run_test "Shell scripts syntax check (bash -n across all 16 scripts)" test_shell_syntax
+run_test "Shell scripts syntax check (bash -n across all 17 scripts)" test_shell_syntax
 
 # Test 2: JSON Syntax Validation
 test_json_syntax() {
@@ -439,6 +440,56 @@ test_root_interactive_entry() {
   return 0
 }
 run_test "Phase 4A: Root interactive entry point (./install.sh --interactive)" test_root_interactive_entry
+
+# Test 31: Phase 4B: Static website build and asset assembly
+test_website_build() {
+  [ -x "$REPO_ROOT/website/build.sh" ] || return 1
+  bash "$REPO_ROOT/website/build.sh" --clean --validate >/dev/null || return 1
+  [ -d "$REPO_ROOT/website/dist" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/index.html" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/404.html" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/styles.css" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/script.js" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/assets/preview.png" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Light.png" ] || return 1
+  [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Dark.png" ] || return 1
+  return 0
+}
+run_test "Phase 4B: Static website build and asset assembly (website/build.sh)" test_website_build
+
+# Test 32: Phase 4B: Static website internal link and reference integrity
+test_website_integrity() {
+  python3 - <<'PYEOF'
+import os, sys, re
+
+repo_root = os.environ.get("REPO_ROOT", ".")
+dist_dir = os.path.join(repo_root, "website", "dist")
+index_path = os.path.join(dist_dir, "index.html")
+if not os.path.exists(index_path):
+    print("Missing index.html in dist", file=sys.stderr)
+    sys.exit(1)
+
+with open(index_path, "r", encoding="utf-8") as f:
+    html = f.read()
+
+# Verify key copy command is present
+assert "git clone https://github.com/realmadede/macKali.git" in html, "Missing clone command"
+assert "./install.sh --interactive" in html, "Missing interactive flag"
+
+# Verify all relative local references exist
+pattern = r'(?:href|src)=["\'](assets/[^"\']+|styles\.css|script\.js|favicon\.svg|index\.html|404\.html)["\']'
+for match in re.finditer(pattern, html):
+    target = match.group(1)
+    full_path = os.path.join(dist_dir, target)
+    if not os.path.exists(full_path):
+        print(f"Missing referenced target: {target} at {full_path}", file=sys.stderr)
+        sys.exit(1)
+
+print("Static website internal integrity verified.")
+PYEOF
+  return $?
+}
+run_test "Phase 4B: Static website internal link and reference integrity" test_website_integrity
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

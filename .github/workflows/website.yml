@@ -1,0 +1,81 @@
+name: macKali Website CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'website/**'
+      - '.github/workflows/website.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'website/**'
+      - '.github/workflows/website.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    name: Build & Validate Static Website
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify shell script syntax
+        run: |
+          chmod +x website/build.sh
+          bash -n website/build.sh
+
+      - name: Build static website distribution
+        run: |
+          bash website/build.sh
+
+      - name: Validate distribution files & asset references
+        run: |
+          python3 -c "
+          import os, sys, re
+
+          dist_dir = 'website/dist'
+          if not os.path.isdir(dist_dir):
+              print(f'ERROR: {dist_dir} does not exist', file=sys.stderr)
+              sys.exit(1)
+
+          required_files = [
+              'index.html',
+              '404.html',
+              'styles.css',
+              'script.js',
+              'favicon.svg',
+              'robots.txt',
+              'sitemap.xml',
+              'assets/preview.png',
+              'assets/macOS-macKali-Light.png',
+              'assets/macOS-macKali-Dark.png',
+          ]
+
+          for rf in required_files:
+              p = os.path.join(dist_dir, rf)
+              if not os.path.exists(p):
+                  print(f'ERROR: Missing required file: {p}', file=sys.stderr)
+                  sys.exit(1)
+              if os.path.getsize(p) == 0:
+                  print(f'ERROR: File is empty: {p}', file=sys.stderr)
+                  sys.exit(1)
+
+          print(f'All {len(required_files)} required distribution files validated successfully.')
+          "
+
+      - name: Upload website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mackali-static-website
+          path: website/dist/
+          retention-days: 7

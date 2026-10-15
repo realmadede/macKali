@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# macKali Uninstallation & System Restoration Utility
+# Completely removes macKali assets and restores Kali Linux desktop settings
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -7,21 +10,39 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/common.sh"
 
-RESTORE_SETTINGS=false
+RESTORE_BACKUP=false
+RESET_DEFAULTS=false
+PURGE_ALL=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --restore-settings)
-      RESTORE_SETTINGS=true
+    --restore-backup|-r)
+      RESTORE_BACKUP=true
+      shift
+      ;;
+    --reset-defaults|-d)
+      RESET_DEFAULTS=true
+      shift
+      ;;
+    --purge|-p)
+      PURGE_ALL=true
+      RESET_DEFAULTS=true
       shift
       ;;
     --help|-h)
       echo "Usage: $0 [OPTIONS]"
-      echo "Safely remove installed macKali assets and optionally revert settings."
+      echo "Completely remove macKali assets and restore Kali Linux defaults."
       echo ""
       echo "Options:"
-      echo "      --restore-settings   Revert GNOME settings to the latest available backup"
-      echo "  -h, --help               Show this help message"
+      echo "  -r, --restore-backup   Restore settings from the latest macKali backup"
+      echo "  -d, --reset-defaults   Reset all modified GNOME settings back to Kali Linux system defaults"
+      echo "  -p, --purge            Remove all assets, reset GNOME settings to default, and delete backups"
+      echo "  -h, --help             Show this help message"
+      echo ""
+      echo "Examples:"
+      echo "  $0 --restore-backup    # Remove cursors and restore your previous settings"
+      echo "  $0 --reset-defaults    # Remove cursors and reset GNOME to original Kali defaults"
+      echo "  $0 --purge             # Complete nuclear cleanup (zero trace left)"
       exit 0
       ;;
     *)
@@ -31,35 +52,80 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-log_step "Uninstalling macKali components..."
+echo "============================================================"
+echo "          macKali Complete Uninstallation & Cleanup         "
+echo "============================================================"
+log_step "Starting removal process..."
 
 # 1. Remove user cursor theme
 USER_ICON_DIR="$HOME/.local/share/icons/WhiteSur-cursors"
 if [ -d "$USER_ICON_DIR" ]; then
   log_info "Removing user cursor theme: $USER_ICON_DIR"
   rm -rf "$USER_ICON_DIR"
-  log_success "User cursor theme removed."
+  log_success "User cursor directory deleted."
 else
-  log_info "No user cursor theme found at $USER_ICON_DIR"
+  log_info "No user cursor directory found at $USER_ICON_DIR"
 fi
 
-# 2. Check system cursor theme
+# 2. Remove system-wide cursor theme (if installed with root)
 SYS_ICON_DIR="/usr/share/icons/WhiteSur-cursors"
 if [ -d "$SYS_ICON_DIR" ]; then
   if [ "$EUID" -eq 0 ]; then
-    log_info "Removing system cursor theme: $SYS_ICON_DIR"
+    log_info "Removing system-wide cursor theme: $SYS_ICON_DIR"
     rm -rf "$SYS_ICON_DIR"
-    log_success "System cursor theme removed."
+    log_success "System cursor directory deleted."
   else
-    log_warn "System cursor theme detected at $SYS_ICON_DIR."
-    log_warn "Run 'sudo $0' to remove system-wide assets."
+    log_warn "System-wide cursors detected at $SYS_ICON_DIR."
+    log_warn "To remove them, run: sudo $0"
   fi
 fi
 
-# 3. Restore settings if requested
-if [ "$RESTORE_SETTINGS" = true ]; then
+# 3. Settings Restoration: Backup vs System Defaults
+if [ "$RESTORE_BACKUP" = true ]; then
   log_step "Restoring GNOME settings from latest backup..."
-  "$REPO_ROOT/scripts/restore.sh"
+  if [ -f "$REPO_ROOT/scripts/restore.sh" ]; then
+    "$REPO_ROOT/scripts/restore.sh"
+  fi
+elif [ "$RESET_DEFAULTS" = true ]; then
+  log_step "Resetting GNOME settings to Kali Linux system defaults..."
+
+  if has_cmd gsettings; then
+    log_info "Resetting cursor-theme to default..."
+    gsettings reset org.gnome.desktop.interface cursor-theme 2>/dev/null || true
+
+    log_info "Resetting cursor-size to default..."
+    gsettings reset org.gnome.desktop.interface cursor-size 2>/dev/null || true
+
+    log_info "Resetting window button-layout to default..."
+    gsettings reset org.gnome.desktop.wm.preferences button-layout 2>/dev/null || true
+
+    log_info "Resetting interface font and theme settings..."
+    gsettings reset org.gnome.desktop.interface icon-theme 2>/dev/null || true
+    gsettings reset org.gnome.desktop.interface gtk-theme 2>/dev/null || true
+  fi
+
+  if has_cmd dconf; then
+    log_info "Resetting macKali extension configurations in dconf..."
+    dconf reset -f /org/gnome/shell/extensions/dash-to-dock/ 2>/dev/null || true
+    dconf reset -f /org/gnome/shell/extensions/blur-my-shell/ 2>/dev/null || true
+    dconf reset -f /org/gnome/shell/extensions/desktop-cube/ 2>/dev/null || true
+    dconf reset -f /org/gnome/shell/extensions/com/github/hermes83/ 2>/dev/null || true
+  fi
+
+  log_success "All desktop settings reverted to standard Kali Linux defaults."
 fi
 
-log_success "Uninstallation tasks completed."
+# 4. Purge backup cache if requested
+if [ "$PURGE_ALL" = true ]; then
+  BACKUP_DIR="$HOME/.config/macKali"
+  if [ -d "$BACKUP_DIR" ]; then
+    log_info "Purging macKali cache and backups ($BACKUP_DIR)..."
+    rm -rf "$BACKUP_DIR"
+    log_success "macKali cache and backups purged."
+  fi
+fi
+
+echo ""
+echo "============================================================"
+log_success "Uninstallation complete. Your system is restored."
+echo "============================================================"

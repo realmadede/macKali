@@ -98,7 +98,13 @@ macKali creates automated backups prior to applying presets:
 ./scripts/restore.sh
 ```
 
-### Cleanly Remove macKali Assets
+### Cleanly Remove macKali Assets & Reset Settings
 ```bash
-./scripts/uninstall.sh --restore-settings
+# Revert to latest backup:
+./scripts/uninstall.sh --restore-backup
+
+# Or complete purge back to Kali Linux system defaults:
+./scripts/uninstall.sh --purge
 ```
+
+For full disaster recovery steps and manual commands, see [docs/safety-and-removal.md](safety-and-removal.md).

@@ -5,10 +5,13 @@
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# If invoked with macKali specific options, delegate to scripts/install.sh
+# If invoked with macKali specific options, delegate to appropriate script
 case "$1" in
   --check|--preset|--dry-run|--backup)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
+    ;;
+  --uninstall|--reset-defaults|--purge)
+    exec "$SCRIPT_DIR/scripts/uninstall.sh" "$@"
     ;;
   --all)
     shift

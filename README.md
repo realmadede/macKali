@@ -147,13 +147,36 @@ sudo apt install -y xorg-xcursorgen librsvg2-bin python3 git
 
 ---
 
-## Safety Requirements
+## Safety, System Impact & Risk Assessment
 
-macKali strictly adheres to safety standards:
-- **No Uncontrolled Root**: The installer is designed to run as a standard user; root is never requested unless installing system-wide assets (`--system`).
-- **No Blind Overwrites**: Settings changes require an existing or automatic backup.
-- **No Fake Successes**: Components planned for Phase 2 are explicitly marked as such; no phantom or mocked extension installations.
-- **Attribution & Licenses**: The original cursor theme license and attribution are preserved in full.
+Will macKali break or disrupt your Kali Linux installation? **No.**
+- **No System Tool Changes**: Penetration testing tools (Nmap, Metasploit, Wireshark, Burp Suite, etc.), system packages, network drivers, and kernel modules are completely untouched.
+- **Strict User-Level Space**: macKali operates exclusively in user space (`~/.local/share/` and user `dconf`). It does not run with or require root permissions.
+- **Automatic Backups**: Settings are backed up before modification (`scripts/backup.sh`), enabling single-command rollback.
+
+For an exhaustive risk assessment and recovery scenarios, read [docs/safety-and-removal.md](docs/safety-and-removal.md).
+
+---
+
+## How to Completely Remove macKali (Zero Traces)
+
+We believe in complete user transparency. If you ever want to revert your system to 100% stock Kali Linux defaults:
+
+### One-Command Full Purge:
+```bash
+./install.sh --purge
+# or
+./scripts/uninstall.sh --purge
+```
+This removes installed cursors, resets all modified GNOME keys back to original Kali Linux defaults, and deletes backup caches.
+
+### Or 100% Manual Terminal Reset (No Scripts):
+```bash
+gsettings reset org.gnome.desktop.interface cursor-theme
+gsettings reset org.gnome.desktop.wm.preferences button-layout
+rm -rf ~/.local/share/icons/WhiteSur-cursors ~/.config/macKali
+```
+See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual recovery details.
 
 ---
 

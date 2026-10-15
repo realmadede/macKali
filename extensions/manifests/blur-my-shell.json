@@ -32,6 +32,10 @@
   "ego_version": 75,
   "ego_download_tag": 76297,
   "dconf_path": "/org/gnome/shell/extensions/blur-my-shell/",
+  "min_gnome_version": "46",
+  "tested_gnome_versions": [
+    "50"
+  ],
   "notes": "Essential macOS frosted glass background effect for top panel, dash dock, and application overview.",
   "unverified_fields": []
 }

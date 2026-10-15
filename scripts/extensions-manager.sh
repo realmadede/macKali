@@ -44,6 +44,11 @@ init_state_tracking() {
 
   # If state file exists, preserve it
   if [ -f "$STATE_FILE" ]; then
+    if has_cmd jq && [ "$(jq -r '._environment // empty' "$STATE_FILE" 2>/dev/null)" = "" ]; then
+      local tmp
+      tmp="$(mktemp)"
+      jq --arg gv "$GNOME_VERSION" --arg gm "$GNOME_MAJOR_VERSION" '._environment = { "gnome_version": $gv, "gnome_major": $gm, "created_at": (now | todateiso8601) }' "$STATE_FILE" > "$tmp" && mv "$tmp" "$STATE_FILE"
+    fi
     return 0
   fi
 
@@ -96,6 +101,9 @@ EOF
 )
     initial_state=$(echo "$initial_state" | jq --arg u "$uuid" --argjson e "$entry" '.[$u] = $e')
   done
+
+  # Record baseline environment metadata
+  initial_state=$(echo "$initial_state" | jq --arg gv "$GNOME_VERSION" --arg gm "$GNOME_MAJOR_VERSION" '._environment = { "gnome_version": $gv, "gnome_major": $gm, "created_at": (now | todateiso8601) }')
 
   echo "$initial_state" > "$STATE_FILE"
   chmod 600 "$STATE_FILE" 2>/dev/null || true
@@ -221,6 +229,15 @@ cmd_status() {
   detect_gnome_version
   detect_session_type
   echo "Current Environment: GNOME $GNOME_VERSION | Session: $SESSION_TYPE"
+
+  detect_version_shift "$STATE_FILE"
+  if [ "$VERSION_SHIFT_DETECTED" = true ]; then
+    echo ""
+    log_warn "GNOME Rolling Update Detected!"
+    echo "  - Initial Installation Version: GNOME $RECORDED_GNOME_VER"
+    echo "  - Current System Version:       GNOME $GNOME_VERSION"
+    echo "  Run '$0 --compat' or './scripts/compat-check.sh' to re-evaluate extension compatibility."
+  fi
   echo ""
 
   printf "%-32s %-12s %-10s %-12s %-16s\n" "Extension" "Status" "Version" "Active" "Origin"
@@ -281,7 +298,7 @@ cmd_status() {
 # Action: Check compatibility against current GNOME version
 cmd_compat() {
   print_banner
-  log_step "Evaluating Upstream Compatibility for GNOME Shell 50.3 & Wayland..."
+  log_step "Evaluating Dynamic GNOME Shell Compatibility..."
 
   detect_gnome_version
   detect_session_type
@@ -289,39 +306,57 @@ cmd_compat() {
   echo "  - Compositor Session:       $SESSION_TYPE"
   echo ""
 
+  detect_version_shift "$STATE_FILE"
+  if [ "$VERSION_SHIFT_DETECTED" = true ]; then
+    log_warn "GNOME Rolling Update Detected! Installed on GNOME $RECORDED_GNOME_VER, active environment is GNOME $GNOME_VERSION."
+    echo ""
+  fi
+
+  echo "Extension Compatibility Evaluation:"
   local all_compat=true
   for uuid in "${SUPPORTED_UUIDS[@]}"; do
     local mf
     mf="$(get_manifest_path "$uuid")"
     [ -f "$mf" ] || continue
 
-    local name license ego_ver tag wayland_ok
+    local name
     name="$(jq -r '.name' "$mf")"
-    license="$(jq -r '.license // "GPL"' "$mf")"
-    ego_ver="$(jq -r '.ego_version // "unknown"' "$mf")"
-    tag="$(jq -r '.ego_download_tag // "unknown"' "$mf")"
-    wayland_ok="$(jq -r '.wayland_compatible' "$mf")"
 
-    local is_ver_supported
-    is_ver_supported="$(jq --arg v "$GNOME_MAJOR_VERSION" '.supported_gnome_versions | index($v)' "$mf")"
+    evaluate_extension_compat "$uuid" "$mf" "$GNOME_MAJOR_VERSION" true
 
-    if [ "$is_ver_supported" != "null" ] && [ "$wayland_ok" = "true" ]; then
-      log_success "$name ($uuid)"
-      echo "    - GNOME $GNOME_MAJOR_VERSION Compatibility: Verified (EGO Release v$ego_ver, tag $tag)"
-      echo "    - Wayland Native Support:        Verified"
-      echo "    - Upstream License:              $license"
-    else
-      log_warn "$name ($uuid) -> Compatibility unverified for current environment."
-      all_compat=false
-    fi
+    case "$COMPAT_STATUS" in
+      VERIFIED_COMPATIBLE)
+        log_success "$name ($uuid)"
+        echo "    - Status:   Verified Compatible (GNOME $GNOME_MAJOR_VERSION)"
+        echo "    - Details:  $COMPAT_DETAILS"
+        ;;
+      REPORTED_COMPATIBLE)
+        log_info "$name ($uuid)"
+        echo "    - Status:   Reported Compatible (GNOME $GNOME_MAJOR_VERSION)"
+        echo "    - Details:  $COMPAT_DETAILS"
+        ;;
+      UNSUPPORTED)
+        log_error "$name ($uuid)"
+        echo "    - Status:   Unsupported on GNOME $GNOME_MAJOR_VERSION"
+        echo "    - Details:  $COMPAT_DETAILS"
+        all_compat=false
+        ;;
+      COMPATIBILITY_UNKNOWN)
+        log_warn "$name ($uuid)"
+        echo "    - Status:   Compatibility Unknown on GNOME $GNOME_MAJOR_VERSION"
+        echo "    - Details:  $COMPAT_DETAILS"
+        all_compat=false
+        ;;
+    esac
   done
 
   echo ""
   if [ "$all_compat" = true ]; then
-    log_success "All 5 extensions have verified GNOME $GNOME_MAJOR_VERSION & Wayland release artifacts!"
+    log_success "All supported extensions are compatible with GNOME $GNOME_MAJOR_VERSION."
   else
-    log_warn "One or more extensions require manual verification before enabling."
+    log_warn "One or more extensions require verification or are unsupported on GNOME $GNOME_MAJOR_VERSION."
   fi
+  log_info "Note: Universal desktop components (wallpapers, cursors, themes) remain fully compatible."
 }
 
 # Action: Install a verified extension bundle from extensions.gnome.org
@@ -333,17 +368,37 @@ cmd_install() {
   mf="$(get_manifest_path "$uuid")"
   if [ -z "$mf" ] || [ ! -f "$mf" ]; then
     log_error "Unknown extension UUID or manifest missing: $uuid"
-    exit 1
+    return 1
   fi
 
-  local name ego_tag ego_ver
+  local name
   name="$(jq -r '.name' "$mf")"
-  ego_tag="$(jq -r '.ego_download_tag // empty' "$mf")"
-  ego_ver="$(jq -r '.ego_version // empty' "$mf")"
+
+  detect_gnome_version
+  evaluate_extension_compat "$uuid" "$mf" "$GNOME_MAJOR_VERSION" true
+
+  if [ "$COMPAT_STATUS" = "UNSUPPORTED" ]; then
+    log_error "Extension $name ($uuid) is UNSUPPORTED on GNOME $GNOME_MAJOR_VERSION."
+    log_error "$COMPAT_DETAILS"
+    return 1
+  elif [ "$COMPAT_STATUS" = "COMPATIBILITY_UNKNOWN" ] && [ "$FORCE_OVERWRITE" != true ]; then
+    log_warn "Compatibility for $name ($uuid) is UNKNOWN on GNOME $GNOME_MAJOR_VERSION."
+    log_warn "$COMPAT_DETAILS"
+    log_warn "macKali preserves GNOME's extension validation and will not force unverified extensions to run."
+    log_warn "Use --force if you have independently verified this extension."
+    return 1
+  fi
+
+  local ego_tag="${COMPAT_EGO_TAG}"
+  local ego_ver="${COMPAT_EGO_VER}"
+  if [ -z "$ego_tag" ]; then
+    ego_tag="$(jq -r '.ego_download_tag // empty' "$mf")"
+    ego_ver="$(jq -r '.ego_version // empty' "$mf")"
+  fi
 
   if [ -z "$ego_tag" ]; then
-    log_error "No verified EGO download tag registered for $uuid"
-    exit 1
+    log_error "No verified EGO download tag registered or found online for $uuid on GNOME $GNOME_MAJOR_VERSION"
+    return 1
   fi
 
   log_step "Installing $name ($uuid)..."
@@ -443,6 +498,19 @@ cmd_enable() {
   log_step "Enabling $name ($uuid)..."
 
   # Compatibility & Conflict Checks
+  detect_gnome_version
+  evaluate_extension_compat "$uuid" "$mf" "$GNOME_MAJOR_VERSION" true
+  if [ "$COMPAT_STATUS" = "UNSUPPORTED" ]; then
+    log_error "Cannot enable $name ($uuid): Extension is UNSUPPORTED on GNOME $GNOME_MAJOR_VERSION."
+    log_error "$COMPAT_DETAILS"
+    return 1
+  elif [ "$COMPAT_STATUS" = "COMPATIBILITY_UNKNOWN" ] && [ "$FORCE_OVERWRITE" != true ]; then
+    log_warn "Cannot automatically enable $name ($uuid): Compatibility with GNOME $GNOME_MAJOR_VERSION is UNKNOWN."
+    log_warn "$COMPAT_DETAILS"
+    log_warn "macKali preserves GNOME extension validation. Will not force an unverified extension to run."
+    return 1
+  fi
+
   if [ -f "$mf" ] && has_cmd jq; then
     # Check known conflicts
     mapfile -t CONFLICTS < <(jq -r '.known_conflicts[]' "$mf" 2>/dev/null || true)
@@ -614,11 +682,14 @@ cmd_preset() {
       echo "  [-] Animation & Experimental Extensions: Disabled by design (Minimal)"
       echo ""
 
-      # Check if Dash to Dock installed
-      cmd_install "dash-to-dock@micxgx.gmail.com"
-      cmd_enable "dash-to-dock@micxgx.gmail.com"
-      cmd_dock_config
-      log_success "Minimal preset applied successfully!"
+      if cmd_install "dash-to-dock@micxgx.gmail.com"; then
+        cmd_enable "dash-to-dock@micxgx.gmail.com"
+        cmd_dock_config
+      else
+        log_warn "Dash to Dock could not be configured on GNOME $GNOME_MAJOR_VERSION."
+        log_info "Continuing with remaining macKali components."
+      fi
+      log_success "Minimal preset process completed!"
       ;;
 
     balanced)
@@ -633,24 +704,33 @@ cmd_preset() {
       echo ""
 
       # 1. Dash to Dock
-      cmd_install "dash-to-dock@micxgx.gmail.com"
-      cmd_enable "dash-to-dock@micxgx.gmail.com"
-      cmd_dock_config
+      if cmd_install "dash-to-dock@micxgx.gmail.com"; then
+        cmd_enable "dash-to-dock@micxgx.gmail.com"
+        cmd_dock_config
+      else
+        log_warn "Skipping Dash to Dock configuration on GNOME $GNOME_MAJOR_VERSION."
+      fi
 
       # 2. Blur My Shell
-      cmd_install "blur-my-shell@aunetx"
-      cmd_enable "blur-my-shell@aunetx"
+      if cmd_install "blur-my-shell@aunetx"; then
+        cmd_enable "blur-my-shell@aunetx"
+      else
+        log_warn "Skipping Blur My Shell on GNOME $GNOME_MAJOR_VERSION."
+      fi
 
       # 3. Magic Lamp (Opt-in)
       if [ "$WITH_MAGIC_LAMP" = true ]; then
-        cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"
-        cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
-        if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
-          dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+        if cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"; then
+          cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
+          if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
+            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+          fi
+        else
+          log_warn "Skipping Magic Lamp on GNOME $GNOME_MAJOR_VERSION."
         fi
       fi
 
-      log_success "Balanced preset applied successfully!"
+      log_success "Balanced preset process completed!"
       ;;
 
     full)
@@ -674,40 +754,55 @@ cmd_preset() {
       echo ""
 
       # Base Balanced
-      cmd_install "dash-to-dock@micxgx.gmail.com"
-      cmd_enable "dash-to-dock@micxgx.gmail.com"
-      cmd_dock_config
+      if cmd_install "dash-to-dock@micxgx.gmail.com"; then
+        cmd_enable "dash-to-dock@micxgx.gmail.com"
+        cmd_dock_config
+      else
+        log_warn "Skipping Dash to Dock on GNOME $GNOME_MAJOR_VERSION."
+      fi
 
-      cmd_install "blur-my-shell@aunetx"
-      cmd_enable "blur-my-shell@aunetx"
+      if cmd_install "blur-my-shell@aunetx"; then
+        cmd_enable "blur-my-shell@aunetx"
+      else
+        log_warn "Skipping Blur My Shell on GNOME $GNOME_MAJOR_VERSION."
+      fi
 
       if [ "$WITH_MAGIC_LAMP" = true ]; then
-        cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"
-        cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
-        if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
-          dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+        if cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"; then
+          cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
+          if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
+            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+          fi
+        else
+          log_warn "Skipping Magic Lamp on GNOME $GNOME_MAJOR_VERSION."
         fi
       fi
 
       if [ "$WITH_WOBBLY" = true ]; then
-        cmd_install "compiz-windows-effect@hermes83.github.com"
-        cmd_enable "compiz-windows-effect@hermes83.github.com"
-        if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/compiz-windows.dconf" ]; then
-          dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-windows-effect/ < "$REPO_ROOT/config/animations/compiz-windows.dconf"
+        if cmd_install "compiz-windows-effect@hermes83.github.com"; then
+          cmd_enable "compiz-windows-effect@hermes83.github.com"
+          if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/compiz-windows.dconf" ]; then
+            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-windows-effect/ < "$REPO_ROOT/config/animations/compiz-windows.dconf"
+          fi
+        else
+          log_warn "Skipping Compiz Windows Effect on GNOME $GNOME_MAJOR_VERSION."
         fi
       fi
 
       if [ "$WITH_CUBE" = true ]; then
-        log_warn "Desktop Cube is experimental on GNOME Shell 50.3 Wayland."
+        log_warn "Desktop Cube is experimental on GNOME Shell Wayland."
         log_warn "Ensuring workspace count and global keyboard shortcuts remain unchanged..."
-        cmd_install "desktop-cube@schneegans.github.com"
-        cmd_enable "desktop-cube@schneegans.github.com"
-        if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/desktop-cube.dconf" ]; then
-          dconf load /org/gnome/shell/extensions/desktop-cube/ < "$REPO_ROOT/config/animations/desktop-cube.dconf"
+        if cmd_install "desktop-cube@schneegans.github.com"; then
+          cmd_enable "desktop-cube@schneegans.github.com"
+          if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/desktop-cube.dconf" ]; then
+            dconf load /org/gnome/shell/extensions/desktop-cube/ < "$REPO_ROOT/config/animations/desktop-cube.dconf"
+          fi
+        else
+          log_warn "Skipping Desktop Cube on GNOME $GNOME_MAJOR_VERSION."
         fi
       fi
 
-      log_success "Full preset applied successfully!"
+      log_success "Full preset process completed!"
       ;;
 
     *)

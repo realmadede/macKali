@@ -135,6 +135,17 @@
     "dconf_path": {
       "type": "string",
       "description": "Dconf path prefix for extension configuration."
+    },
+    "tested_gnome_versions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "GNOME Shell major versions explicitly tested and verified in macKali test suite."
+    },
+    "min_gnome_version": {
+      "type": "string",
+      "description": "Minimum GNOME Shell major version required by upstream extension."
     }
   },
   "additionalProperties": false

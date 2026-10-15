@@ -92,15 +92,31 @@ Once executed, your desktop will immediately return to standard Kali Linux defau
 
 ## 4. Emergency Recovery: What If GNOME Shell Freezes?
 
-In the unlikely event that a combination of extensions causes GNOME Shell to freeze:
+In the unlikely event that a combination of extensions causes GNOME Shell to freeze under Wayland:
 
 1. Switch to a virtual terminal: Press `Ctrl + Alt + F3`.
 2. Log in with your Kali username and password.
-3. Disable all GNOME extensions at once:
+3. Choose the appropriate recovery action:
+
+   **Option 1: Safely restore macKali extensions and dock settings (Preserves other user extensions)**:
    ```bash
-   gnome-extensions disable --all
+   cd ~/BAGOMWA/PROJECTS/macKali  # or your repository path
+   ./scripts/extensions-manager.sh --restore
    ```
-4. Reset your window manager preferences:
+   Or manually disable only macKali-managed extensions:
+   ```bash
+   for ext in dash-to-dock@micxgx.gmail.com blur-my-shell@aunetx compiz-alike-magic-lamp-effect@hermes83.github.com compiz-windows-effect@hermes83.github.com desktop-cube@schneegans.github.com; do
+     gnome-extensions disable "$ext" 2>/dev/null || true
+   done
+   ```
+
+   **Option 2: Instantly disable all user extensions globally (Built-in GNOME setting)**:
+   ```bash
+   gsettings set org.gnome.shell disable-user-extensions true
+   ```
+   *(To re-enable user extensions once logged back in: `gsettings set org.gnome.shell disable-user-extensions false`)*
+
+4. Revert window controls if needed:
    ```bash
    gsettings reset org.gnome.desktop.wm.preferences button-layout
    gsettings reset org.gnome.desktop.interface cursor-theme

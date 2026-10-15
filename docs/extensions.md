@@ -18,22 +18,41 @@ macKali integrates five optional, upstream-maintained GNOME Shell extensions to 
 
 ---
 
-## 2. GNOME Shell 50.3 & Wayland Compatibility Findings
+## 2. Dynamic GNOME Compatibility Architecture
 
-### Live Environment Verification
-- **Target OS**: Kali Linux Rolling 2026.3
-- **GNOME Shell**: 50.3
-- **Display Server**: Wayland (`XDG_SESSION_TYPE=wayland`)
+macKali targets Kali Linux Rolling and is built with a forward-compatible architecture that adapts to recent and future GNOME Shell releases rather than being permanently tied to GNOME Shell 50.3.
 
-### Key Technical Findings:
-1. **Official Release Artifacts on EGO**:
-   All 5 extensions have released packages published directly on `extensions.gnome.org` declaring support for GNOME `50` in their official `metadata.json`.
-2. **Pre-existing System Extensions**:
-   On Kali Linux Rolling systems, `dash-to-dock@micxgx.gmail.com` may already be installed system-wide via the `gnome-shell-extension-dashtodock` Debian package (v106). macKali detects pre-existing system extensions automatically and **never attempts to overwrite or delete them**.
-3. **Wayland Animation Compositing**:
-   Under Wayland, window animation and effects extensions interact directly with Clutter and Mutter scene graphs. The Magic Lamp and Compiz Windows Effect extensions operate smoothly without X11 compositor hacks.
-4. **Desktop Cube Workspace Behavior**:
-   Desktop Cube provides Compiz-style 3D workspace transitions. On GNOME 50 Wayland, horizontal workspace navigation remains standard. macKali treats Desktop Cube as an **experimental opt-in** feature and **never modifies the user's workspace count or global shortcut bindings**.
+### Four-Tier Compatibility Classification
+Compatibility for each extension is evaluated across four distinct tiers:
+
+1. **`VERIFIED_COMPATIBLE`**:
+   The extension release has undergone automated regression testing in macKali's test suite directly on this GNOME version.
+2. **`REPORTED_COMPATIBLE`**:
+   The extension release explicitly declares support for this GNOME version in upstream metadata or verified dynamically via the `extensions.gnome.org` API, but has not yet been locally regression-tested.
+3. **`UNSUPPORTED`**:
+   The target GNOME version is below the extension's minimum version requirement (`min_gnome_version`) or has known fatal incompatibilities.
+4. **`COMPATIBILITY_UNKNOWN`**:
+   The target GNOME version is newer than declared in local manifests and unconfirmed via upstream network query. **Unknown compatibility is never assumed to be compatible.** macKali preserves GNOME's native validation and will not force an unverified extension to run.
+
+### Tested vs. Declared Upstream Versions
+| Extension UUID | Minimum GNOME | Declared Upstream Range | Regression-Tested in macKali |
+| :--- | :---: | :---: | :---: |
+| `dash-to-dock@micxgx.gmail.com` | 45 | 45, 46, 47, 48, 49, 50 | **GNOME 50** |
+| `blur-my-shell@aunetx` | 46 | 46, 47, 48, 49, 50 | **GNOME 50** |
+| `compiz-alike-magic-lamp-effect@hermes83.github.com` | 45 | 45, 46, 47, 48, 49, 50 | **GNOME 50** |
+| `compiz-windows-effect@hermes83.github.com` | 49 | 49, 50 | **GNOME 50** |
+| `desktop-cube@schneegans.github.com` | 45 | 45, 46, 47, 48, 49, 50 | **GNOME 50** |
+
+### Independent Component Compatibility
+macKali evaluates the 10 desktop customization components independently:
+- **Universal Components**: Wallpapers, Cursors, Icons, and GTK Themes adhere to standard Freedesktop / XDG / Libadwaita standards and function identically across all modern GNOME releases.
+- **Shell-Coupled Components**: GNOME Shell extensions are evaluated individually. If a future GNOME update causes an extension to become unsupported, macKali cleanly continues applying all other compatible components.
+
+### Rolling-Release Resilience & Version Shifts
+When Kali Linux Rolling updates GNOME Shell:
+- Version changes between previous installations and current environment are automatically detected by `scripts/compat-check.sh` and `scripts/extensions-manager.sh --status`.
+- macKali provides `scripts/extensions-manager.sh --compat` to recheck extension compatibility without altering system packages or downgrading system packages.
+- macKali never modifies APT repositories, never pins Kali packages, and never disables GNOME's native extension compatibility checks.
 
 ---
 
@@ -166,13 +185,27 @@ If an extension misbehaves or causes a compositor freeze under Wayland:
    Ctrl + Alt + F3
    ```
 2. Log in with your Kali Linux credentials.
-3. Disable all GNOME Shell extensions instantly:
+3. Choose the appropriate recovery action:
+
+   - **Targeted Recovery (Preserves other user extensions)**:
+     ```bash
+     for ext in dash-to-dock@micxgx.gmail.com blur-my-shell@aunetx compiz-alike-magic-lamp-effect@hermes83.github.com compiz-windows-effect@hermes83.github.com desktop-cube@schneegans.github.com; do
+       gnome-extensions disable "$ext" 2>/dev/null || true
+     done
+     ./scripts/extensions-manager.sh --dock-revert
+     ```
+   - **Global Extension Safe Kill-switch (Native GNOME setting)**:
+     ```bash
+     gsettings set org.gnome.shell disable-user-extensions true
+     ```
+     *(To re-enable user extensions once logged in: `gsettings set org.gnome.shell disable-user-extensions false`)*
+
+4. Revert extension dconf paths if needed:
    ```bash
-   gnome-extensions disable --all
-   ```
-4. Reset extension dconf paths if needed:
-   ```bash
-   dconf reset -f /org/gnome/shell/extensions/dash-to-dock/
+   # Revert dock settings to pre-macKali backup:
+   ./scripts/extensions-manager.sh --dock-revert
+
+   # Reset effects schemas installed by macKali:
    dconf reset -f /org/gnome/shell/extensions/blur-my-shell/
    dconf reset -f /org/gnome/shell/extensions/desktop-cube/
    dconf reset -f /org/gnome/shell/extensions/com/github/hermes83/

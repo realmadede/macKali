@@ -33,6 +33,10 @@
   "ego_version": 25,
   "ego_download_tag": 76122,
   "dconf_path": "/org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/",
+  "min_gnome_version": "45",
+  "tested_gnome_versions": [
+    "50"
+  ],
   "notes": "Classic macOS genie minimize and restore window animation.",
   "unverified_fields": []
 }

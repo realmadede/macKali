@@ -141,8 +141,12 @@ elif [ "$RESET_DEFAULTS" = true ]; then
     log_info "Reverting macKali extension modifications via extensions-manager.sh..."
     "$REPO_ROOT/scripts/extensions-manager.sh" --restore || true
   elif has_cmd dconf; then
-    log_info "Resetting macKali extension configurations in dconf..."
-    dconf reset -f /org/gnome/shell/extensions/dash-to-dock/ 2>/dev/null || true
+    log_info "Reverting macKali extension configurations in dconf..."
+    local dock_backup="$HOME/.config/macKali/extensions/backups/dash-to-dock-pre-mackali.dconf"
+    if [ -f "$dock_backup" ] && [ -s "$dock_backup" ]; then
+      dconf reset -f /org/gnome/shell/extensions/dash-to-dock/ 2>/dev/null || true
+      dconf load /org/gnome/shell/extensions/dash-to-dock/ < "$dock_backup" 2>/dev/null || true
+    fi
     dconf reset -f /org/gnome/shell/extensions/blur-my-shell/ 2>/dev/null || true
     dconf reset -f /org/gnome/shell/extensions/desktop-cube/ 2>/dev/null || true
     dconf reset -f /org/gnome/shell/extensions/com/github/hermes83/ 2>/dev/null || true

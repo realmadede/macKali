@@ -1,13 +1,24 @@
 # macKali
 
-**macOS-inspired GNOME Desktop Customization Framework for Kali Linux**
+**An open-source macOS-inspired appearance customization project for Kali Linux GNOME, designed to adapt to recent and future GNOME releases.**
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Platform: Kali Linux / GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
+[![Platform: Kali Linux | GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
 [![Status: Phase 3 Complete](https://img.shields.io/badge/Status-Phase%203%20Complete-green.svg)](#)
 [![macKali CI](https://github.com/realmadede/macKali/actions/workflows/ci.yml/badge.svg)](https://github.com/realmadede/macKali/actions/workflows/ci.yml)
 
 macKali transforms the GNOME desktop environment on Kali Linux into a refined, high-performance macOS-like desktop experience. Built on the foundation of the macOS-inspired **WhiteSur cursor theme**, macKali provides a modular framework supporting both automated presets and manual installation.
+
+---
+
+## Dynamic GNOME Compatibility & Component Independence
+
+macKali is engineered for Kali Linux Rolling and modern GNOME releases:
+
+- **Dynamic Detection & 4-Tier Evaluation**: Rather than being permanently tied to a single version ceiling, macKali dynamically inspects your GNOME version and categorizes extensions into `VERIFIED_COMPATIBLE` (regression tested in CI/test suite), `REPORTED_COMPATIBLE` (declared by upstream release or EGO API), `UNSUPPORTED`, and `COMPATIBILITY_UNKNOWN`.
+- **Tested vs. Theoretically Supported Versions**: Regression testing has been conducted directly on **GNOME Shell 50.3 Wayland**. Future or upstream-declared versions are evaluated on demand; unknown versions are never assumed to be compatible.
+- **Independent 10-Component Architecture**: Universal components (wallpapers, cursors, icons, GTK themes) are decoupled from GNOME Shell versions. If an extension is unverified or unsupported on a newer GNOME release, macKali gracefully continues installing all other compatible components.
+- **Rolling-Release Resilience**: Detects GNOME upgrades automatically and provides `./scripts/compat-check.sh` to re-evaluate components without downgrading GNOME or modifying Kali APT packages.
 
 ---
 
@@ -19,14 +30,14 @@ macKali transforms the GNOME desktop environment on Kali Linux into a refined, h
 
 ## Project Status: Phase 3 (GNOME Extensions & Dock Integration)
 
-This repository provides a complete macOS visual appearance and desktop extension integration suite for Kali Linux (GNOME Shell 50.3 Wayland):
+This repository provides a complete macOS visual appearance and desktop extension integration suite for Kali Linux:
 
 - **Modular Extension Manager** ([`scripts/extensions-manager.sh`](scripts/extensions-manager.sh)): Inspect compatibility, query metadata, download verified release bundles from `extensions.gnome.org` (EGO), and manage lifecycle states.
 - **macOS Dock Layout Engine**: Centered bottom layout, intelligent autohide, 48px icons, dynamic transparency, and dots indicators via Dash to Dock—with strict preservation of user favorite applications and Kali security launchers.
-- **Verified GNOME 50.3 Wayland Support**: All 5 target extensions (Dash to Dock, Blur My Shell, Magic Lamp, Compiz Windows Effect, Desktop Cube) verified compatible with official GNOME 50 packages.
+- **Verified GNOME 50.3 Wayland Support**: All 5 target extensions (Dash to Dock, Blur My Shell, Magic Lamp, Compiz Windows Effect, Desktop Cube) regression tested and verified compatible with GNOME 50.
 - **Strict Pre-existing Asset Protection**: Distinguishes system/pre-existing extensions from macKali-installed packages, ensuring host extensions are never removed during uninstallation.
 - **Appearance Foundation & 4K Wallpapers**: Light/Dark mode pairing, WhiteSur cursors, traffic light controls, GTK/Icon theme providers.
-- **Safety, TTY Recovery & Reversible Rollback**: Isolated backups, single-command restoration, and emergency virtual console (`Ctrl+Alt+F3`) recovery instructions.
+- **Safety, TTY Recovery & Reversible Rollback**: Scoped backups, single-command restoration, and emergency virtual console (`Ctrl+Alt+F3`) recovery instructions.
 
 ---
 

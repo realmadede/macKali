@@ -99,4 +99,11 @@ The script `scripts/backup.sh` captures current desktop and shell dconf dumps pr
 The foundational WhiteSur cursor build pipeline (`themes/cursors/src` -> `themes/cursors/dist`) is completely preserved. The build and installation scripts function autonomously within `themes/cursors/` while maintaining root-level wrappers (`./build.sh` and `./install.sh`).
 
 ### 4. Explicit Compatibility & Verification
-Extension UUIDs and compatibility ranges are verified against upstream source repositories. Manifests use a formal schema (`extensions/manifest-schema.json`) where any unverified attributes are recorded explicitly.
+Extension UUIDs and compatibility ranges are verified against upstream source repositories. Manifests use a formal schema (`extensions/manifest-schema.json`) where tested vs. declared versions are explicitly delineated.
+
+### 5. Dynamic Forward-Compatibility & Component Independence
+macKali does not treat desktop customization as one monolithic block tied to a single GNOME Shell version.
+- **Independent Component Hierarchy**: The 10 desktop components are divided into Universal Components (wallpapers, cursors, icons, GTK themes) that operate across all modern GNOME versions, and Shell-Coupled Components (extensions) that are evaluated dynamically against the running GNOME Shell major version.
+- **Four-Tier Classification**: Components are classified as `VERIFIED_COMPATIBLE`, `REPORTED_COMPATIBLE`, `UNSUPPORTED`, or `COMPATIBILITY_UNKNOWN`. Unknown compatibility is never treated as verified.
+- **Graceful Partial Installation**: If an extension is unverified or unsupported on a newer or older GNOME version, macKali skips the extension safely while continuing to apply all other compatible components.
+- **Rolling-Release Resilience**: Detects GNOME upgrades automatically, provides non-destructive compatibility re-checks, and never modifies system APT packages or downgrades GNOME.

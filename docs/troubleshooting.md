@@ -117,13 +117,23 @@ If an experimental extension or Wayland compositor issue locks the graphical int
    Press `Ctrl + Alt + F3`.
 2. **Log In**:
    Enter your Kali Linux username and password.
-3. **Disable All Extensions Immediately**:
+3. **Disable Extensions Safely**:
+   - To disable **only macKali-managed extensions** (preserving your personal extensions):
+     ```bash
+     for ext in dash-to-dock@micxgx.gmail.com blur-my-shell@aunetx compiz-alike-magic-lamp-effect@hermes83.github.com compiz-windows-effect@hermes83.github.com desktop-cube@schneegans.github.com; do
+       gnome-extensions disable "$ext" 2>/dev/null || true
+     done
+     ```
+   - Or to instantly disable **all user extensions globally** via GNOME's native kill-switch:
+     ```bash
+     gsettings set org.gnome.shell disable-user-extensions true
+     ```
+4. **Revert Dock Settings Safely (Preserving Pre-existing Configurations)**:
    ```bash
-   gnome-extensions disable --all
+   ./scripts/extensions-manager.sh --dock-revert
    ```
-4. **Revert Any Conflicting Extension Dconf Settings**:
+   If needed, reset schemas for animation extensions installed by macKali:
    ```bash
-   dconf reset -f /org/gnome/shell/extensions/dash-to-dock/
    dconf reset -f /org/gnome/shell/extensions/blur-my-shell/
    dconf reset -f /org/gnome/shell/extensions/desktop-cube/
    dconf reset -f /org/gnome/shell/extensions/com/github/hermes83/

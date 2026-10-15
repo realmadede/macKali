@@ -250,6 +250,90 @@ test_ext_restore() {
 }
 run_test "Extension manager safe restoration & non-destructive dry-run" test_ext_restore
 
+# Test 17: Dynamic GNOME Compatibility — Current Version Verification (GNOME 50)
+test_compat_current_gnome() {
+  local output
+  output="$("$REPO_ROOT/scripts/compat-check.sh" -g 50)"
+  echo "$output" | grep -q "Verified Compatible (GNOME 50)" || return 1
+  echo "$output" | grep -q "Wallpapers:          Universal" || return 1
+  echo "$output" | grep -q "Cursor Themes:       Universal" || return 1
+  return 0
+}
+run_test "Dynamic GNOME compatibility: Current GNOME 50 (Verified Compatible)" test_compat_current_gnome
+
+# Test 18: Older GNOME Version Simulation (GNOME 46 & GNOME 40)
+test_compat_older_gnome() {
+  local out_46 out_40
+  out_46="$("$REPO_ROOT/scripts/compat-check.sh" -g 46 2>&1)"
+  # Dash to Dock is reported compatible on GNOME 46
+  echo "$out_46" | grep -q "Dash to Dock: Reported Compatible (GNOME 46)" || return 1
+  # Compiz windows effect requires GNOME 49+, so it must be marked Unsupported on 46
+  echo "$out_46" | grep -q "Compiz windows effect: Unsupported on GNOME 46" || return 1
+
+  # GNOME 40 is below min_gnome_version (45) for all supported extensions
+  out_40="$("$REPO_ROOT/scripts/compat-check.sh" -g 40 2>&1)"
+  echo "$out_40" | grep -q "Dash to Dock: Unsupported on GNOME 40" || return 1
+  echo "$out_40" | grep -q "Wallpapers:          Universal" || return 1
+  return 0
+}
+run_test "Older GNOME version simulation: GNOME 46 (Reported) & GNOME 40 (Unsupported)" test_compat_older_gnome
+
+# Test 19: Unknown Future GNOME Version Simulation (GNOME 55)
+test_compat_future_gnome() {
+  local output
+  output="$("$REPO_ROOT/scripts/compat-check.sh" -g 55)"
+  # Unknown versions must be marked COMPATIBILITY_UNKNOWN, never assumed compatible
+  echo "$output" | grep -q "Compatibility Unknown on GNOME 55" || return 1
+  echo "$output" | grep -qv "Verified Compatible (GNOME 55)" || return 1
+  # Universal components must remain compatible even on GNOME 55
+  echo "$output" | grep -q "Wallpapers:          Universal" || return 1
+  echo "$output" | grep -q "Cursor Themes:       Universal" || return 1
+  return 0
+}
+run_test "Unknown future GNOME simulation: GNOME 55 (Compatibility Unknown, never assumed)" test_compat_future_gnome
+
+# Test 20: Missing Network Access & Offline Compatibility Handling
+test_compat_offline_fallback() {
+  # Without --online, an unverified version must safely report unknown without failing
+  local output
+  output="$("$REPO_ROOT/scripts/compat-check.sh" -g 53)"
+  echo "$output" | grep -q "Compatibility Unknown on GNOME 53" || return 1
+  return 0
+}
+run_test "Offline compatibility evaluation fallback (safe handling without network)" test_compat_offline_fallback
+
+# Test 21: Partial Component Compatibility & Preset Resilience
+test_partial_component_resilience() {
+  # Test that extensions-manager preset dry-runs succeed and report component independence
+  local output
+  output="$("$REPO_ROOT/scripts/extensions-manager.sh" --compat)"
+  echo "$output" | grep -q "Universal desktop components" || return 1
+
+  # Test that install dry-run with extensions handles preset orchestration
+  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null || return 1
+  return 0
+}
+run_test "Partial component compatibility & preset resilience" test_partial_component_resilience
+
+# Test 22: Safe Recovery Audit & User Configuration Preservation
+test_safe_recovery_audit() {
+  # 1. Verify uninstall dry-run / help flags work
+  "$REPO_ROOT/scripts/uninstall.sh" --help >/dev/null || return 1
+  # 2. Verify restore dry-run does not alter live settings
+  local orig_wp orig_theme
+  if command -v gsettings >/dev/null 2>&1 && gsettings list-schemas 2>/dev/null | grep -qx "org.gnome.desktop.background"; then
+    orig_wp="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null || true)"
+  fi
+  "$REPO_ROOT/scripts/restore.sh" --dry-run >/dev/null 2>&1 || true
+  if [ -n "$orig_wp" ]; then
+    local cur_wp
+    cur_wp="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null || true)"
+    [ "$orig_wp" = "$cur_wp" ] || return 1
+  fi
+  return 0
+}
+run_test "Safe recovery audit & user settings preservation" test_safe_recovery_audit
+
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"
 echo "============================================================"

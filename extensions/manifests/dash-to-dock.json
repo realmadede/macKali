@@ -35,6 +35,10 @@
   "ego_version": 110,
   "ego_download_tag": 76105,
   "dconf_path": "/org/gnome/shell/extensions/dash-to-dock/",
+  "min_gnome_version": "45",
+  "tested_gnome_versions": [
+    "50"
+  ],
   "notes": "Essential component for macOS dock styling (bottom, centered, autohide, icon zooming). In Debian/Kali repositories, packaged as gnome-shell-extension-dashtodock.",
   "unverified_fields": []
 }

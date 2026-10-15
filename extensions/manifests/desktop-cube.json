@@ -32,6 +32,10 @@
   "ego_version": 35,
   "ego_download_tag": 76156,
   "dconf_path": "/org/gnome/shell/extensions/desktop-cube/",
+  "min_gnome_version": "45",
+  "tested_gnome_versions": [
+    "50"
+  ],
   "notes": "Classic Compiz 3D desktop cube animation for multi-workspace navigation.",
   "unverified_fields": []
 }

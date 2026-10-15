@@ -172,28 +172,50 @@ gsettings set org.gnome.shell.extensions.desktop-cube enable-skybox true
 
 ---
 
-## 5. Extensions Installation Methods
+## 5. Extensions Installation Methods & Manual CLI Setup
 
-While automated installation is scheduled for Phase 2, users may install extensions manually today:
+In Phase 3, macKali includes the automated Extension Manager (`./scripts/extensions-manager.sh`). For users wishing to perform all configuration manually:
 
-### Method A: GNOME Extensions Website
-1. Install `gnome-browser-connector` on Kali:
-   ```bash
-   sudo apt install -y gnome-browser-connector
-   ```
-2. Navigate to [extensions.gnome.org](https://extensions.gnome.org/) and toggle on:
-   - [Dash to Dock](https://extensions.gnome.org/extension/307/dash-to-dock/)
-   - [Blur My Shell](https://extensions.gnome.org/extension/3193/blur-my-shell/)
-   - [Compiz Alike Magic Lamp Effect](https://extensions.gnome.org/extension/3740/compiz-alike-magic-lamp-effect/)
-
-### Method B: Git Source Installation
-Clone the extension repo directly into `~/.local/share/gnome-shell/extensions/<UUID>`:
+### Method A: macKali Extension Manager CLI
 ```bash
-git clone https://github.com/aunetx/blur-my-shell.git
-cd blur-my-shell
-make install
+# Verify compatibility against GNOME 50.3 Wayland
+./scripts/extensions-manager.sh --compat
+
+# Apply macOS dock styling without modifying favorite apps
+./scripts/extensions-manager.sh --dock-config
+
+# Apply balanced extensions (Dock + Blur My Shell)
+./scripts/extensions-manager.sh --preset balanced
+
+# Opt-in to Genie lamp animations
+./scripts/extensions-manager.sh --enable compiz-alike-magic-lamp-effect@hermes83.github.com
 ```
-Restart GNOME Shell or log out and log back in, then enable:
+
+### Method B: Direct Dconf Import for Dash to Dock
+If Dash to Dock is already installed, configure the centered macOS dock layout with:
 ```bash
+# 1. Backup existing dock configuration
+dconf dump /org/gnome/shell/extensions/dash-to-dock/ > ~/dash-to-dock-backup.dconf
+
+# 2. Apply macKali macOS dock profile
+dconf load /org/gnome/shell/extensions/dash-to-dock/ < config/dock/dash-to-dock.dconf
+
+# 3. Verify favorite applications remain untouched
+gsettings get org.gnome.shell favorite-apps
+```
+
+To revert manually:
+```bash
+dconf reset -f /org/gnome/shell/extensions/dash-to-dock/
+dconf load /org/gnome/shell/extensions/dash-to-dock/ < ~/dash-to-dock-backup.dconf
+```
+
+### Method C: Official EGO Bundle Download
+Download verified release packages directly from `extensions.gnome.org`:
+```bash
+# Example: Blur My Shell for GNOME 50
+curl -sL "https://extensions.gnome.org/download-extension/blur-my-shell@aunetx.shell-extension.zip?version_tag=76297" -o /tmp/bms.zip
+gnome-extensions install /tmp/bms.zip
 gnome-extensions enable blur-my-shell@aunetx
+rm /tmp/bms.zip
 ```

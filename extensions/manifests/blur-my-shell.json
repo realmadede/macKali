@@ -26,6 +26,12 @@
     "dash-to-dock corner radius styling conflict (requires corner radius matching in settings)"
   ],
   "installation_status": "planned",
+  "license": "GPL-3.0-or-later",
+  "wayland_compatible": true,
+  "ego_pk": 3193,
+  "ego_version": 75,
+  "ego_download_tag": 76297,
+  "dconf_path": "/org/gnome/shell/extensions/blur-my-shell/",
   "notes": "Essential macOS frosted glass background effect for top panel, dash dock, and application overview.",
   "unverified_fields": []
 }

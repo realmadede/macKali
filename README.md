@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: Kali Linux / GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
-[![Status: Phase 2 Complete](https://img.shields.io/badge/Status-Phase%202%20Complete-green.svg)](#)
+[![Status: Phase 3 Complete](https://img.shields.io/badge/Status-Phase%203%20Complete-green.svg)](#)
 [![macKali CI](https://github.com/realmadede/macKali/actions/workflows/ci.yml/badge.svg)](https://github.com/realmadede/macKali/actions/workflows/ci.yml)
 
 macKali transforms the GNOME desktop environment on Kali Linux into a refined, high-performance macOS-like desktop experience. Built on the foundation of the macOS-inspired **WhiteSur cursor theme**, macKali provides a modular framework supporting both automated presets and manual installation.
@@ -17,16 +17,16 @@ macKali transforms the GNOME desktop environment on Kali Linux into a refined, h
 
 ---
 
-## Project Status: Phase 2 (GNOME Appearance Foundation)
+## Project Status: Phase 3 (GNOME Extensions & Dock Integration)
 
-This repository provides a complete macOS visual appearance foundation for Kali Linux and GNOME environments:
+This repository provides a complete macOS visual appearance and desktop extension integration suite for Kali Linux (GNOME Shell 50.3 Wayland):
 
-- **WhiteSur Cursors**: 100% functional build and installation pipeline for X11 & Wayland.
-- **macOS 4K Wallpapers**: Bundled Day & Night high-resolution wallpapers (`themes/wallpapers/`) with automatic light/dark pairing via GNOME `picture-uri` & `picture-uri-dark`.
-- **Appearance Manager Engine** ([`scripts/appearance.sh`](scripts/appearance.sh)): Safely preview, configure, and revert GNOME light/dark color schemes, traffic light window controls, GTK themes, and icon packs with explicit confirmation and per-setting snapshots.
-- **Theme & Icon Providers** ([`scripts/providers/`](scripts/providers/)): Modular user-space installer drivers for WhiteSur GTK and Icon themes.
-- **Libadwaita / GTK4 Compliance**: Respects GNOME upstream standards by using native `color-scheme` negotiation without forcing unstable CSS hacks on libadwaita applications.
-- **Safety & Rollback**: Single-command appearance reversion (`--revert`), full backup/restore, and nuclear purge (`--purge`).
+- **Modular Extension Manager** ([`scripts/extensions-manager.sh`](scripts/extensions-manager.sh)): Inspect compatibility, query metadata, download verified release bundles from `extensions.gnome.org` (EGO), and manage lifecycle states.
+- **macOS Dock Layout Engine**: Centered bottom layout, intelligent autohide, 48px icons, dynamic transparency, and dots indicators via Dash to Dock—with strict preservation of user favorite applications and Kali security launchers.
+- **Verified GNOME 50.3 Wayland Support**: All 5 target extensions (Dash to Dock, Blur My Shell, Magic Lamp, Compiz Windows Effect, Desktop Cube) verified compatible with official GNOME 50 packages.
+- **Strict Pre-existing Asset Protection**: Distinguishes system/pre-existing extensions from macKali-installed packages, ensuring host extensions are never removed during uninstallation.
+- **Appearance Foundation & 4K Wallpapers**: Light/Dark mode pairing, WhiteSur cursors, traffic light controls, GTK/Icon theme providers.
+- **Safety, TTY Recovery & Reversible Rollback**: Isolated backups, single-command restoration, and emergency virtual console (`Ctrl+Alt+F3`) recovery instructions.
 
 ---
 
@@ -198,12 +198,16 @@ See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual rec
   - Wallpaper provider (`scripts/providers/wallpaper-provider.sh`)
   - Libadwaita / GTK4 color-scheme native styling
   - Traffic light window controls toggle
-- [ ] **Phase 3: GNOME Extensions & Desktop Environment Automation**
-  - Automated extension installation via GNOME Extensions CLI / GitHub releases
-  - Dash to Dock macOS dock layout application
-  - Compiz wobbly windows & magic lamp genie animations
+- [x] **Phase 3: GNOME Extensions & Desktop Environment Automation**
+  - Modular Extension Manager (`scripts/extensions-manager.sh`)
+  - Official GNOME 50 release package verification from EGO
+  - Dash to Dock macOS dock layout application (bottom, centered, 48px, autohide)
+  - Strict preservation of favorite apps and Kali security launchers
   - Blur My Shell frosted glass overview styling
-  - Interactive TUI installer wizard
+  - Compiz wobbly windows & magic lamp genie animations (opt-in)
+  - Experimental Desktop Cube 3D transition integration
+  - Automated tests (16 tests in `tests/run-tests.sh`)
+- [ ] **Phase 4: Interactive TUI Installer & Static Website**
 
 ---
 

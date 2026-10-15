@@ -47,8 +47,16 @@ if has_cmd dconf; then
 
   log_info "Backing up /org/gnome/shell/..."
   dconf dump /org/gnome/shell/ > "$TARGET_DIR/org_gnome_shell.dconf" 2>/dev/null || true
+
+  log_info "Backing up /org/gnome/shell/extensions/..."
+  dconf dump /org/gnome/shell/extensions/ > "$TARGET_DIR/org_gnome_shell_extensions.dconf" 2>/dev/null || true
 else
   log_warn "dconf command not found; skipping dconf database dumps."
+fi
+
+# 1.5 Backup macKali extensions state if present
+if [ -f "$HOME/.config/macKali/extensions-state.json" ]; then
+  cp "$HOME/.config/macKali/extensions-state.json" "$TARGET_DIR/extensions-state.json"
 fi
 
 # 2. Backup GSettings interface values
@@ -98,7 +106,8 @@ cat <<EOF > "$TARGET_DIR/backup-meta.json"
   "shell_theme": "$CURRENT_SHELL",
   "files": [
     "org_gnome_desktop.dconf",
-    "org_gnome_shell.dconf"
+    "org_gnome_shell.dconf",
+    "org_gnome_shell_extensions.dconf"
   ]
 }
 EOF

@@ -27,6 +27,12 @@
     "other-window-animation-extensions"
   ],
   "installation_status": "planned",
+  "license": "GPL-3.0-or-later",
+  "wayland_compatible": true,
+  "ego_pk": 3740,
+  "ego_version": 25,
+  "ego_download_tag": 76122,
+  "dconf_path": "/org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/",
   "notes": "Classic macOS genie minimize and restore window animation.",
   "unverified_fields": []
 }

@@ -23,6 +23,12 @@
     "wobbly-windows@hermes83.github.com"
   ],
   "installation_status": "planned",
+  "license": "GPL-3.0-or-later",
+  "wayland_compatible": true,
+  "ego_pk": 3210,
+  "ego_version": 33,
+  "ego_download_tag": 76121,
+  "dconf_path": "/org/gnome/shell/extensions/com/github/hermes83/compiz-windows-effect/",
   "notes": "Upstream master branch targets GNOME 49-51. For GNOME 45-48, specific release tags or older zips from extensions.gnome.org must be installed.",
   "unverified_fields": []
 }

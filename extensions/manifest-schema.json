@@ -111,6 +111,30 @@
         "type": "string"
       },
       "description": "List of any fields requiring further manual or automated verification."
+    },
+    "license": {
+      "type": "string",
+      "description": "Software license of the upstream extension."
+    },
+    "wayland_compatible": {
+      "type": "boolean",
+      "description": "Whether the extension has been verified operational on GNOME Wayland sessions."
+    },
+    "ego_pk": {
+      "type": "integer",
+      "description": "Numeric extension ID on extensions.gnome.org."
+    },
+    "ego_version": {
+      "type": "integer",
+      "description": "Verified release version number on extensions.gnome.org for target GNOME."
+    },
+    "ego_download_tag": {
+      "type": "integer",
+      "description": "Download tag ID for the verified release artifact on extensions.gnome.org."
+    },
+    "dconf_path": {
+      "type": "string",
+      "description": "Dconf path prefix for extension configuration."
     }
   },
   "additionalProperties": false

@@ -16,7 +16,11 @@ DO_BACKUP=false
 CURSORS_ONLY=false
 APPLY_APPEARANCE=false
 APPEARANCE_MODE="dark"
-APPLY_WALLPAPER=false
+APPLY_EXTENSIONS=false
+DOCK_ONLY=false
+WITH_MAGIC_LAMP=false
+WITH_WOBBLY=false
+WITH_CUBE=false
 
 # Banner
 print_banner() {
@@ -29,7 +33,7 @@ print_banner() {
   echo " |_|  |_|\__,_|\___|____/     \/   |_|"
   echo -e "${COLOR_RESET}"
   echo -e "${COLOR_BOLD}macKali: macOS Desktop Customization for Kali Linux & GNOME${COLOR_RESET}"
-  echo -e "${COLOR_GREEN}[Phase 2: GNOME Appearance Foundation]${COLOR_RESET}"
+  echo -e "${COLOR_GREEN}[Phase 3: GNOME Extensions & Dock Integration]${COLOR_RESET}"
   echo ""
 }
 
@@ -56,6 +60,26 @@ while [[ $# -gt 0 ]]; do
       APPLY_WALLPAPER=true
       shift
       ;;
+    --extensions)
+      APPLY_EXTENSIONS=true
+      shift
+      ;;
+    --dock-only)
+      DOCK_ONLY=true
+      shift
+      ;;
+    --with-magic-lamp)
+      WITH_MAGIC_LAMP=true
+      shift
+      ;;
+    --with-wobbly)
+      WITH_WOBBLY=true
+      shift
+      ;;
+    --with-cube)
+      WITH_CUBE=true
+      shift
+      ;;
     --cursors-only)
       CURSORS_ONLY=true
       shift
@@ -78,6 +102,11 @@ while [[ $# -gt 0 ]]; do
       echo "      --appearance       Apply macOS appearance (color-scheme, window buttons, wallpapers)"
       echo "      --mode [dark|light] Set appearance color mode [default: dark]"
       echo "      --wallpaper        Apply bundled 4K macOS Light & Dark wallpapers"
+      echo "      --extensions       Configure GNOME extensions corresponding to the preset"
+      echo "      --dock-only        Apply only macOS-inspired bottom centered dock styling"
+      echo "      --with-magic-lamp  Opt-in to Magic Lamp animation in Balanced/Full preset"
+      echo "      --with-wobbly      Opt-in to Compiz wobbly windows in Full preset"
+      echo "      --with-cube        Opt-in to experimental Desktop Cube in Full preset"
       echo "      --cursors-only     Install only the WhiteSur cursor theme"
       echo "      --backup           Create a timestamped backup before installation"
       echo "      --dry-run          Preview installation operations without modifying system"
@@ -133,14 +162,15 @@ log_step "Selected Preset: $(jq -r '.name' "$PRESET_FILE")"
 echo "  Description: $(jq -r '.description' "$PRESET_FILE")"
 echo ""
 
-# Report Phase 2 Scope Clearly
+# Report Phase 3 Scope Clearly
 echo "------------------------------------------------------------"
-echo "Phase 2 Component Status:"
+echo "Phase 3 Component Status:"
 echo "  [x] Cursors:      Ready & bundled (WhiteSur-cursors)"
 echo "  [x] Wallpapers:   Ready & bundled (4K macOS Light & Dark)"
 echo "  [x] Appearance:   Ready (Dark/Light mode, left traffic lights)"
 echo "  [x] Providers:    Ready (GTK & Icon user-space provider engines)"
-echo "  [ ] Extensions:   Decoupled from Phase 2 (appearance foundation only)"
+echo "  [x] Dock Layout:  Ready (macOS bottom centered layout via Dash to Dock)"
+echo "  [x] Extensions:   Ready (Modular Extension Manager & verified GNOME 50 EGO releases)"
 echo "------------------------------------------------------------"
 echo ""
 
@@ -176,10 +206,32 @@ if [ "$APPLY_APPEARANCE" = true ]; then
   fi
 fi
 
+# 4. Apply Dock & Extensions if requested
+if [ "$DOCK_ONLY" = true ]; then
+  echo ""
+  log_step "Applying macOS Dock Styling..."
+  DOCK_CMD=("$SCRIPT_DIR/extensions-manager.sh" "--dock-config")
+  [ "$DRY_RUN" = true ] && DOCK_CMD+=("--dry-run")
+  "${DOCK_CMD[@]}"
+elif [ "$APPLY_EXTENSIONS" = true ]; then
+  echo ""
+  log_step "Applying Preset Extensions ($PRESET)..."
+  EXT_CMD=("$SCRIPT_DIR/extensions-manager.sh" "--preset" "$PRESET")
+  [ "$DRY_RUN" = true ] && EXT_CMD+=("--dry-run")
+  [ "$WITH_MAGIC_LAMP" = true ] && EXT_CMD+=("--with-magic-lamp")
+  [ "$WITH_WOBBLY" = true ] && EXT_CMD+=("--with-wobbly")
+  [ "$WITH_CUBE" = true ] && EXT_CMD+=("--with-cube")
+  "${EXT_CMD[@]}"
+fi
+
 echo ""
 log_success "macKali installation tasks completed!"
 echo ""
 echo "Next Steps:"
+echo "  - Check extension status:  ./scripts/extensions-manager.sh --status"
+echo "  - Revert dock settings:    ./scripts/extensions-manager.sh --dock-revert"
 echo "  - Check appearance status: ./scripts/appearance.sh --status"
-echo "  - Revert appearance anytime: ./scripts/appearance.sh --revert"
-echo "  - See manual configuration instructions: docs/manual-configuration.md"
+echo "  - Revert appearance:       ./scripts/appearance.sh --revert"
+echo "  - Restore desktop anytime: ./scripts/restore.sh"
+echo "  - Emergency safe recovery: See docs/troubleshooting.md"
+echo "  - Manual configuration:    docs/manual-configuration.md"

@@ -77,6 +77,12 @@ if has_cmd dconf; then
     dconf load /org/gnome/shell/ < "$SOURCE_DIR/org_gnome_shell.dconf"
     log_success "Restored /org/gnome/shell/"
   fi
+
+  if [ -f "$SOURCE_DIR/org_gnome_shell_extensions.dconf" ]; then
+    log_info "Restoring /org/gnome/shell/extensions/ settings..."
+    dconf load /org/gnome/shell/extensions/ < "$SOURCE_DIR/org_gnome_shell_extensions.dconf"
+    log_success "Restored /org/gnome/shell/extensions/"
+  fi
 else
   log_warn "dconf command not available; cannot restore dconf keys."
 fi
@@ -131,6 +137,48 @@ if [ -f "$SOURCE_DIR/backup-meta.json" ] && has_cmd jq && has_cmd gsettings; the
     log_info "Restoring user-theme shell name: $SHELL_VAL"
     gsettings set org.gnome.shell.extensions.user-theme name "$SHELL_VAL" || true
   fi
+fi
+
+# 3. Restore extension enabled states
+if [ -f "$SOURCE_DIR/enabled_extensions.txt" ] && has_cmd gnome-extensions; then
+  log_info "Reconciling enabled GNOME Shell extensions..."
+  mapfile -t BACKUP_ENABLED < "$SOURCE_DIR/enabled_extensions.txt"
+  mapfile -t CURRENT_ENABLED < <(gnome-extensions list --enabled 2>/dev/null || true)
+
+  # Check macKali target extensions specifically
+  TARGET_EXTS=(
+    "dash-to-dock@micxgx.gmail.com"
+    "blur-my-shell@aunetx"
+    "compiz-alike-magic-lamp-effect@hermes83.github.com"
+    "compiz-windows-effect@hermes83.github.com"
+    "desktop-cube@schneegans.github.com"
+  )
+
+  for uuid in "${TARGET_EXTS[@]}"; do
+    should_enable=false
+    for item in "${BACKUP_ENABLED[@]}"; do
+      [ "$item" = "$uuid" ] && should_enable=true
+    done
+
+    is_enabled=false
+    for cur in "${CURRENT_ENABLED[@]}"; do
+      [ "$cur" = "$uuid" ] && is_enabled=true
+    done
+
+    if [ "$should_enable" = true ] && [ "$is_enabled" = false ]; then
+      log_info "Re-enabling extension: $uuid"
+      gnome-extensions enable "$uuid" 2>/dev/null || true
+    elif [ "$should_enable" = false ] && [ "$is_enabled" = true ]; then
+      log_info "Disabling extension: $uuid"
+      gnome-extensions disable "$uuid" 2>/dev/null || true
+    fi
+  done
+fi
+
+# 4. Restore extensions-state.json if available
+if [ -f "$SOURCE_DIR/extensions-state.json" ]; then
+  mkdir -p "$HOME/.config/macKali"
+  cp "$SOURCE_DIR/extensions-state.json" "$HOME/.config/macKali/extensions-state.json"
 fi
 
 log_success "Restoration completed successfully."

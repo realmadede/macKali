@@ -26,6 +26,12 @@
     "workspace-switcher-mods"
   ],
   "installation_status": "planned",
+  "license": "GPL-3.0-or-later",
+  "wayland_compatible": true,
+  "ego_pk": 4648,
+  "ego_version": 35,
+  "ego_download_tag": 76156,
+  "dconf_path": "/org/gnome/shell/extensions/desktop-cube/",
   "notes": "Classic Compiz 3D desktop cube animation for multi-workspace navigation.",
   "unverified_fields": []
 }

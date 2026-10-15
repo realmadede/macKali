@@ -28,7 +28,13 @@
     "dash-to-panel@jderose9.github.com",
     "ubuntu-dock@ubuntu.com"
   ],
-  "installation_status": "planned",
+  "installation_status": "installed",
+  "license": "GPL-2.0-or-later",
+  "wayland_compatible": true,
+  "ego_pk": 307,
+  "ego_version": 110,
+  "ego_download_tag": 76105,
+  "dconf_path": "/org/gnome/shell/extensions/dash-to-dock/",
   "notes": "Essential component for macOS dock styling (bottom, centered, autohide, icon zooming). In Debian/Kali repositories, packaged as gnome-shell-extension-dashtodock.",
   "unverified_fields": []
 }

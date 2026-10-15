@@ -107,4 +107,29 @@ macKali creates automated backups prior to applying presets:
 ./scripts/uninstall.sh --purge
 ```
 
+---
+
+## 6. Emergency Recovery via Virtual Console (TTY)
+
+If an experimental extension or Wayland compositor issue locks the graphical interface:
+
+1. **Switch to Virtual Console 3**:
+   Press `Ctrl + Alt + F3`.
+2. **Log In**:
+   Enter your Kali Linux username and password.
+3. **Disable All Extensions Immediately**:
+   ```bash
+   gnome-extensions disable --all
+   ```
+4. **Revert Any Conflicting Extension Dconf Settings**:
+   ```bash
+   dconf reset -f /org/gnome/shell/extensions/dash-to-dock/
+   dconf reset -f /org/gnome/shell/extensions/blur-my-shell/
+   dconf reset -f /org/gnome/shell/extensions/desktop-cube/
+   dconf reset -f /org/gnome/shell/extensions/com/github/hermes83/
+   ```
+5. **Switch Back to the Graphical Desktop**:
+   Press `Ctrl + Alt + F2` (or `Ctrl + Alt + F1` depending on display manager).
+   The desktop will resume without the offending extension.
+
 For full disaster recovery steps and manual commands, see [docs/safety-and-removal.md](safety-and-removal.md).

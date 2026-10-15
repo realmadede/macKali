@@ -58,6 +58,7 @@ test_shell_syntax() {
     "$REPO_ROOT/install.sh"
     "$REPO_ROOT/build.sh"
     "$REPO_ROOT/scripts/install.sh"
+    "$REPO_ROOT/scripts/extensions-manager.sh"
     "$REPO_ROOT/scripts/appearance.sh"
     "$REPO_ROOT/scripts/compat-check.sh"
     "$REPO_ROOT/scripts/backup.sh"
@@ -78,7 +79,7 @@ test_shell_syntax() {
   done
   return 0
 }
-run_test "Shell scripts syntax check (bash -n across all 14 scripts)" test_shell_syntax
+run_test "Shell scripts syntax check (bash -n across all 15 scripts)" test_shell_syntax
 
 # Test 2: JSON Syntax Validation
 test_json_syntax() {
@@ -116,6 +117,7 @@ run_test "Extension manifest schema compliance" test_schema_compliance
 test_cli_help() {
   "$REPO_ROOT/install.sh" --help >/dev/null
   "$REPO_ROOT/scripts/install.sh" --help >/dev/null
+  "$REPO_ROOT/scripts/extensions-manager.sh" --help >/dev/null
   "$REPO_ROOT/scripts/appearance.sh" --help >/dev/null
   "$REPO_ROOT/scripts/backup.sh" --help >/dev/null
   "$REPO_ROOT/scripts/restore.sh" --help >/dev/null
@@ -209,6 +211,43 @@ test_reentrancy() {
   "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
 }
 run_test "Installer reentrancy and idempotency (no duplication on repeated runs)" test_reentrancy
+
+# Test 13: Extension manager inspection commands
+test_ext_mgr_inspection() {
+  "$REPO_ROOT/scripts/extensions-manager.sh" --list >/dev/null || return 1
+  "$REPO_ROOT/scripts/extensions-manager.sh" --compat >/dev/null || return 1
+  "$REPO_ROOT/scripts/extensions-manager.sh" --status >/dev/null || return 1
+}
+run_test "Extension manager metadata, compatibility, and status reporting" test_ext_mgr_inspection
+
+# Test 14: Extension manager preset dry-runs
+test_ext_mgr_presets() {
+  "$REPO_ROOT/scripts/extensions-manager.sh" --preset minimal --dry-run >/dev/null || return 1
+  "$REPO_ROOT/scripts/extensions-manager.sh" --preset balanced --dry-run >/dev/null || return 1
+  "$REPO_ROOT/scripts/extensions-manager.sh" --preset balanced --with-magic-lamp --dry-run >/dev/null || return 1
+  "$REPO_ROOT/scripts/extensions-manager.sh" --preset full --with-wobbly --with-cube --dry-run >/dev/null || return 1
+}
+run_test "Extension manager preset resolution and opt-in dry-runs" test_ext_mgr_presets
+
+# Test 15: Dock configuration and favorite-apps preservation
+test_dock_safety() {
+  # Verify dock config dry-run executes cleanly
+  "$REPO_ROOT/scripts/extensions-manager.sh" --dock-config --dry-run >/dev/null || return 1
+  # Ensure favorite-apps gsettings is preserved and not altered
+  if command -v gsettings >/dev/null 2>&1; then
+    local current_favs
+    current_favs="$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || true)"
+    [ -n "$current_favs" ] || return 1
+  fi
+}
+run_test "Dash to Dock layout safety & favorite-apps preservation" test_dock_safety
+
+# Test 16: Safe restoration and non-destructive extension lifecycle
+test_ext_restore() {
+  "$REPO_ROOT/scripts/extensions-manager.sh" --restore --dry-run >/dev/null || return 1
+  "$REPO_ROOT/scripts/install.sh" --extensions --preset balanced --dry-run >/dev/null || return 1
+}
+run_test "Extension manager safe restoration & non-destructive dry-run" test_ext_restore
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

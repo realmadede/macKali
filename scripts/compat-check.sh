@@ -88,11 +88,13 @@ else
     [ -f "$manifest" ] || continue
     name="$(jq -r '.name' "$manifest")"
     uuid="$(jq -r '.uuid' "$manifest")"
+    license="$(jq -r '.license // "Unknown"' "$manifest")"
+    wayland_ok="$(jq -r 'if .wayland_compatible then "Wayland: Verified" else "Wayland: Unverified" end' "$manifest")"
     supported_versions="$(jq -r '.supported_gnome_versions | join(", ")' "$manifest")"
     is_compatible="$(jq --arg v "$GNOME_MAJOR_VERSION" '.supported_gnome_versions | index($v)' "$manifest")"
 
     if [ "$is_compatible" != "null" ]; then
-      log_success "$name ($uuid) -> Compatible with GNOME $GNOME_MAJOR_VERSION (Supports: $supported_versions)"
+      log_success "$name ($uuid) -> Compatible with GNOME $GNOME_MAJOR_VERSION ($wayland_ok, License: $license)"
     else
       log_warn "$name ($uuid) -> NOT explicitly validated for GNOME $GNOME_MAJOR_VERSION (Supports: $supported_versions)"
     fi

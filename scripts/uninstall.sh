@@ -136,7 +136,11 @@ elif [ "$RESET_DEFAULTS" = true ]; then
     fi
   fi
 
-  if has_cmd dconf; then
+  # Safely reconcile extensions and dock settings
+  if [ -x "$REPO_ROOT/scripts/extensions-manager.sh" ]; then
+    log_info "Reverting macKali extension modifications via extensions-manager.sh..."
+    "$REPO_ROOT/scripts/extensions-manager.sh" --restore || true
+  elif has_cmd dconf; then
     log_info "Resetting macKali extension configurations in dconf..."
     dconf reset -f /org/gnome/shell/extensions/dash-to-dock/ 2>/dev/null || true
     dconf reset -f /org/gnome/shell/extensions/blur-my-shell/ 2>/dev/null || true

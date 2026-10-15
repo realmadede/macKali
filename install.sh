@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # If invoked with macKali specific options, delegate to appropriate script
 case "$1" in
-  --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode)
+  --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
     ;;
   --uninstall|--reset-defaults|--purge)

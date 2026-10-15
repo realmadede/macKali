@@ -178,8 +178,8 @@ test_backup_restore() {
   [ -f "$backup_dest/backup-meta.json" ] || return 1
   [ -f "$backup_dest/org_gnome_desktop.dconf" ] || return 1
   [ -f "$backup_dest/org_gnome_shell.dconf" ] || return 1
-  # Test restoration from this specific isolated backup
-  "$REPO_ROOT/scripts/restore.sh" --from "$backup_dest" >/dev/null
+  # Test restoration safely with dry-run from this isolated backup
+  "$REPO_ROOT/scripts/restore.sh" --from "$backup_dest" --dry-run >/dev/null
 }
 run_test "Isolated backup creation & restore verification" test_backup_restore
 

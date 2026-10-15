@@ -9,6 +9,8 @@ source "$SCRIPT_DIR/lib/common.sh"
 BACKUP_BASE_DIR="$HOME/.config/macKali/backups"
 SOURCE_DIR=""
 
+DRY_RUN=false
+
 # Parse options
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -25,6 +27,10 @@ while [[ $# -gt 0 ]]; do
       fi
       exit 0
       ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
     --help|-h)
       echo "Usage: $0 [OPTIONS]"
       echo "Restore GNOME desktop settings from a macKali backup."
@@ -32,6 +38,7 @@ while [[ $# -gt 0 ]]; do
       echo "Options:"
       echo "  -f, --from PATH   Path to specific backup directory (default: latest)"
       echo "  -l, --list        List available backups"
+      echo "      --dry-run     Preview restoration without modifying system"
       echo "  -h, --help        Show this help message"
       exit 0
       ;;
@@ -64,7 +71,18 @@ fi
 
 log_step "Restoring configuration from: $SOURCE_DIR"
 
-# 1. Restore dconf settings
+if [ "$DRY_RUN" = true ]; then
+  log_info "[DRY-RUN] Validating backup contents in $SOURCE_DIR..."
+  if [ -f "$SOURCE_DIR/backup-meta.json" ] && has_cmd jq; then
+    cur_theme="$(jq -r '.cursor_theme // "default"' "$SOURCE_DIR/backup-meta.json")"
+    cur_wp="$(jq -r '.picture_uri // "default"' "$SOURCE_DIR/backup-meta.json")"
+    log_info "[DRY-RUN] Backup metadata verified: Cursor=$cur_theme, Wallpaper=$cur_wp"
+  fi
+  log_info "[DRY-RUN] Would restore dconf dumps: desktop, shell, and extensions"
+  log_info "[DRY-RUN] Would reconcile GNOME extension enabled states"
+  log_success "[DRY-RUN] Restoration preview completed without modifying system."
+  exit 0
+fi
 if has_cmd dconf; then
   if [ -f "$SOURCE_DIR/org_gnome_desktop.dconf" ]; then
     log_info "Restoring /org/gnome/desktop/ settings..."

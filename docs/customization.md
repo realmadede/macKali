@@ -97,3 +97,24 @@ gsettings set org.gnome.shell.extensions.com.github.hermes83.compiz-windows-effe
 gsettings set org.gnome.shell.extensions.com.github.hermes83.compiz-windows-effect spring-k 5.0
 gsettings set org.gnome.shell.extensions.com.github.hermes83.compiz-windows-effect friction 2.5
 ```
+
+---
+
+## 5. Custom Wallpapers (Unsplash & Community Collections)
+
+Wallpaper aesthetics are subjective. While macKali bundles clean 4K macOS gradients, you can use any photo, cybersecurity background, or wallpaper you prefer.
+
+We recommend browsing the curated open collection:
+👉 **[Unsplash Linux Wallpapers](https://unsplash.com/s/photos/linux-wallpaper)**
+
+### Download & Apply Workflow:
+1. Visit [Unsplash Linux Wallpapers](https://unsplash.com/s/photos/linux-wallpaper) and download your preferred photo to `~/Downloads`.
+2. Apply it using the macKali wallpaper provider:
+   ```bash
+   ./scripts/providers/wallpaper-provider.sh --file ~/Downloads/your-wallpaper.jpg
+   ```
+3. To configure separate wallpapers for Day and Night:
+   ```bash
+   ./scripts/providers/wallpaper-provider.sh --file ~/Downloads/day-photo.jpg --variant light
+   ./scripts/providers/wallpaper-provider.sh --file ~/Downloads/night-photo.jpg --variant dark
+   ```

@@ -1,20 +1,58 @@
-# Wallpapers (Planned for Phase 2)
+# macKali Wallpapers
 
-This directory is reserved for macOS-inspired backgrounds and wallpapers tailored for Kali Linux.
+This directory houses the wallpaper assets, metadata, and provider configurations for **macKali**.
 
-## Target Scope
-- **Dynamic Wallpapers**: Timed XML backgrounds transitioning from Day to Night automatically according to the user's local solar time.
-- **Resolutions**: Crisp 4K (3840x2160) and 5K (5120x2880) wallpapers.
-- **Variants**:
-  - Classic macOS scenic & abstract wallpapers.
-  - Custom macOS-Kali mashup wallpapers (e.g., Kali Dragon silhouette blended with macOS abstract gradients).
+---
 
-## Planned Organization
+## Bundled Wallpapers
+
+macKali includes two high-resolution 4K UHD (3840x2160) wallpapers:
+
+- **`macOS-macKali-Light.png`**: Warm sunrise abstract gradient for Light mode.
+- **`macOS-macKali-Dark.png`**: Deep midnight nebula gradient for Dark mode.
+
+These are configured simultaneously in GNOME:
+- `org.gnome.desktop.background picture-uri` (Light mode)
+- `org.gnome.desktop.background picture-uri-dark` (Dark mode)
+
+When you toggle between light and dark appearance in GNOME, the wallpaper transitions automatically.
+
+---
+
+## Finding & Applying Custom Wallpapers
+
+Wallpaper preferences are highly personal. If you prefer photography, coding themes, or custom artwork over the default gradients, we recommend browsing high-resolution open collections such as:
+
+👉 **[Unsplash Linux Wallpapers Collection](https://unsplash.com/s/photos/linux-wallpaper)**
+
+### How to Apply a Custom Wallpaper
+
+1. Browse [Unsplash Linux Wallpapers](https://unsplash.com/s/photos/linux-wallpaper) and click **"Download free"** on any wallpaper you like.
+2. The image will save into your `~/Downloads` folder.
+3. Apply it using the macKali wallpaper provider:
+
+```bash
+# Set as both Light and Dark wallpaper:
+./scripts/providers/wallpaper-provider.sh --file ~/Downloads/your-wallpaper.jpg
+
+# Or set separate Light and Dark wallpapers:
+./scripts/providers/wallpaper-provider.sh --file ~/Downloads/day-wallpaper.jpg --variant light
+./scripts/providers/wallpaper-provider.sh --file ~/Downloads/night-wallpaper.jpg --variant dark
 ```
-themes/wallpapers/
-├── mac-dynamic/        # Day/Night dynamic XML wallpaper definitions
-├── 4k/                 # Static 4K wallpapers
-└── metadata/           # GNOME background properties XML definitions
+
+---
+
+## Configuration Provider
+
+The driver script is located at [`scripts/providers/wallpaper-provider.sh`](../../scripts/providers/wallpaper-provider.sh).
+To preview changes without applying:
+
+```bash
+./scripts/providers/wallpaper-provider.sh --bundled --dry-run
 ```
 
-*Note: In Phase 1, wallpaper assets are not yet installed or bundled. Implementation is scheduled for Phase 2.*
+To revert back to Kali Linux system default wallpapers:
+
+```bash
+./scripts/providers/wallpaper-provider.sh --reset
+```

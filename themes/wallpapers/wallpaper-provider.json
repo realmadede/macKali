@@ -19,5 +19,8 @@
     "picture_options": "org.gnome.desktop.background picture-options"
   },
   "default_picture_options": "zoom",
+  "recommended_galleries": [
+    "https://unsplash.com/s/photos/linux-wallpaper"
+  ],
   "notes": "GNOME automatically displays picture-uri when in light mode and picture-uri-dark when in dark mode (color-scheme 'prefer-dark')."
 }

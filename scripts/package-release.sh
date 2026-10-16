@@ -144,10 +144,12 @@ mkdir -p "$STAGE_DIR/assets" "$STAGE_DIR/docs"
 cp -p "$REPO_ROOT/assets/preview.png" "$STAGE_DIR/assets/"
 cp -p "$REPO_ROOT/docs/"*.md "$STAGE_DIR/docs/"
 
-# Ensure executable permissions on all shell scripts
-chmod +x "$STAGE_DIR/install.sh"
-find "$STAGE_DIR/scripts" -type f -name "*.sh" -exec chmod +x {} +
-find "$STAGE_DIR/themes/cursors" -type f -name "*.sh" -exec chmod +x {} +
+# Normalize file and directory permissions for deterministic reproducible archives across any environment/umask
+find "$STAGE_DIR" -type d -exec chmod 755 {} +
+find "$STAGE_DIR" -type f -exec chmod 644 {} +
+chmod 755 "$STAGE_DIR/install.sh"
+find "$STAGE_DIR/scripts" -type f -name "*.sh" -exec chmod 755 {} +
+find "$STAGE_DIR/themes/cursors" -type f -name "*.sh" -exec chmod 755 {} +
 
 # Clean out any temporary editor or cache files from staging
 find "$STAGE_DIR" -type f \( -name ".DS_Store" -o -name "*~" -o -name "*.swp" -o -name "*.swo" \) -delete

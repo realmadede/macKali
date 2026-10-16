@@ -261,4 +261,30 @@
     });
   });
 
+  // --------------------------------------------------------------------------
+  // macOS-Inspired System Preloader
+  // --------------------------------------------------------------------------
+  function dismissPreloader() {
+    var preloader = document.getElementById('system-preloader');
+    if (!preloader || preloader.classList.contains('loaded')) return;
+
+    preloader.classList.add('loaded');
+    setTimeout(function () {
+      if (preloader.parentNode) {
+        preloader.parentNode.removeChild(preloader);
+      }
+    }, 600);
+  }
+
+  // Dismiss on window complete load or safe fallback
+  if (document.readyState === 'complete') {
+    setTimeout(dismissPreloader, 350);
+  } else {
+    window.addEventListener('load', function () {
+      setTimeout(dismissPreloader, 300);
+    });
+    // Fallback maximum display time so users are never blocked
+    setTimeout(dismissPreloader, 1400);
+  }
+
 })();

@@ -31,9 +31,37 @@
 
   <!-- Favicon & Stylesheet -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="styles.css?v=20261016c">
+  <link rel="stylesheet" href="styles.css?v=20261016d">
+
+  <!-- Immediate Theme Initializer (prevents theme flash on preloader) -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('mackali-theme');
+        if (saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else if (saved === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
+  <!-- macOS-Inspired System Preloader / Loading Screen -->
+  <div id="system-preloader" class="system-preloader" aria-hidden="true" role="status" aria-label="Loading macKali portal">
+    <div class="preloader-content">
+      <div class="preloader-logo-wrap">
+        <img src="favicon.svg" alt="macKali Logo" class="preloader-logo" width="64" height="64">
+        <div class="preloader-glow"></div>
+      </div>
+      <div class="preloader-bar-wrap" aria-hidden="true">
+        <div id="preloader-progress-bar" class="preloader-bar"></div>
+      </div>
+      <div class="preloader-status-text" id="preloader-status">Loading macKali…</div>
+    </div>
+  </div>
+
   <!-- Accessibility Skip Link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="a11y-live-region" aria-live="polite" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"></div>

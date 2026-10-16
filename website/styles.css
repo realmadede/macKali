@@ -1248,3 +1248,155 @@ code, pre {
     gap: 24px;
   }
 }
+
+/* ==============================================================================
+   macOS-Inspired System Preloader / Loading Screen
+   ============================================================================== */
+.system-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background-color: var(--bg-primary, #fbf9f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, visibility;
+  user-select: none;
+  pointer-events: all;
+}
+
+[data-theme="dark"] .system-preloader {
+  background-color: #0c0d12;
+}
+
+.system-preloader.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.02);
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 22px;
+  animation: preloader-fade-in 0.4s ease-out;
+}
+
+.preloader-logo-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader-logo {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
+  animation: preloader-pulse 2.2s infinite ease-in-out;
+}
+
+[data-theme="dark"] .preloader-logo {
+  filter: drop-shadow(0 10px 30px rgba(0, 122, 255, 0.25));
+}
+
+.preloader-glow {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.22) 0%, rgba(0, 113, 227, 0) 70%);
+  z-index: 1;
+  pointer-events: none;
+  animation: preloader-glow-pulse 2.2s infinite ease-in-out;
+}
+
+.preloader-bar-wrap {
+  width: 180px;
+  height: 5px;
+  background-color: rgba(120, 120, 128, 0.16);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .preloader-bar-wrap {
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.preloader-bar {
+  height: 100%;
+  width: 35%;
+  background: linear-gradient(90deg, #0071e3, #38bdf8);
+  border-radius: 999px;
+  animation: preloader-indeterminate 1.4s infinite ease-in-out;
+  box-shadow: 0 0 10px rgba(0, 113, 227, 0.45);
+}
+
+.preloader-status-text {
+  font-family: 'Sofia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary, #6e6e73);
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="dark"] .preloader-status-text {
+  color: #86868b;
+}
+
+@keyframes preloader-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes preloader-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes preloader-glow-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.4; }
+  50% { transform: scale(1.25); opacity: 0.85; }
+}
+
+@keyframes preloader-indeterminate {
+  0% {
+    transform: translateX(-100%);
+    width: 25%;
+  }
+  50% {
+    width: 65%;
+  }
+  100% {
+    transform: translateX(350%);
+    width: 25%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .system-preloader,
+  .system-preloader.loaded,
+  .preloader-content,
+  .preloader-logo,
+  .preloader-glow,
+  .preloader-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+  .system-preloader.loaded {
+    display: none !important;
+  }
+}

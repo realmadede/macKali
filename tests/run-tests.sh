@@ -757,13 +757,13 @@ def validate_css_file(path, required_selectors, required_tokens):
 validate_css_file(
     'config/gnome/traffic-lights-gtk4.css',
     ['windowcontrols', 'windowcontrols button', 'button.close', 'button.minimize', 'button.maximize'],
-    ['#ff5f56', '#ffbd2e', '#27c93f', '13px']
+    ['#ff5f56', '#ffbd2e', '#27c93f', '11px']
 )
 
 validate_css_file(
     'config/gnome/traffic-lights-gtk3.css',
     ['headerbar', 'button.titlebutton.close', 'button.titlebutton.minimize', 'button.titlebutton.maximize'],
-    ['#ff5f56', '#ffbd2e', '#27c93f', '13px']
+    ['#ff5f56', '#ffbd2e', '#27c93f', '11px']
 )
 PYEOF
 

@@ -4,96 +4,120 @@
 
 /* Container & Headerbar Spacing */
 headerbar > box.start,
-headerbar > box.left {
-  padding: 0 8px;
+headerbar > box.left,
+windowcontrols {
+  padding: 0 6px;
 }
 
 /* Base Circular Button Geometry & Click Target */
+button.titlebutton,
 headerbar button.titlebutton,
-titlebar button.titlebutton {
-  min-width: 13px;
-  min-height: 13px;
-  margin: 0 4px;
+titlebar button.titlebutton,
+windowcontrols button {
+  min-width: 11px;
+  min-height: 11px;
+  margin: 0 3px;
   padding: 0;
   border-radius: 9999px;
-  border: 1px solid rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.18);
   box-shadow: none;
   background-clip: padding-box;
+  background-image: none;
   transition: all 120ms ease;
 }
 
 /* Close: Red Circular Button */
+button.titlebutton.close,
 headerbar button.titlebutton.close,
-titlebar button.titlebutton.close {
+titlebar button.titlebutton.close,
+windowcontrols button.close {
   background-color: #ff5f56;
   border-color: #e0443e;
 }
+button.titlebutton.close:hover,
 headerbar button.titlebutton.close:hover,
-titlebar button.titlebutton.close:hover {
+titlebar button.titlebutton.close:hover,
+windowcontrols button.close:hover {
   background-color: #ff5f56;
+  border-color: #c03630;
 }
+button.titlebutton.close:active,
 headerbar button.titlebutton.close:active,
-titlebar button.titlebutton.close:active {
+titlebar button.titlebutton.close:active,
+windowcontrols button.close:active {
   background-color: #bf4942;
 }
 
 /* Minimize: Yellow Circular Button */
+button.titlebutton.minimize,
 headerbar button.titlebutton.minimize,
-titlebar button.titlebutton.minimize {
+titlebar button.titlebutton.minimize,
+windowcontrols button.minimize {
   background-color: #ffbd2e;
   border-color: #dea123;
 }
+button.titlebutton.minimize:hover,
 headerbar button.titlebutton.minimize:hover,
-titlebar button.titlebutton.minimize:hover {
+titlebar button.titlebutton.minimize:hover,
+windowcontrols button.minimize:hover {
   background-color: #ffbd2e;
+  border-color: #b88214;
 }
+button.titlebutton.minimize:active,
 headerbar button.titlebutton.minimize:active,
-titlebar button.titlebutton.minimize:active {
+titlebar button.titlebutton.minimize:active,
+windowcontrols button.minimize:active {
   background-color: #bf8e22;
 }
 
 /* Maximize: Green Circular Button */
+button.titlebutton.maximize,
 headerbar button.titlebutton.maximize,
-titlebar button.titlebutton.maximize {
+titlebar button.titlebutton.maximize,
+windowcontrols button.maximize {
   background-color: #27c93f;
   border-color: #1aab29;
 }
+button.titlebutton.maximize:hover,
 headerbar button.titlebutton.maximize:hover,
-titlebar button.titlebutton.maximize:hover {
+titlebar button.titlebutton.maximize:hover,
+windowcontrols button.maximize:hover {
   background-color: #27c93f;
+  border-color: #128820;
 }
+button.titlebutton.maximize:active,
 headerbar button.titlebutton.maximize:active,
-titlebar button.titlebutton.maximize:active {
+titlebar button.titlebutton.maximize:active,
+windowcontrols button.maximize:active {
   background-color: #1d9730;
 }
 
 /* Inactive / Backdrop Windows */
-headerbar button.titlebutton:backdrop,
-titlebar button.titlebutton:backdrop {
+button.titlebutton:backdrop,
+windowcontrols button:backdrop {
   opacity: 0.45;
 }
 
-/* Inner Glyph Symbols (Revealed on Hover) */
-headerbar button.titlebutton > image,
-titlebar button.titlebutton > image {
+/* Completely suppress all inner glyph symbols/icons (no Kali icon on hover) */
+button.titlebutton image,
+button.titlebutton label,
+button.titlebutton:hover image,
+button.titlebutton:hover label,
+headerbar:hover button.titlebutton image,
+titlebar:hover button.titlebutton image,
+windowcontrols:hover button image {
   opacity: 0;
-  color: rgba(0, 0, 0, 0.72);
-  transition: opacity 120ms ease;
+  color: transparent;
+  -gtk-icon-shadow: none;
+  background-image: none;
+  box-shadow: none;
 }
 
-headerbar:hover button.titlebutton > image,
-headerbar button.titlebutton:hover > image,
-titlebar:hover button.titlebutton > image,
-titlebar button.titlebutton:hover > image {
-  opacity: 0.85;
-}
-
-headerbar button.titlebutton:active > image,
-titlebar button.titlebutton:active > image {
-  opacity: 1;
-}
-
-headerbar button.titlebutton:backdrop > image,
-titlebar button.titlebutton:backdrop > image {
-  opacity: 0;
+/* Ensure pure circular dots without hover backgrounds or icons */
+button.titlebutton,
+button.titlebutton:hover,
+button.titlebutton:active {
+  background-image: none;
+  box-shadow: none;
+  color: transparent;
 }

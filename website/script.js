@@ -45,9 +45,9 @@
     updateThemeToggleLabel(isLight);
   }
 
-  // Initialize theme: Default to 'dark'
+  // Initialize theme: Default to 'light'
   const savedTheme = safeGetTheme();
-  const initialTheme = (savedTheme === 'light') ? 'light' : 'dark';
+  const initialTheme = (savedTheme === 'dark') ? 'dark' : 'light';
   applyTheme(initialTheme);
 
   // Delegated theme toggle listener (guarantees click capture)
@@ -55,8 +55,8 @@
     const btn = e.target.closest('#theme-toggle-btn');
     if (!btn) return;
     e.preventDefault();
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-    const nextTheme = (currentTheme === 'light') ? 'dark' : 'light';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const nextTheme = (currentTheme === 'dark') ? 'light' : 'dark';
     safeSetTheme(nextTheme);
     applyTheme(nextTheme);
   });

@@ -111,19 +111,25 @@ for vfile in "$SCRIPT_DIR"/google*.html; do
   fi
 done
 
-# Step 3: Copy genuine repository visual assets
+# Step 3: Copy authentic project visual assets
 log_info "Bundling authentic project visual assets..."
 
 declare -A ASSET_MAP=(
-  ["$REPO_ROOT/assets/preview.png"]="$DIST_DIR/assets/preview.png"
-  ["$REPO_ROOT/themes/wallpapers/macOS-macKali-Light.png"]="$DIST_DIR/assets/macOS-macKali-Light.png"
-  ["$REPO_ROOT/themes/wallpapers/macOS-macKali-Dark.png"]="$DIST_DIR/assets/macOS-macKali-Dark.png"
+  ["preview.png"]="$DIST_DIR/assets/preview.png"
+  ["macOS-macKali-Light.png"]="$DIST_DIR/assets/macOS-macKali-Light.png"
+  ["macOS-macKali-Dark.png"]="$DIST_DIR/assets/macOS-macKali-Dark.png"
 )
 
-for src in "${!ASSET_MAP[@]}"; do
-  dest="${ASSET_MAP[$src]}"
-  if [ ! -f "$src" ]; then
-    log_err "Required repository asset not found: $src"
+for asset in "${!ASSET_MAP[@]}"; do
+  dest="${ASSET_MAP[$asset]}"
+  if [ -f "$SCRIPT_DIR/assets/$asset" ]; then
+    src="$SCRIPT_DIR/assets/$asset"
+  elif [ -f "$REPO_ROOT/assets/$asset" ]; then
+    src="$REPO_ROOT/assets/$asset"
+  elif [ -f "$REPO_ROOT/themes/wallpapers/$asset" ]; then
+    src="$REPO_ROOT/themes/wallpapers/$asset"
+  else
+    log_err "Required asset not found: $asset"
     exit 1
   fi
   cp -p "$src" "$dest"

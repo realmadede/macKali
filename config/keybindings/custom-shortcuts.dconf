@@ -1,5 +1,0 @@
-[org/gnome/desktop/wm/keybindings]
-switch-windows=['<Alt>Tab']
-switch-applications=['<Super>Tab']
-show-desktop=['<Super>d']
-panel-run-dialog=['<Super>Space']

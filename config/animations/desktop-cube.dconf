@@ -1,6 +1,0 @@
-[org/gnome/shell/extensions/desktop-cube]
-cube-rotation-speed=1.0
-cube-zoom=0.8
-ambient-light=0.4
-enable-skybox=true
-skybox-color='rgba(20,20,30,0.9)'

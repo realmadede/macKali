@@ -1,6 +1,0 @@
-[org/gnome/desktop/wm/preferences]
-button-layout='close,minimize,maximize:'
-titlebar-font='Cantarell Bold 11'
-action-double-click-titlebar='toggle-maximize'
-focus-mode='click'
-auto-raise=false

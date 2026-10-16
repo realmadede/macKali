@@ -661,7 +661,7 @@ cmd_dock_config() {
 
   # Apply dconf settings
   if has_cmd dconf; then
-    dconf load /org/gnome/shell/extensions/dash-to-dock/ < "$template"
+    dconf load / < "$template"
     update_state "dash-to-dock@micxgx.gmail.com" "dock_config_applied" "true"
     update_state "dash-to-dock@micxgx.gmail.com" "dock_backup_file" "\"$backup_file\""
     log_success "macOS dock settings applied cleanly!"
@@ -758,7 +758,7 @@ cmd_preset() {
         if cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"; then
           cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
           if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
-            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+            dconf load / < "$REPO_ROOT/config/animations/magic-lamp.dconf"
           fi
         else
           log_warn "Skipping Magic Lamp on GNOME $GNOME_MAJOR_VERSION."
@@ -806,7 +806,7 @@ cmd_preset() {
         if cmd_install "compiz-alike-magic-lamp-effect@hermes83.github.com"; then
           cmd_enable "compiz-alike-magic-lamp-effect@hermes83.github.com"
           if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/magic-lamp.dconf" ]; then
-            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-alike-magic-lamp-effect/ < "$REPO_ROOT/config/animations/magic-lamp.dconf"
+            dconf load / < "$REPO_ROOT/config/animations/magic-lamp.dconf"
           fi
         else
           log_warn "Skipping Magic Lamp on GNOME $GNOME_MAJOR_VERSION."
@@ -817,7 +817,7 @@ cmd_preset() {
         if cmd_install "compiz-windows-effect@hermes83.github.com"; then
           cmd_enable "compiz-windows-effect@hermes83.github.com"
           if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/compiz-windows.dconf" ]; then
-            dconf load /org/gnome/shell/extensions/com/github/hermes83/compiz-windows-effect/ < "$REPO_ROOT/config/animations/compiz-windows.dconf"
+            dconf load / < "$REPO_ROOT/config/animations/compiz-windows.dconf"
           fi
         else
           log_warn "Skipping Compiz Windows Effect on GNOME $GNOME_MAJOR_VERSION."
@@ -830,7 +830,7 @@ cmd_preset() {
         if cmd_install "desktop-cube@schneegans.github.com"; then
           cmd_enable "desktop-cube@schneegans.github.com"
           if [ "$DRY_RUN" = false ] && has_cmd dconf && [ -f "$REPO_ROOT/config/animations/desktop-cube.dconf" ]; then
-            dconf load /org/gnome/shell/extensions/desktop-cube/ < "$REPO_ROOT/config/animations/desktop-cube.dconf"
+            dconf load / < "$REPO_ROOT/config/animations/desktop-cube.dconf"
           fi
         else
           log_warn "Skipping Desktop Cube on GNOME $GNOME_MAJOR_VERSION."

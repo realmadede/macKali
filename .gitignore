@@ -1,6 +1,7 @@
 # Git Ignore for macKali
 
 # Website and release build output
+/website
 website/dist/
 dist/
 *.tar.gz

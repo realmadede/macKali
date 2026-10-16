@@ -65,6 +65,13 @@ jobs:
           else
             RELEASE_TAG="v${AUTHORITATIVE_VER}"
             echo "Triggered via workflow_dispatch. Targeting tag '${RELEASE_TAG}'"
+            if git rev-parse -q --verify "refs/tags/$RELEASE_TAG" >/dev/null; then
+              TAG_SHA="$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+              if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+                echo "::error::Tag '${RELEASE_TAG}' already exists pointing to commit ${TAG_SHA}, but workflow is running on ${GITHUB_SHA}! Refusing to proceed."
+                exit 1
+              fi
+            fi
           fi
 
           # Detect prerelease flag
@@ -115,15 +122,16 @@ jobs:
             PRERELEASE_FLAG="--prerelease"
           fi
 
-          # Check if release already exists to prevent duplicate failures
+          # Guard against accidental overwrites: Never overwrite existing releases
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "Release $RELEASE_TAG already exists. Uploading/updating assets..."
-            gh release upload "$RELEASE_TAG" dist/* --clobber
-          else
-            echo "Creating GitHub Release $RELEASE_TAG..."
-            gh release create "$RELEASE_TAG" dist/* \
-              --title "macKali $RELEASE_TAG" \
-              --generate-notes \
-              $DRAFT_FLAG \
-              $PRERELEASE_FLAG
+            echo "::error::Release $RELEASE_TAG already exists on GitHub! Existing releases cannot be overwritten."
+            exit 1
           fi
+
+          echo "Creating GitHub Release $RELEASE_TAG linked to commit $GITHUB_SHA..."
+          gh release create "$RELEASE_TAG" dist/* \
+            --target "$GITHUB_SHA" \
+            --title "macKali $RELEASE_TAG" \
+            --generate-notes \
+            $DRAFT_FLAG \
+            $PRERELEASE_FLAG

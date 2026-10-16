@@ -33,7 +33,9 @@ print_banner() {
   echo " |_|  |_|\__,_|\___|____/     \/   |_|"
   echo -e "${COLOR_RESET}"
   echo -e "${COLOR_BOLD}macKali: macOS Desktop Customization for Kali Linux & GNOME${COLOR_RESET}"
-  echo -e "${COLOR_GREEN}[Phase 3: GNOME Extensions & Dock Integration]${COLOR_RESET}"
+  local ver
+  ver="$(get_mackali_version "$REPO_ROOT")"
+  echo -e "${COLOR_GREEN}Release v${ver}${COLOR_RESET}"
   echo ""
 }
 

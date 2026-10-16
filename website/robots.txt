@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap configuration
-Sitemap: https://realmadede.github.io/macKali/sitemap.xml
+Sitemap: https://mackali.madede.workers.dev/sitemap.xml

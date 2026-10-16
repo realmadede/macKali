@@ -4,10 +4,13 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Platform: Kali Linux | GNOME](https://img.shields.io/badge/Platform-Kali%20Linux%20%7C%20GNOME-blueviolet.svg)](#)
-[![Status: Phase 4 Complete](https://img.shields.io/badge/Status-Phase%204%20Complete-green.svg)](#)
+[![Release Candidate: v1.0.0-rc.1](https://img.shields.io/badge/Release%20Candidate-v1.0.0--rc.1-blue.svg)](https://github.com/realmadede/macKali/releases)
 [![macKali CI](https://github.com/realmadede/macKali/actions/workflows/ci.yml/badge.svg)](https://github.com/realmadede/macKali/actions/workflows/ci.yml)
+[![Live Showcase](https://img.shields.io/badge/Live%20Showcase-mackali.madede.workers.dev-success.svg)](https://mackali.madede.workers.dev/)
 
 macKali transforms the GNOME desktop environment on Kali Linux into a refined, high-performance macOS-like desktop experience. Built on the foundation of the macOS-inspired **WhiteSur cursor theme**, macKali provides a modular framework supporting both automated presets and manual installation.
+
+🌐 **Live Showcase Portal**: [https://mackali.madede.workers.dev/](https://mackali.madede.workers.dev/)
 
 ---
 
@@ -28,11 +31,13 @@ macKali is engineered for Kali Linux Rolling and modern GNOME releases:
 
 ---
 
-## Project Status: Phase 4 (Interactive TUI & Static Showcase Portal)
+## Project Status: Release Candidate (v1.0.0-rc.1)
 
-This repository provides a complete macOS visual appearance and desktop extension integration suite for Kali Linux:
+This repository provides an enterprise-grade release pipeline and desktop customization suite:
 
-- **Modern Static Website & Showcase Portal** ([`website/`](website/)): Apple-inspired static portal featuring responsive bento grids, dynamic wallpaper viewers, accessibility controls, and a self-contained build engine ([`website/build.sh`](website/build.sh)).
+- **Deterministic Release Packaging** ([`scripts/package-release.sh`](scripts/package-release.sh)): Produces verified, standalone `.tar.gz` distribution packages with bit-for-bit reproducibility and cryptographic SHA-256 checksums (`SHA256SUMS`).
+- **Automated Release Pipeline** ([`.github/workflows/release.yml`](.github/workflows/release.yml)): Tag-triggered and dispatch packaging, validation test suite execution, and pre-release GitHub publishing.
+- **Modern Static Website & Showcase Portal** ([`website/`](website/)): Apple-inspired static portal deployed at [mackali.madede.workers.dev](https://mackali.madede.workers.dev/) featuring responsive bento grids, dynamic wallpaper viewers, accessibility controls, and a self-contained build engine ([`website/build.sh`](website/build.sh)).
 - **Interactive Terminal Wizard** ([`scripts/tui-installer.sh`](scripts/tui-installer.sh)): Guided terminal interface with `whiptail`/`dialog` support and ANSI fallback, environment inspection, safety backup toggles, and instant recovery instructions.
 - **Modular Extension Manager** ([`scripts/extensions-manager.sh`](scripts/extensions-manager.sh)): Inspect compatibility, query metadata, download verified release bundles from `extensions.gnome.org` (EGO), and manage lifecycle states.
 - **macOS Dock Layout Engine**: Centered bottom layout, intelligent autohide, 48px icons, dynamic transparency, and dots indicators via Dash to Dock—with strict preservation of user favorite applications and Kali security launchers.
@@ -64,19 +69,19 @@ macKali/
 │   ├── manifest-schema.json    # JSON Schema for extension verification
 │   ├── manifests/              # Verified extension metadata (5 extensions)
 │   └── presets/                # Minimal, Balanced, and Full presets
-├── scripts/            # Management and installation automation
-│   ├── backup.sh       # Timestamped dconf desktop backup utility
-│   ├── compat-check.sh # System detection and extension compatibility checker
-│   ├── install.sh      # Central macKali installer engine
-│   ├── restore.sh      # Rollback utility
-│   ├── tui-installer.sh # Interactive terminal customization wizard
-│   ├── uninstall.sh    # Safe asset removal utility
-│   └── lib/common.sh   # Shared shell logging and detection library
+├── scripts/            # Management, packaging and installation automation
+│   ├── backup.sh          # Timestamped dconf desktop backup utility
+│   ├── compat-check.sh    # System detection and extension compatibility checker
+│   ├── install.sh         # Central macKali installer engine
+│   ├── package-release.sh # Deterministic release archiver & SHA-256 generator
+│   ├── restore.sh         # Rollback utility
+│   ├── tui-installer.sh   # Interactive terminal customization wizard
+│   ├── uninstall.sh       # Safe asset removal utility
+│   └── lib/common.sh      # Shared shell logging and detection library
 ├── themes/             # Visual theme packages
 │   ├── cursors/        # WhiteSur cursor theme (src, dist, build, install)
-│   ├── gtk/            # (Planned Phase 2) GTK 3/4 themes
-│   ├── icons/          # (Planned Phase 2) macOS squircle icon sets
-│   ├── shell/          # (Planned Phase 2) GNOME Shell panel theme
+│   ├── gtk/            # GTK 3/4 theme assets & providers
+│   ├── icons/          # macOS icon sets & providers
 │   └── wallpapers/     # Dynamic Day/Night 4K wallpapers
 ├── website/            # Static showcase & documentation portal
 │   ├── index.html      # Landing page & showcase
@@ -84,9 +89,11 @@ macKali/
 │   ├── styles.css      # Design system & responsive bento grids
 │   ├── script.js       # Dynamic theming & accessible clipboard copy
 │   ├── build.sh        # Self-contained build & validation engine
-│   └── README.md       # Preview & Cloudflare Pages deployment instructions
+│   └── README.md       # Preview & deployment instructions
 ├── build.sh            # Root backward-compatible cursor build wrapper
 ├── install.sh          # Root backward-compatible installer wrapper
+├── CHANGELOG.md        # Structured release history across all phases
+├── VERSION             # Authoritative release version source (1.0.0-rc.1)
 └── LICENSE             # GNU General Public License v3.0
 ```
 
@@ -94,13 +101,32 @@ macKali/
 
 ## Quickstart & Installation
 
-### 1. Interactive Terminal Wizard (Recommended)
+### 1. Verified Release Archive (Recommended)
+
+Download the official standalone package and verify SHA-256 checksums before running:
+
+```bash
+# 1. Download release candidate and checksum manifest
+VERSION="1.0.0-rc.1"
+curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/macKali-v${VERSION}.tar.gz"
+curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/SHA256SUMS"
+
+# 2. Verify SHA-256 integrity
+sha256sum -c SHA256SUMS
+
+# 3. Extract and launch the interactive wizard
+tar -xzf "macKali-v${VERSION}.tar.gz"
+cd "macKali-v${VERSION}"
+./install.sh --interactive
+```
+
+### 2. Git Clone Workflow (Development)
 Run the guided terminal customization wizard with environment detection, preset picker, and safety confirmation:
 
 ```bash
+git clone https://github.com/realmadede/macKali.git
+cd macKali
 ./install.sh --interactive
-# or
-./scripts/install.sh -i
 ```
 *Automatically uses `whiptail` or `dialog` if present, with a clean ANSI plain-terminal fallback.*
 
@@ -259,7 +285,13 @@ See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual rec
     - Accessible clipboard copy with fallback and zero third-party framework dependencies
     - Self-contained static build engine (`website/build.sh`) and dedicated CI validation workflow (`.github/workflows/website.yml`)
     - 32 automated tests in `tests/run-tests.sh`
-- [ ] **Phase 5: Release Packaging & Final Polish**
+- [x] **Phase 5: Release Packaging, Distribution & Verification**
+  - Authoritative Semantic Versioning system (`VERSION`, `1.0.0-rc.1`)
+  - Deterministic release archiver (`scripts/package-release.sh`) with GNU tar reproducible flags and SHA-256 manifests
+  - GitHub Actions automated release pipeline (`.github/workflows/release.yml`) with version-tag agreement checks
+  - Standalone release package verification (standalone execution, required inclusions, dev artifact exclusions)
+  - Live production website metadata synchronization ([mackali.madede.workers.dev](https://mackali.madede.workers.dev/))
+  - 40-test automated regression suite covering packaging and integrity verification
 
 ---
 

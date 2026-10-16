@@ -10,11 +10,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/common.sh"
 
-MACKALI_VERSION="0.4.0-dev"
-if has_cmd git && [ -d "$REPO_ROOT/.git" ]; then
-  GIT_VER="$(git -C "$REPO_ROOT" describe --tags --always 2>/dev/null || true)"
-  [ -n "$GIT_VER" ] && MACKALI_VERSION="$GIT_VER"
-fi
+MACKALI_VERSION="$(get_mackali_version "$REPO_ROOT")"
 
 # Options & defaults
 DRY_RUN=false

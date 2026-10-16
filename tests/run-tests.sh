@@ -66,6 +66,7 @@ test_shell_syntax() {
     "$REPO_ROOT/scripts/restore.sh"
     "$REPO_ROOT/scripts/uninstall.sh"
     "$REPO_ROOT/scripts/lib/common.sh"
+    "$REPO_ROOT/scripts/package-release.sh"
     "$REPO_ROOT/scripts/providers/wallpaper-provider.sh"
     "$REPO_ROOT/scripts/providers/gtk-provider.sh"
     "$REPO_ROOT/scripts/providers/icon-provider.sh"
@@ -490,6 +491,171 @@ PYEOF
   return $?
 }
 run_test "Phase 4B: Static website internal link and reference integrity" test_website_integrity
+
+# Test 33: Phase 5: Authoritative VERSION format and SemVer compliance
+test_version_compliance() {
+  [ -f "$REPO_ROOT/VERSION" ] || return 1
+  local ver
+  ver="$(tr -d '[:space:]' < "$REPO_ROOT/VERSION")"
+  [ -n "$ver" ] || return 1
+  echo "$ver" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' || return 1
+
+  # shellcheck disable=SC1091
+  source "$REPO_ROOT/scripts/lib/common.sh"
+  local fn_ver
+  fn_ver="$(get_mackali_version "$REPO_ROOT")"
+  [ "$fn_ver" = "$ver" ] || return 1
+  return 0
+}
+run_test "Phase 5: Authoritative VERSION format and SemVer compliance" test_version_compliance
+
+# Test 34: Phase 5: CHANGELOG.md structure and Keep a Changelog conformance
+test_changelog_structure() {
+  [ -f "$REPO_ROOT/CHANGELOG.md" ] || return 1
+  grep -q "# Changelog" "$REPO_ROOT/CHANGELOG.md" || return 1
+  grep -q "## \[Unreleased\]" "$REPO_ROOT/CHANGELOG.md" || return 1
+  grep -q "## \[1.0.0-rc.1\]" "$REPO_ROOT/CHANGELOG.md" || return 1
+  grep -q "### Added" "$REPO_ROOT/CHANGELOG.md" || return 1
+  return 0
+}
+run_test "Phase 5: CHANGELOG.md structure and Keep a Changelog conformance" test_changelog_structure
+
+# Test 35: Phase 5: Release packaging script execution and archive generation
+test_packaging_script() {
+  local test_dist="$SANDBOX/dist"
+  rm -rf "$test_dist"
+  bash "$REPO_ROOT/scripts/package-release.sh" --output-dir "$test_dist" --no-check >/dev/null || return 1
+  [ -d "$test_dist" ] || return 1
+  [ -f "$test_dist/macKali-v1.0.0-rc.1.tar.gz" ] || return 1
+  [ -f "$test_dist/SHA256SUMS" ] || return 1
+  return 0
+}
+run_test "Phase 5: Release packaging script execution and artifact generation" test_packaging_script
+
+# Test 36: Phase 5: Archive SHA-256 checksum integrity verification
+test_archive_checksum_integrity() {
+  local test_dist="$SANDBOX/dist"
+  [ -f "$test_dist/SHA256SUMS" ] || return 1
+  (
+    cd "$test_dist"
+    sha256sum -c SHA256SUMS >/dev/null 2>&1
+  ) || return 1
+  return 0
+}
+run_test "Phase 5: Archive SHA-256 checksum integrity verification" test_archive_checksum_integrity
+
+# Test 37: Phase 5: Release archive content completeness and file permissions
+test_archive_contents() {
+  local test_dist="$SANDBOX/dist"
+  local extract_dir="$SANDBOX/extract_test"
+  rm -rf "$extract_dir"
+  mkdir -p "$extract_dir"
+  tar -xzf "$test_dist/macKali-v1.0.0-rc.1.tar.gz" -C "$extract_dir" || return 1
+
+  local payload="$extract_dir/macKali-v1.0.0-rc.1"
+  [ -d "$payload" ] || return 1
+
+  local required=(
+    "install.sh"
+    "VERSION"
+    "LICENSE"
+    "README.md"
+    "CHANGELOG.md"
+    "scripts/install.sh"
+    "scripts/tui-installer.sh"
+    "scripts/compat-check.sh"
+    "scripts/appearance.sh"
+    "scripts/backup.sh"
+    "scripts/restore.sh"
+    "scripts/uninstall.sh"
+    "scripts/extensions-manager.sh"
+    "scripts/lib/common.sh"
+    "scripts/providers/gtk-provider.sh"
+    "scripts/providers/icon-provider.sh"
+    "themes/wallpapers/macOS-macKali-Light.png"
+    "themes/wallpapers/macOS-macKali-Dark.png"
+    "themes/cursors/install.sh"
+    "extensions/manifests/dash-to-dock.json"
+    "extensions/presets/balanced.json"
+    "config/dock/dash-to-dock.dconf"
+    "assets/preview.png"
+    "docs/installation.md"
+    "docs/architecture.md"
+  )
+  for item in "${required[@]}"; do
+    if [ ! -s "$payload/$item" ]; then
+      echo "Missing or empty required file: $item"
+      return 1
+    fi
+  done
+
+  [ -x "$payload/install.sh" ] || return 1
+  [ -x "$payload/scripts/install.sh" ] || return 1
+  [ -x "$payload/scripts/tui-installer.sh" ] || return 1
+  [ -x "$payload/scripts/compat-check.sh" ] || return 1
+  [ -x "$payload/scripts/appearance.sh" ] || return 1
+  [ -x "$payload/scripts/restore.sh" ] || return 1
+  [ -x "$payload/scripts/uninstall.sh" ] || return 1
+  return 0
+}
+run_test "Phase 5: Release archive content completeness and file permissions" test_archive_contents
+
+# Test 38: Phase 5: Release archive exclusion of development and temporary artifacts
+test_archive_exclusions() {
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  [ -d "$payload" ] || return 1
+
+  local forbidden=(
+    ".git"
+    ".github"
+    "website"
+    "tests"
+    "dist"
+    "build"
+    ".cache"
+  )
+  for item in "${forbidden[@]}"; do
+    if [ -e "$payload/$item" ]; then
+      echo "Forbidden path present in archive payload: $item"
+      return 1
+    fi
+  done
+  return 0
+}
+run_test "Phase 5: Release archive exclusion of development artifacts" test_archive_exclusions
+
+# Test 39: Phase 5: Standalone execution of root entry points outside Git repository
+test_standalone_execution() {
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  [ -d "$payload" ] || return 1
+  [ ! -e "$payload/.git" ] || return 1
+
+  "$payload/install.sh" --help >/dev/null || return 1
+  "$payload/scripts/compat-check.sh" --help >/dev/null || return 1
+  "$payload/scripts/appearance.sh" --help >/dev/null || return 1
+  "$payload/scripts/uninstall.sh" --help >/dev/null || return 1
+  return 0
+}
+run_test "Phase 5: Standalone execution of root entry points outside Git repository" test_standalone_execution
+
+# Test 40: Phase 5: Website production domain metadata & releases navigation integrity
+test_website_production_metadata() {
+  [ -f "$REPO_ROOT/website/index.html" ] || return 1
+  [ -f "$REPO_ROOT/website/sitemap.xml" ] || return 1
+  [ -f "$REPO_ROOT/website/robots.txt" ] || return 1
+
+  grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/index.html" || return 1
+  grep -q "https://github.com/realmadede/macKali/releases" "$REPO_ROOT/website/index.html" || return 1
+  grep -q "https://mackali.madede.workers.dev/sitemap.xml" "$REPO_ROOT/website/robots.txt" || return 1
+  grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/sitemap.xml" || return 1
+
+  if grep -rq "realmadede.github.io" "$REPO_ROOT/website"; then
+    echo "Outdated realmadede.github.io domain still present in website files"
+    return 1
+  fi
+  return 0
+}
+run_test "Phase 5: Website production domain metadata and releases link integrity" test_website_production_metadata
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

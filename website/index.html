@@ -7,18 +7,18 @@
   <meta name="description" content="Open-source macOS-inspired desktop appearance customization for Kali Linux GNOME. Dynamic compatibility, interactive setup wizard, and non-destructive styling.">
   <meta name="keywords" content="Kali Linux, GNOME Shell, macOS theme, WhiteSur, Dash to Dock, desktop customization, Linux styling, open source">
   <meta name="theme-color" content="#fbf9f5">
-  <link rel="canonical" href="https://realmadede.github.io/macKali/">
+  <link rel="canonical" href="https://mackali.madede.workers.dev/">
 
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://realmadede.github.io/macKali/">
+  <meta property="og:url" content="https://mackali.madede.workers.dev/">
   <meta property="og:title" content="macKali — A macOS-inspired desktop. The power of Kali Linux.">
   <meta property="og:description" content="Transform GNOME on Kali Linux with modular appearance customization, an interactive terminal wizard, and compatibility-aware GNOME extension management.">
   <meta property="og:image" content="assets/preview.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://realmadede.github.io/macKali/">
+  <meta name="twitter:url" content="https://mackali.madede.workers.dev/">
   <meta name="twitter:title" content="macKali — A macOS-inspired desktop. The power of Kali Linux.">
   <meta name="twitter:description" content="Transform GNOME on Kali Linux with modular appearance customization, an interactive terminal wizard, and compatibility-aware GNOME extension management.">
   <meta name="twitter:image" content="assets/preview.png">
@@ -52,6 +52,7 @@
           <li><a href="#presets" class="nav-link">Presets</a></li>
           <li><a href="#compatibility" class="nav-link">Compatibility</a></li>
           <li><a href="#installation" class="nav-link">Install</a></li>
+          <li><a href="https://github.com/realmadede/macKali/releases" class="nav-link" target="_blank" rel="noopener noreferrer">Releases</a></li>
           <li><a href="#faq" class="nav-link">FAQ</a></li>
           <li><a href="#docs" class="nav-link">Docs</a></li>
         </ul>
@@ -470,13 +471,35 @@
         </div>
 
         <div class="install-block">
-          <!-- Command Bar with Copy Button -->
-          <div class="command-bar">
-            <code id="install-command-text" class="command-text">git clone https://github.com/realmadede/macKali.git &amp;&amp; cd macKali &amp;&amp; ./install.sh --interactive</code>
-            <button class="btn-copy copy-btn" data-target="install-command-text" aria-label="Copy installation command to clipboard">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              <span>Copy</span>
-            </button>
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+              <span class="term-tag tag-ready" style="font-size: 0.8rem; padding: 4px 10px;">Recommended</span>
+              <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-base);">Option 1: Verified Release Tarball (v1.0.0-rc.1)</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+              Download the standalone package and verify cryptographic integrity via SHA-256 before running the rootless wizard:
+            </p>
+            <div class="command-bar" style="margin-bottom: 8px;">
+              <code id="install-tar-cmd" class="command-text">curl -sLO https://github.com/realmadede/macKali/releases/download/v1.0.0-rc.1/macKali-v1.0.0-rc.1.tar.gz &amp;&amp; curl -sLO https://github.com/realmadede/macKali/releases/download/v1.0.0-rc.1/SHA256SUMS &amp;&amp; sha256sum -c SHA256SUMS &amp;&amp; tar -xzf macKali-v1.0.0-rc.1.tar.gz &amp;&amp; cd macKali-v1.0.0-rc.1 &amp;&amp; ./install.sh --interactive</code>
+              <button class="btn-copy copy-btn" data-target="install-tar-cmd" aria-label="Copy tarball installation command to clipboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-faint); margin-top: 6px;">
+              View all official packages and checksums on the <a href="https://github.com/realmadede/macKali/releases" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">macKali Releases</a> page.
+            </div>
+          </div>
+
+          <div style="margin-bottom: 28px; padding-top: 18px; border-top: 1px dashed var(--border-light);">
+            <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-base); margin-bottom: 8px;">Option 2: Git Clone (Development)</div>
+            <div class="command-bar">
+              <code id="install-command-text" class="command-text">git clone https://github.com/realmadede/macKali.git &amp;&amp; cd macKali &amp;&amp; ./install.sh --interactive</code>
+              <button class="btn-copy copy-btn" data-target="install-command-text" aria-label="Copy git clone command to clipboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+            </div>
           </div>
 
           <!-- Steps -->
@@ -672,6 +695,7 @@
               <li><a href="#presets">Presets</a></li>
               <li><a href="#compatibility">Compatibility</a></li>
               <li><a href="#installation">Install</a></li>
+              <li><a href="https://github.com/realmadede/macKali/releases" target="_blank" rel="noopener noreferrer">Releases (v1.0.0-rc.1)</a></li>
               <li><a href="#faq">FAQ</a></li>
             </ul>
           </div>
@@ -683,6 +707,7 @@
               <li><a href="https://github.com/realmadede/macKali/blob/main/docs/architecture.md" target="_blank" rel="noopener noreferrer">Architecture</a></li>
               <li><a href="https://github.com/realmadede/macKali/blob/main/docs/extensions.md" target="_blank" rel="noopener noreferrer">Extensions</a></li>
               <li><a href="https://github.com/realmadede/macKali/blob/main/docs/safety-and-removal.md" target="_blank" rel="noopener noreferrer">Safety & Rollback</a></li>
+              <li><a href="https://github.com/realmadede/macKali/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a></li>
             </ul>
           </div>
 

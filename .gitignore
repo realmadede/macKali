@@ -1,7 +1,10 @@
 # Git Ignore for macKali
 
-# Website build output
+# Website and release build output
 website/dist/
+dist/
+*.tar.gz
+SHA256SUMS
 
 # Python cache
 __pycache__/

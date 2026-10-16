@@ -19,7 +19,44 @@ This document covers both the **Automated** and **Manual** workflows for deployi
 
 ---
 
-## Workflow 1: Interactive Terminal Wizard (Recommended)
+## Workflow 1: Verified Release Archive (Recommended for Users)
+
+For production deployments, download the standalone macKali distribution archive and verify its cryptographic integrity using the official `SHA256SUMS` manifest before extracting:
+
+### Step 1: Download Release Archive & Checksums
+Download the latest release candidate assets from GitHub:
+
+```bash
+VERSION="1.0.0-rc.1"
+curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/macKali-v${VERSION}.tar.gz"
+curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/SHA256SUMS"
+```
+
+### Step 2: Verify Archive Integrity (SHA-256)
+Validate that the downloaded file matches the official checksum manifest:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+Expected output:
+```text
+macKali-v1.0.0-rc.1.tar.gz: OK
+```
+
+> [!IMPORTANT]
+> **Integrity vs Identity**: Checksum verification proves the downloaded archive was transmitted without data corruption or tampering relative to the published manifest. It does not cryptographically prove publisher identity. Always ensure you download both archive and checksums directly from the official GitHub repository at `https://github.com/realmadede/macKali/releases`.
+
+### Step 3: Extract and Launch the Interactive Wizard
+```bash
+tar -xzf "macKali-v${VERSION}.tar.gz"
+cd "macKali-v${VERSION}"
+./install.sh --interactive
+```
+The extracted package is completely self-contained and operates independently of any Git repository.
+
+---
+
+## Workflow 2: Interactive Terminal Wizard (Git Clone)
 
 macKali includes a dedicated interactive terminal customization wizard (`scripts/tui-installer.sh`) designed to make installation effortless, safe, and transparent:
 
@@ -41,7 +78,7 @@ macKali includes a dedicated interactive terminal customization wizard (`scripts
 
 ---
 
-## Workflow 2: Automated Non-Interactive Installation
+## Workflow 3: Automated Non-Interactive Installation
 
 For scripting, automation, or direct CLI usage, macKali provides non-interactive flags via `scripts/install.sh` (or the top-level `./install.sh` wrapper).
 
@@ -56,10 +93,10 @@ Verify that your OS version, GNOME Shell release, and system utilities meet requ
 
 ### Step 2: Choose an Installation Preset
 
-| Preset | Target Experience | Included Components (Phase 1) |
+| Preset | Target Experience | Included Components |
 | :--- | :--- | :--- |
 | `minimal` | Lightweight macOS layout | WhiteSur cursors, dock config schema, window buttons on left |
-| `balanced` | Authentic macOS polish | Minimal + Blur My Shell schema + Magic Lamp schema |
+| `balanced` | Authentic macOS polish | Minimal + Blur My Shell schema + Magic Lamp schema + GTK & Icons |
 | `full` | macOS + 3D Compiz effects | Balanced + Desktop Cube schema + Wobbly Windows schema |
 
 ### Step 3: Run the Installer
@@ -86,7 +123,7 @@ To install only the cursors:
 
 ---
 
-## Workflow 3: Manual Installation
+## Workflow 4: Manual Component-by-Component Installation
 
 If you prefer to inspect and apply components individually without automation scripts:
 
@@ -140,7 +177,20 @@ To rollback all GNOME settings to your pre-install state:
 ./scripts/restore.sh
 ```
 
-### Clean Removal of Cursors
+### Clean Removal of Cursors & Purge
 ```bash
-./scripts/uninstall.sh
+./scripts/uninstall.sh --purge
 ```
+
+---
+
+## Packaging Release Archives (Maintainers)
+
+macKali includes a deterministic release packager that generates self-contained tarballs and SHA-256 manifests without modifying host settings:
+
+```bash
+./scripts/package-release.sh
+```
+
+Artifacts are written to `dist/macKali-v<VERSION>.tar.gz` and validated automatically against required inclusion/exclusion rules.
+

@@ -11,7 +11,15 @@ case "$1" in
     shift
     exec "$SCRIPT_DIR/scripts/tui-installer.sh" "$@"
     ;;
-  --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube)
+  --check-update|--check-updates)
+    shift
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/scripts/lib/common.sh"
+    REPO_ROOT="$SCRIPT_DIR"
+    check_for_updates 3 "check" "$@"
+    exit 0
+    ;;
+  --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
     ;;
   --uninstall|--reset-defaults|--purge)
@@ -32,6 +40,8 @@ case "$1" in
     echo "macKali Modular Customization Usage:"
     echo "  $0 --interactive, -i Run the interactive terminal customization wizard (TUI)"
     echo "  $0 --check          Check system and GNOME extension compatibility"
+    echo "  $0 --check-update   Check official GitHub releases for newer version"
+    echo "  $0 --no-update-check Skip online release update check"
     echo "  $0 --preset <name>  Run macKali installer with preset (minimal, balanced, full)"
     echo "  $0 --backup         Create desktop backup before installing"
     echo "  $0 --dry-run        Simulate installation without making changes"

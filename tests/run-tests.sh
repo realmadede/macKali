@@ -657,6 +657,40 @@ test_website_production_metadata() {
 }
 run_test "Phase 5: Website production domain metadata and releases link integrity" test_website_production_metadata
 
+# Test 41: In-app release update checker (--check-update & SemVer comparison)
+test_in_app_update_checker() {
+  # shellcheck disable=SC1091
+  source "$REPO_ROOT/scripts/lib/common.sh"
+
+  # 1. Verify is_version_newer logic
+  is_version_newer "1.0.0-rc.1" "1.0.0" || return 1
+  is_version_newer "1.0.0" "1.0.1" || return 1
+  ! is_version_newer "1.0.1" "1.0.0" || return 1
+  ! is_version_newer "1.0.0" "1.0.0" || return 1
+
+  # 2. Test mock newer release notification via install.sh --check-update
+  local out_update
+  out_update="$(MOCK_LATEST_RELEASE="v1.0.1" "$REPO_ROOT/install.sh" --check-update 2>&1)"
+  echo "$out_update" | grep -q "macKali Update Available!" || return 1
+  echo "$out_update" | grep -q "v1.0.1" || return 1
+
+  # 3. Test mock current release (up to date)
+  local out_current
+  out_current="$(MOCK_LATEST_RELEASE="v1.0.0-rc.1" "$REPO_ROOT/install.sh" --check-update 2>&1)"
+  echo "$out_current" | grep -q "is up to date" || return 1
+
+  # 4. Test --no-update-check suppression
+  local out_suppressed
+  out_suppressed="$(MOCK_LATEST_RELEASE="v1.0.1" "$REPO_ROOT/scripts/install.sh" --preset minimal --dry-run --no-update-check 2>&1)"
+  if echo "$out_suppressed" | grep -q "macKali Update Available!"; then
+    echo "--no-update-check failed to suppress update banner"
+    return 1
+  fi
+
+  return 0
+}
+run_test "Phase 5: In-app release update checker (--check-update and SemVer evaluation)" test_in_app_update_checker
+
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"
 echo "============================================================"

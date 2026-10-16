@@ -168,6 +168,26 @@ dconf load / < config/keybindings/custom-shortcuts.dconf
 
 ---
 
+## Upstream Updates & In-App Release Checking
+
+macKali automatically queries the official GitHub Releases API on startup to alert you whenever a newer version or patch is published:
+
+```bash
+# Explicitly check for newer releases:
+./install.sh --check-update
+
+# Disable update check when running in offline or firewalled environments:
+./install.sh --no-update-check --interactive
+# or
+./scripts/install.sh --no-update-check --preset balanced
+```
+
+When an update is detected, you can upgrade:
+- **Git users**: Run `git pull && ./install.sh --interactive`
+- **Archive users**: Download the latest release from [macKali Releases](https://github.com/realmadede/macKali/releases) and extract.
+
+---
+
 ## Uninstallation & Rollback
 
 ### Restore from Backup

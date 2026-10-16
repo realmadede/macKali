@@ -19,6 +19,7 @@ FORCE_BACKEND=""
 PRESELECTED_PRESET=""
 PRESELECTED_MODE=""
 DO_BACKUP=true
+CHECK_UPDATES=true
 
 # Parse CLI arguments
 while [[ $# -gt 0 ]]; do
@@ -55,6 +56,10 @@ while [[ $# -gt 0 ]]; do
       DO_BACKUP=false
       shift
       ;;
+    --no-update-check)
+      CHECK_UPDATES=false
+      shift
+      ;;
     --help|-h)
       echo "macKali Interactive Terminal (TUI) Installer"
       echo "==========================================="
@@ -69,6 +74,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --preset NAME        Pre-select preset (minimal, balanced, full)"
       echo "  --mode MODE          Pre-select appearance mode (dark, light)"
       echo "  --no-backup          Disable automatic desktop settings backup"
+      echo "  --no-update-check    Disable automatic online release update checks"
       echo "  -h, --help           Show this help message"
       echo ""
       echo "Entry points:"
@@ -617,8 +623,10 @@ step_execute_and_report() {
   [ "$DO_EXTENSIONS" = true ] && install_cmd+=("--extensions")
   [ "$OPT_MAGIC_LAMP" = true ] && install_cmd+=("--with-magic-lamp")
   [ "$OPT_WOBBLY" = true ] && install_cmd+=("--with-wobbly")
+  [ "$DO_CUBE" = true ] 2>/dev/null || true
   [ "$OPT_CUBE" = true ] && install_cmd+=("--with-cube")
   [ "$DRY_RUN" = true ] && install_cmd+=("--dry-run")
+  [ "$CHECK_UPDATES" = false ] && install_cmd+=("--no-update-check")
 
   # Run the established installer engine
   local exit_code=0
@@ -659,6 +667,9 @@ To restore previous settings, run:
 # Main Execution Flow
 main() {
   check_not_root
+  if [ "$CHECK_UPDATES" = true ]; then
+    check_for_updates 2 "notify"
+  fi
   step_welcome
   step_select_preset
   step_customization_and_compatibility

@@ -79,7 +79,8 @@ This release candidate unifies the modular desktop customization architecture, c
 - Release checksum manifest (`SHA256SUMS`) for independent artifact verification.
 - Comprehensive package extraction test validating root entry points (`./install.sh --help`, `./scripts/compat-check.sh`) in standalone environments outside of Git.
 - GitHub Actions release pipeline (`.github/workflows/release.yml`) enforcing tag-version alignment, test execution, checksum validation, and artifact generation.
-- Expanded 40-test automated regression suite covering versioning, packaging, checksum verification, file inclusions, and standalone execution.
+- In-app upstream release update checker (`--check-update` and `--no-update-check`) querying GitHub Releases API with SemVer evaluation.
+- Expanded 41-test automated regression suite covering versioning, packaging, checksum verification, file inclusions, standalone execution, and update checking.
 
 ### Security & Safety Principles
 - **Rootless Operation**: User-level customizations execute within user space (`~/.local/share`, `~/.config`, user dconf) without requiring `sudo`.

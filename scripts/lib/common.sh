@@ -210,3 +210,89 @@ detect_version_shift() {
     fi
   fi
 }
+
+# Compare two SemVer strings (e.g. 1.0.0-rc.1 vs 1.0.0, or 1.0.0 vs 1.0.1)
+# Returns 0 (true) if $2 (target/remote) is strictly newer than $1 (current)
+is_version_newer() {
+  local cur="$1"
+  local lat="$2"
+  if [ "$cur" = "$lat" ]; then
+    return 1
+  fi
+  if has_cmd python3; then
+    python3 -c "
+import sys
+def parse_ver(v):
+    v = v.lstrip('v').strip()
+    parts = v.split('-', 1)
+    nums = [int(x) if x.isdigit() else 0 for x in parts[0].split('.')]
+    is_prerelease = len(parts) > 1
+    return (nums, 0 if is_prerelease else 1, parts[1] if is_prerelease else '')
+
+cur = parse_ver('$cur')
+lat = parse_ver('$lat')
+sys.exit(0 if cur < lat else 1)
+" >/dev/null 2>&1
+    return $?
+  else
+    [ "$cur" != "$lat" ] && return 0 || return 1
+  fi
+}
+
+# Check GitHub Releases API for upstream updates
+# Parameters:
+#   $1: timeout_seconds (default: 2)
+#   $2: mode ("notify" - only print if update available, "check" - print status always)
+#   $3: repo_owner_repo (default: "realmadede/macKali")
+#   $4: mock_tag (optional, for testing via $MOCK_LATEST_RELEASE)
+check_for_updates() {
+  local timeout="${1:-2}"
+  local mode="${2:-notify}"
+  local repo="${3:-realmadede/macKali}"
+  local mock_tag="${4:-${MOCK_LATEST_RELEASE:-}}"
+
+  local current_ver
+  current_ver="$(get_mackali_version "${REPO_ROOT:-}")"
+  local clean_current="${current_ver#v}"
+  local latest_tag=""
+
+  if [ -n "$mock_tag" ]; then
+    latest_tag="$mock_tag"
+  elif has_cmd curl; then
+    local api_url="https://api.github.com/repos/${repo}/releases/latest"
+    local resp
+    resp="$(curl -fsSL --max-time "$timeout" -H "Accept: application/vnd.github.v3+json" -H "User-Agent: macKali-Updater" "$api_url" 2>/dev/null || true)"
+    if [ -n "$resp" ] && has_cmd jq; then
+      latest_tag="$(echo "$resp" | jq -r '.tag_name // empty' 2>/dev/null || true)"
+    elif [ -n "$resp" ]; then
+      latest_tag="$(echo "$resp" | grep -oP '"tag_name":\s*"\K[^"]+' || true)"
+    fi
+  fi
+
+  local clean_latest="${latest_tag#v}"
+
+  if [ -z "$clean_latest" ]; then
+    if [ "$mode" = "check" ]; then
+      log_warn "Could not reach GitHub Releases API to verify updates (offline, unreleased, or rate limited)."
+    fi
+    return 0
+  fi
+
+  if is_version_newer "$clean_current" "$clean_latest"; then
+    echo ""
+    echo -e "${COLOR_BOLD}${COLOR_YELLOW}============================================================${COLOR_RESET}"
+    echo -e "${COLOR_BOLD}${COLOR_YELLOW}🔔  macKali Update Available!${COLOR_RESET}"
+    echo -e "   Current installed:  ${COLOR_BOLD}v${clean_current}${COLOR_RESET}"
+    echo -e "   Latest release:     ${COLOR_BOLD}${COLOR_GREEN}v${clean_latest}${COLOR_RESET}"
+    echo -e "   To update:          Run ${COLOR_CYAN}git pull${COLOR_RESET} or download from:"
+    echo -e "                       ${COLOR_CYAN}https://mackali.madede.workers.dev${COLOR_RESET}"
+    echo -e "${COLOR_BOLD}${COLOR_YELLOW}============================================================${COLOR_RESET}"
+    echo ""
+    return 0
+  fi
+
+  if [ "$mode" = "check" ]; then
+    log_success "macKali is up to date (v${clean_current})."
+  fi
+  return 0
+}

@@ -21,6 +21,7 @@ DOCK_ONLY=false
 WITH_MAGIC_LAMP=false
 WITH_WOBBLY=false
 WITH_CUBE=false
+CHECK_UPDATES=true
 
 # Banner
 print_banner() {
@@ -48,6 +49,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --check)
       ACTION="check"
+      shift
+      ;;
+    --check-update|--check-updates)
+      ACTION="check_update"
+      shift
+      ;;
+    --no-update-check)
+      CHECK_UPDATES=false
       shift
       ;;
     --preset)
@@ -105,6 +114,8 @@ while [[ $# -gt 0 ]]; do
       echo "Options:"
       echo "  -i, --interactive      Run interactive terminal customization wizard (TUI)"
       echo "      --check            Run environment and GNOME compatibility checks"
+      echo "      --check-update     Check official GitHub releases for newer version"
+      echo "      --no-update-check  Disable automatic online release update checks"
       echo "      --preset NAME      Select preset (minimal, balanced, full) [default: balanced]"
       echo "      --appearance       Apply macOS appearance (color-scheme, window buttons, wallpapers)"
       echo "      --mode [dark|light] Set appearance color mode [default: dark]"
@@ -129,6 +140,17 @@ done
 
 print_banner
 check_not_root
+
+# Handle --check-update
+if [ "$ACTION" = "check_update" ]; then
+  check_for_updates 3 "check"
+  exit 0
+fi
+
+# Run non-blocking update check notification if enabled
+if [ "$CHECK_UPDATES" = true ] && [ "$ACTION" != "check" ]; then
+  check_for_updates 2 "notify"
+fi
 
 # Handle --check
 if [ "$ACTION" = "check" ]; then

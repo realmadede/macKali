@@ -130,7 +130,14 @@ cd macKali
 ```
 *Automatically uses `whiptail` or `dialog` if present, with a clean ANSI plain-terminal fallback.*
 
-### 2. Check System Compatibility
+### 3. Check for Updates & Upstream Releases
+macKali automatically checks for new releases on startup (can be bypassed with `--no-update-check`). You can also check explicitly at any time:
+
+```bash
+./install.sh --check-update
+```
+
+### 4. Check System Compatibility
 Inspect your Kali Linux environment, GNOME Shell version, and tool availability without altering any settings:
 
 ```bash
@@ -139,7 +146,7 @@ Inspect your Kali Linux environment, GNOME Shell version, and tool availability 
 ./install.sh --check
 ```
 
-### 3. Install WhiteSur Cursors (Backward-Compatible)
+### 5. Install WhiteSur Cursors (Backward-Compatible)
 Installs the precompiled cursor theme to `~/.local/share/icons/WhiteSur-cursors`:
 
 ```bash
@@ -151,7 +158,7 @@ For system-wide installation across all users:
 sudo ./install.sh --system
 ```
 
-### 4. Non-Interactive Preset Installation
+### 6. Non-Interactive Preset Installation
 Run the macKali installer non-interactively with safety backup and preset selection:
 
 ```bash
@@ -163,7 +170,7 @@ To test without making changes:
 ./scripts/install.sh --preset balanced --dry-run
 ```
 
-### 5. Static Showcase Website (Local Preview & Build)
+### 7. Static Showcase Website (Local Preview & Build)
 Build and preview the macKali static showcase portal locally:
 
 ```bash
@@ -172,7 +179,7 @@ python3 -m http.server 8000 -d website/dist
 ```
 Then visit `http://localhost:8000` in your web browser.
 
-### 6. Rollback at Any Time
+### 8. Rollback at Any Time
 If you ever want to revert desktop changes back to your initial state:
 
 ```bash
@@ -291,7 +298,8 @@ See [docs/safety-and-removal.md](docs/safety-and-removal.md) for full manual rec
   - GitHub Actions automated release pipeline (`.github/workflows/release.yml`) with version-tag agreement checks
   - Standalone release package verification (standalone execution, required inclusions, dev artifact exclusions)
   - Live production website metadata synchronization ([mackali.madede.workers.dev](https://mackali.madede.workers.dev/))
-  - 40-test automated regression suite covering packaging and integrity verification
+  - In-app release update checker (`--check-update` and `--no-update-check`) querying GitHub Releases API
+  - 41-test automated regression suite covering packaging, integrity verification, and in-app update checks
 
 ---
 

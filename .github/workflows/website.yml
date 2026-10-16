@@ -2,12 +2,12 @@ name: macKali Website CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ website, main ]
     paths:
       - 'website/**'
       - '.github/workflows/website.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ website, main ]
     paths:
       - 'website/**'
       - '.github/workflows/website.yml'

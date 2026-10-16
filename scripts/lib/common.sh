@@ -35,20 +35,22 @@ has_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Retrieve authoritative macKali project version
+# Retrieve authoritative macKali project version (normalized SemVer, e.g. 1.0.0-rc.1)
 get_mackali_version() {
   local search_dir="${1:-${REPO_ROOT:-}}"
+  local raw=""
   if [ -n "$search_dir" ] && [ -f "$search_dir/VERSION" ]; then
-    head -n 1 "$search_dir/VERSION" | tr -d '[:space:]'
+    raw="$(head -n 1 "$search_dir/VERSION" | tr -d '[:space:]')"
   elif [ -f "${SCRIPT_DIR:-.}/../VERSION" ]; then
-    head -n 1 "${SCRIPT_DIR:-.}/../VERSION" | tr -d '[:space:]'
+    raw="$(head -n 1 "${SCRIPT_DIR:-.}/../VERSION" | tr -d '[:space:]')"
   elif [ -f "./VERSION" ]; then
-    head -n 1 "./VERSION" | tr -d '[:space:]'
+    raw="$(head -n 1 "./VERSION" | tr -d '[:space:]')"
   elif has_cmd git && [ -d "${search_dir:-.}/.git" ]; then
-    git -C "${search_dir:-.}" describe --tags --always 2>/dev/null || echo "1.0.0-rc.1"
+    raw="$(git -C "${search_dir:-.}" describe --tags --always 2>/dev/null || echo "1.0.0-rc.1")"
   else
-    echo "1.0.0-rc.1"
+    raw="1.0.0-rc.1"
   fi
+  echo "${raw#v}"
 }
 
 # Detect Distribution

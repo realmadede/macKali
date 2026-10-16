@@ -495,9 +495,10 @@ run_test "Phase 4B: Static website internal link and reference integrity" test_w
 # Test 33: Phase 5: Authoritative VERSION format and SemVer compliance
 test_version_compliance() {
   [ -f "$REPO_ROOT/VERSION" ] || return 1
-  local ver
-  ver="$(tr -d '[:space:]' < "$REPO_ROOT/VERSION")"
-  [ -n "$ver" ] || return 1
+  local raw ver
+  raw="$(tr -d '[:space:]' < "$REPO_ROOT/VERSION")"
+  [ -n "$raw" ] || return 1
+  ver="${raw#v}"
   echo "$ver" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' || return 1
 
   # shellcheck disable=SC1091

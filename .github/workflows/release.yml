@@ -44,8 +44,9 @@ jobs:
       - name: Validate version consistency
         id: version-check
         run: |
-          AUTHORITATIVE_VER="$(tr -d '[:space:]' < VERSION)"
-          echo "Authoritative VERSION file: '${AUTHORITATIVE_VER}'"
+          RAW_VER="$(tr -d '[:space:]' < VERSION)"
+          AUTHORITATIVE_VER="${RAW_VER#v}"
+          echo "Authoritative VERSION file: '${AUTHORITATIVE_VER}' (raw: '${RAW_VER}')"
           
           if [ -z "$AUTHORITATIVE_VER" ]; then
             echo "::error::VERSION file is empty or missing."

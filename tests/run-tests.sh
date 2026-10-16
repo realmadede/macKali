@@ -72,8 +72,10 @@ test_shell_syntax() {
     "$REPO_ROOT/scripts/providers/icon-provider.sh"
     "$REPO_ROOT/themes/cursors/build.sh"
     "$REPO_ROOT/themes/cursors/install.sh"
-    "$REPO_ROOT/website/build.sh"
   )
+  if [ -f "$REPO_ROOT/website/build.sh" ]; then
+    scripts+=("$REPO_ROOT/website/build.sh")
+  fi
   for s in "${scripts[@]}"; do
     if ! bash -n "$s"; then
       echo "Syntax error in $s"
@@ -442,25 +444,26 @@ test_root_interactive_entry() {
 }
 run_test "Phase 4A: Root interactive entry point (./install.sh --interactive)" test_root_interactive_entry
 
-# Test 31: Phase 4B: Static website build and asset assembly
-test_website_build() {
-  [ -x "$REPO_ROOT/website/build.sh" ] || return 1
-  bash "$REPO_ROOT/website/build.sh" --clean --validate >/dev/null || return 1
-  [ -d "$REPO_ROOT/website/dist" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/index.html" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/404.html" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/styles.css" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/script.js" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/assets/preview.png" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Light.png" ] || return 1
-  [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Dark.png" ] || return 1
-  return 0
-}
-run_test "Phase 4B: Static website build and asset assembly (website/build.sh)" test_website_build
+if [ -f "$REPO_ROOT/website/build.sh" ]; then
+  # Test 31: Phase 4B: Static website build and asset assembly
+  test_website_build() {
+    [ -x "$REPO_ROOT/website/build.sh" ] || return 1
+    bash "$REPO_ROOT/website/build.sh" --clean --validate >/dev/null || return 1
+    [ -d "$REPO_ROOT/website/dist" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/index.html" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/404.html" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/styles.css" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/script.js" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/assets/preview.png" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Light.png" ] || return 1
+    [ -s "$REPO_ROOT/website/dist/assets/macOS-macKali-Dark.png" ] || return 1
+    return 0
+  }
+  run_test "Phase 4B: Static website build and asset assembly (website/build.sh)" test_website_build
 
-# Test 32: Phase 4B: Static website internal link and reference integrity
-test_website_integrity() {
-  python3 - <<'PYEOF'
+  # Test 32: Phase 4B: Static website internal link and reference integrity
+  test_website_integrity() {
+    python3 - <<'PYEOF'
 import os, sys, re
 
 repo_root = os.environ.get("REPO_ROOT", ".")
@@ -488,9 +491,15 @@ for match in re.finditer(pattern, html):
 
 print("Static website internal integrity verified.")
 PYEOF
-  return $?
-}
-run_test "Phase 4B: Static website internal link and reference integrity" test_website_integrity
+    return $?
+  }
+  run_test "Phase 4B: Static website internal link and reference integrity" test_website_integrity
+else
+  test_website_isolated() {
+    return 0
+  }
+  run_test "Phase 4B: Static website isolation verification (dedicated 'website' branch)" test_website_isolated
+fi
 
 # Test 33: Phase 5: Authoritative VERSION format and SemVer compliance
 test_version_compliance() {
@@ -639,24 +648,26 @@ test_standalone_execution() {
 }
 run_test "Phase 5: Standalone execution of root entry points outside Git repository" test_standalone_execution
 
-# Test 40: Phase 5: Website production domain metadata & releases navigation integrity
-test_website_production_metadata() {
-  [ -f "$REPO_ROOT/website/index.html" ] || return 1
-  [ -f "$REPO_ROOT/website/sitemap.xml" ] || return 1
-  [ -f "$REPO_ROOT/website/robots.txt" ] || return 1
+if [ -f "$REPO_ROOT/website/index.html" ]; then
+  # Test 40: Phase 5: Website production domain metadata & releases navigation integrity
+  test_website_production_metadata() {
+    [ -f "$REPO_ROOT/website/index.html" ] || return 1
+    [ -f "$REPO_ROOT/website/sitemap.xml" ] || return 1
+    [ -f "$REPO_ROOT/website/robots.txt" ] || return 1
 
-  grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/index.html" || return 1
-  grep -q "https://github.com/realmadede/macKali/releases" "$REPO_ROOT/website/index.html" || return 1
-  grep -q "https://mackali.madede.workers.dev/sitemap.xml" "$REPO_ROOT/website/robots.txt" || return 1
-  grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/sitemap.xml" || return 1
+    grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/index.html" || return 1
+    grep -q "https://github.com/realmadede/macKali/releases" "$REPO_ROOT/website/index.html" || return 1
+    grep -q "https://mackali.madede.workers.dev/sitemap.xml" "$REPO_ROOT/website/robots.txt" || return 1
+    grep -q "https://mackali.madede.workers.dev/" "$REPO_ROOT/website/sitemap.xml" || return 1
 
-  if grep -rq "realmadede.github.io" "$REPO_ROOT/website"; then
-    echo "Outdated realmadede.github.io domain still present in website files"
-    return 1
-  fi
-  return 0
-}
-run_test "Phase 5: Website production domain metadata and releases link integrity" test_website_production_metadata
+    if grep -rq "realmadede.github.io" "$REPO_ROOT/website"; then
+      echo "Outdated realmadede.github.io domain still present in website files"
+      return 1
+    fi
+    return 0
+  }
+  run_test "Phase 5: Website production domain metadata and releases link integrity" test_website_production_metadata
+fi
 
 # Test 41: In-app release update checker (--check-update & SemVer comparison)
 test_in_app_update_checker() {

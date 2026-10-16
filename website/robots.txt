@@ -1,6 +1,0 @@
-# macKali static showcase website robots.txt
-User-agent: *
-Allow: /
-
-# Sitemap configuration
-Sitemap: https://mackali.madede.workers.dev/sitemap.xml

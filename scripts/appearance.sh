@@ -559,6 +559,10 @@ if [ -n "$REQ_GTK_THEME" ]; then
 fi
 
 if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
+  if [ ! -d "$HOME/.local/share/themes/WhiteSur-Dark" ] && [ ! -d "/usr/share/themes/WhiteSur-Dark" ]; then
+    log_info "Installing WhiteSur GTK themes via gtk-provider.sh..."
+    "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install
+  fi
   log_step "Applying macOS traffic lights stylesheet overrides..."
   apply_traffic_lights_css "$GTK4_CSS" "$GTK4_TEMPLATE" "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
   apply_traffic_lights_css "$GTK3_CSS" "$GTK3_TEMPLATE" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"

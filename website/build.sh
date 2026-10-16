@@ -103,6 +103,14 @@ for f in "${SOURCE_FILES[@]}"; do
 done
 log_ok "Copied ${#SOURCE_FILES[@]} core website files"
 
+# Copy search console verification files if present
+for vfile in "$SCRIPT_DIR"/google*.html; do
+  if [ -f "$vfile" ]; then
+    cp -p "$vfile" "$DIST_DIR/"
+    log_ok "Bundled search verification: $(basename "$vfile")"
+  fi
+done
+
 # Step 3: Copy genuine repository visual assets
 log_info "Bundling authentic project visual assets..."
 

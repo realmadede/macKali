@@ -579,10 +579,10 @@
               <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">Method B: Standalone Release Archive &amp; Cryptographic Verification</h3>
             </div>
             <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.55;">
-              Standalone distribution packages and SHA-256 manifests are published on <a href="https://github.com/realmadede/macKali/releases" target="_blank" rel="noopener noreferrer" style="color: var(--accent); font-weight: 600; text-decoration: underline;">GitHub Releases</a>. Until public release tagging is finalized, <strong>Method A (Git clone) above is the recommended working installation</strong>. For published releases, download and verify with:
+              Official verified standalone packages and SHA-256 checksum manifests are now available on <a href="https://github.com/realmadede/macKali/releases/tag/v1.0.0-rc.1" target="_blank" rel="noopener noreferrer" style="color: var(--accent); font-weight: 600; text-decoration: underline;">GitHub Releases (v1.0.0-rc.1)</a>. You can install either via the quick <strong>Git clone interactive wizard (Method A)</strong> or by downloading the <strong>cryptographically verified standalone release archive (Method B)</strong>:
             </p>
             
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Step 1: Download &amp; Verify SHA-256 Integrity (Published Releases)</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Step 1: Download &amp; Verify SHA-256 Integrity (v1.0.0-rc.1)</div>
             <div class="command-bar" style="margin-bottom: 14px;">
               <code id="install-manual-dl" class="command-text">curl -sLO https://github.com/realmadede/macKali/releases/download/v1.0.0-rc.1/macKali-v1.0.0-rc.1.tar.gz &amp;&amp; curl -sLO https://github.com/realmadede/macKali/releases/download/v1.0.0-rc.1/SHA256SUMS &amp;&amp; sha256sum -c SHA256SUMS &amp;&amp; tar -xzf macKali-v1.0.0-rc.1.tar.gz &amp;&amp; cd macKali-v1.0.0-rc.1</code>
               <button class="btn-copy copy-btn" data-target="install-manual-dl" aria-label="Copy manual download and verification command">

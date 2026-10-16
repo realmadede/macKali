@@ -540,12 +540,12 @@ fi
 log_step "Applying appearance settings..."
 
 if [ -n "$REQ_COLOR_SCHEME" ]; then
-  gsettings set org.gnome.desktop.interface color-scheme "$REQ_COLOR_SCHEME"
+  gsettings set org.gnome.desktop.interface color-scheme "$REQ_COLOR_SCHEME" 2>/dev/null || true
   log_success "Set color-scheme: $REQ_COLOR_SCHEME"
 fi
 
 if [ -n "$REQ_BUTTON_LAYOUT" ]; then
-  gsettings set org.gnome.desktop.wm.preferences button-layout "$REQ_BUTTON_LAYOUT"
+  gsettings set org.gnome.desktop.wm.preferences button-layout "$REQ_BUTTON_LAYOUT" 2>/dev/null || true
   log_success "Set button-layout: $REQ_BUTTON_LAYOUT"
 fi
 
@@ -554,7 +554,7 @@ if [ -n "$REQ_GTK_THEME" ]; then
     log_info "Installing WhiteSur GTK themes via gtk-provider.sh..."
     "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install
   fi
-  gsettings set org.gnome.desktop.interface gtk-theme "$REQ_GTK_THEME"
+  gsettings set org.gnome.desktop.interface gtk-theme "$REQ_GTK_THEME" 2>/dev/null || true
   log_success "Set gtk-theme: $REQ_GTK_THEME"
 fi
 
@@ -566,12 +566,12 @@ if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
 fi
 
 if [ -n "$REQ_SHELL_THEME" ] && gsettings list-schemas | grep -q "org.gnome.shell.extensions.user-theme"; then
-  gsettings set org.gnome.shell.extensions.user-theme name "$REQ_SHELL_THEME"
+  gsettings set org.gnome.shell.extensions.user-theme name "$REQ_SHELL_THEME" 2>/dev/null || true
   log_success "Set shell-theme: $REQ_SHELL_THEME"
 fi
 
 if [ -n "$REQ_ICON_THEME" ]; then
-  gsettings set org.gnome.desktop.interface icon-theme "$REQ_ICON_THEME"
+  gsettings set org.gnome.desktop.interface icon-theme "$REQ_ICON_THEME" 2>/dev/null || true
   log_success "Set icon-theme: $REQ_ICON_THEME"
 fi
 

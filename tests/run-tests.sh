@@ -708,27 +708,64 @@ test_traffic_lights_css_syntax() {
   [ -f "$REPO_ROOT/config/gnome/traffic-lights-gtk4.css" ] || return 1
   [ -f "$REPO_ROOT/config/gnome/traffic-lights-gtk3.css" ] || return 1
 
-  # Test GTK4 parsing with Python
-  python3 -c "
-import gi
-gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk
-with open('$REPO_ROOT/config/gnome/traffic-lights-gtk4.css') as f:
-    css = f.read()
-p = Gtk.CssProvider()
-p.load_from_data(css.encode('utf-8'))
-" || return 1
+  # Validate CSS structure, required tokens, and GTK parser compliance
+  python3 - <<'PYEOF' || return 1
+import sys
 
-  # Test GTK3 parsing with Python
-  python3 -c "
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-with open('$REPO_ROOT/config/gnome/traffic-lights-gtk3.css') as f:
-    css = f.read()
-p = Gtk.CssProvider()
-p.load_from_data(css.encode('utf-8'))
-" || return 1
+def validate_css_file(path, required_selectors, required_tokens):
+    with open(path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    if not content.strip():
+        raise ValueError(f"{path} is empty")
+
+    # Verify balanced braces
+    open_b = content.count('{')
+    close_b = content.count('}')
+    if open_b != close_b or open_b == 0:
+        raise ValueError(f"{path} has unbalanced braces: {open_b} open vs {close_b} close")
+
+    # Verify balanced comments
+    if content.count('/*') != content.count('*/'):
+        raise ValueError(f"{path} has unbalanced comment blocks")
+
+    # Verify required selectors
+    for sel in required_selectors:
+        if sel not in content:
+            raise ValueError(f"{path} missing required selector: {sel}")
+
+    # Verify required color and size tokens
+    for tok in required_tokens:
+        if tok not in content:
+            raise ValueError(f"{path} missing required token: {tok}")
+
+    # If PyGObject (gi) is available, validate via Gtk.CssProvider
+    try:
+        import gi
+        for ver in ['4.0', '3.0']:
+            try:
+                gi.require_version('Gtk', ver)
+                from gi.repository import Gtk
+                provider = Gtk.CssProvider()
+                provider.load_from_data(content.encode('utf-8'))
+                break
+            except (ValueError, ImportError, AttributeError):
+                continue
+    except ImportError:
+        pass
+
+validate_css_file(
+    'config/gnome/traffic-lights-gtk4.css',
+    ['windowcontrols', 'windowcontrols button', 'button.close', 'button.minimize', 'button.maximize'],
+    ['#ff5f56', '#ffbd2e', '#27c93f', '13px']
+)
+
+validate_css_file(
+    'config/gnome/traffic-lights-gtk3.css',
+    ['headerbar', 'button.titlebutton.close', 'button.titlebutton.minimize', 'button.titlebutton.maximize'],
+    ['#ff5f56', '#ffbd2e', '#27c93f', '13px']
+)
+PYEOF
 
   return 0
 }

@@ -39,7 +39,7 @@ jobs:
       - name: Install system testing tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y dconf-cli libglib2.0-bin jq dbus-x11
+          sudo apt-get install -y dconf-cli libglib2.0-bin jq dbus-x11 gsettings-desktop-schemas
 
       - name: Validate version consistency
         id: version-check

@@ -10,27 +10,25 @@
   // Theme Management (Dark Mode Default with Light Mode Toggle)
   // --------------------------------------------------------------------------
   const THEME_KEY = 'mackali-theme';
-  const themeToggleBtn = document.getElementById('theme-toggle-btn');
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
-  function getSavedTheme() {
-    return localStorage.getItem(THEME_KEY);
-  }
-
-  function applyTheme(theme) {
-    if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-      if (metaThemeColor) metaThemeColor.setAttribute('content', '#fbf9f5');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      if (metaThemeColor) metaThemeColor.setAttribute('content', '#0d0e12');
+  function safeGetTheme() {
+    try {
+      return localStorage.getItem(THEME_KEY);
+    } catch (e) {
+      return null;
     }
-    updateThemeToggleLabel();
   }
 
-  function updateThemeToggleLabel() {
+  function safeSetTheme(theme) {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch (e) {}
+  }
+
+  function updateThemeToggleLabel(isLight) {
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
     if (!themeToggleBtn) return;
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     themeToggleBtn.setAttribute('aria-label', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
     themeToggleBtn.setAttribute('title', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
     themeToggleBtn.innerHTML = isLight
@@ -38,18 +36,30 @@
       : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
   }
 
-  // Initialize theme: Default to 'dark' for Kali Linux desktop
-  const initialTheme = getSavedTheme() || 'dark';
+  function applyTheme(theme) {
+    const isLight = (theme === 'light');
+    document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', isLight ? '#fbf9f5' : '#0d0e12');
+    }
+    updateThemeToggleLabel(isLight);
+  }
+
+  // Initialize theme: Default to 'dark'
+  const savedTheme = safeGetTheme();
+  const initialTheme = (savedTheme === 'light') ? 'light' : 'dark';
   applyTheme(initialTheme);
 
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', function () {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      const newTheme = isLight ? 'dark' : 'light';
-      localStorage.setItem(THEME_KEY, newTheme);
-      applyTheme(newTheme);
-    });
-  }
+  // Delegated theme toggle listener (guarantees click capture)
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('#theme-toggle-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const nextTheme = (currentTheme === 'light') ? 'dark' : 'light';
+    safeSetTheme(nextTheme);
+    applyTheme(nextTheme);
+  });
 
   // --------------------------------------------------------------------------
   // Mobile Navigation Menu (with Click-Outside and Escape)
@@ -174,40 +184,59 @@
   // --------------------------------------------------------------------------
   // Wallpaper Showcase Switcher (4K Light Sunrise / 4K Dark Midnight)
   // --------------------------------------------------------------------------
-  const wallpaperImg = document.getElementById('showcase-wallpaper-img');
-  const wallpaperCaption = document.getElementById('showcase-wallpaper-caption');
-  const segmentBtns = document.querySelectorAll('.segment-pill-btn, .segment-btn');
+  function switchWallpaper(variant) {
+    const wallpaperImg = document.getElementById('showcase-wallpaper-img');
+    const wallpaperCaption = document.getElementById('showcase-wallpaper-caption');
+    const allBtns = document.querySelectorAll('.segment-pill-btn, .segment-btn');
 
-  segmentBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      segmentBtns.forEach(function (b) {
+    allBtns.forEach(function (b) {
+      if (b.getAttribute('data-variant') === variant) {
+        b.classList.add('active');
+        b.setAttribute('aria-selected', 'true');
+      } else {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
-
-      const variant = btn.getAttribute('data-variant');
-      if (wallpaperImg) {
-        wallpaperImg.style.opacity = '0.35';
-        setTimeout(function () {
-          if (variant === 'light') {
-            wallpaperImg.src = 'assets/macOS-macKali-Light.png';
-            wallpaperImg.alt = 'macKali 4K UHD Light Mode Sunrise Abstract Wallpaper Preview';
-            if (wallpaperCaption) {
-              wallpaperCaption.textContent = 'macOS-macKali-Light.png • 3840×2160 UHD • Dynamic Sunrise Abstract';
-            }
-          } else {
-            wallpaperImg.src = 'assets/macOS-macKali-Dark.png';
-            wallpaperImg.alt = 'macKali 4K UHD Dark Mode Midnight Nebula Wallpaper Preview';
-            if (wallpaperCaption) {
-              wallpaperCaption.textContent = 'macOS-macKali-Dark.png • 3840×2160 UHD • Dynamic Midnight Nebula';
-            }
-          }
-          wallpaperImg.style.opacity = '1';
-        }, 120);
       }
     });
+
+    if (wallpaperImg) {
+      wallpaperImg.style.opacity = '0.35';
+      setTimeout(function () {
+        if (variant === 'light') {
+          wallpaperImg.src = 'assets/macOS-macKali-Light.png';
+          wallpaperImg.onerror = function () {
+            this.onerror = null;
+            this.src = '../themes/wallpapers/macOS-macKali-Light.png';
+          };
+          wallpaperImg.alt = 'macKali 4K UHD Light Mode Sunrise Abstract Wallpaper Preview';
+          if (wallpaperCaption) {
+            wallpaperCaption.textContent = 'macOS-macKali-Light.png • 3840×2160 UHD • Dynamic Sunrise Abstract';
+          }
+        } else {
+          wallpaperImg.src = 'assets/macOS-macKali-Dark.png';
+          wallpaperImg.onerror = function () {
+            this.onerror = null;
+            this.src = '../themes/wallpapers/macOS-macKali-Dark.png';
+          };
+          wallpaperImg.alt = 'macKali 4K UHD Dark Mode Midnight Abstract Wallpaper Preview';
+          if (wallpaperCaption) {
+            wallpaperCaption.textContent = 'macOS-macKali-Dark.png • 3840×2160 UHD • Dynamic Midnight Abstract';
+          }
+        }
+        wallpaperImg.style.opacity = '1';
+      }, 100);
+    }
+  }
+
+  // Delegated click handler for wallpaper preview switcher
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.segment-pill-btn, .segment-btn');
+    if (!btn) return;
+    const variant = btn.getAttribute('data-variant');
+    if (variant) {
+      e.preventDefault();
+      switchWallpaper(variant);
+    }
   });
 
   // --------------------------------------------------------------------------

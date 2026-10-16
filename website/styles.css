@@ -6,7 +6,9 @@
 /* --------------------------------------------------------------------------
    Design Tokens & Craft.do Theming
    -------------------------------------------------------------------------- */
-:root {
+:root,
+html[data-theme="dark"],
+[data-theme="dark"] {
   /* Typography - Sofia Sans as Primary */
   --font-sans: 'Sofia Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -64,6 +66,7 @@
 }
 
 /* Craft Palette - Light Mode Overrides */
+html[data-theme="light"],
 [data-theme="light"] {
   --bg-page: #fbf9f5;
   --bg-subtle: #f4efe6;

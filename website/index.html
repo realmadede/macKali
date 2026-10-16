@@ -6,6 +6,7 @@
   <title>macKali — A macOS-inspired desktop. The power of Kali Linux.</title>
   <meta name="description" content="Open-source macOS-inspired desktop appearance customization for Kali Linux GNOME. Dynamic compatibility, interactive setup wizard, and non-destructive styling.">
   <meta name="keywords" content="Kali Linux, GNOME Shell, macOS theme, WhiteSur, Dash to Dock, desktop customization, Linux styling, open source">
+  <meta name="theme-color" content="#0d0e12">
   <link rel="canonical" href="https://realmadede.github.io/macKali/">
 
   <!-- Open Graph / Social Media -->
@@ -51,6 +52,7 @@
           <li><a href="#presets" class="nav-link">Presets</a></li>
           <li><a href="#compatibility" class="nav-link">Compatibility</a></li>
           <li><a href="#installation" class="nav-link">Install</a></li>
+          <li><a href="#faq" class="nav-link">FAQ</a></li>
           <li><a href="#docs" class="nav-link">Docs</a></li>
         </ul>
       </nav>
@@ -95,6 +97,14 @@
             <span>Explore on GitHub</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           </a>
+        </div>
+
+        <div class="hero-quick-command">
+          <code id="hero-quick-cmd" class="hero-quick-code">git clone https://github.com/realmadede/macKali.git &amp;&amp; cd macKali &amp;&amp; ./install.sh --interactive</code>
+          <button class="btn-sm-copy" data-target="hero-quick-cmd" aria-label="Copy quick installation command">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span class="copy-label">Copy</span>
+          </button>
         </div>
 
         <!-- Fully Responsive Terminal Window Mockup (Wraps Flawlessly on All Devices) -->
@@ -246,17 +256,17 @@
         <div class="showcase-block">
           <!-- Segmented Pill Bar -->
           <div class="segmented-pill-bar" role="tablist" aria-label="Wallpaper Variant Preview">
-            <button class="segment-pill-btn active" role="tab" aria-selected="true" data-variant="light">4K Light Sunrise</button>
-            <button class="segment-pill-btn" role="tab" aria-selected="false" data-variant="dark">4K Dark Midnight</button>
+            <button class="segment-pill-btn" role="tab" aria-selected="false" data-variant="light">4K Light Sunrise</button>
+            <button class="segment-pill-btn active" role="tab" aria-selected="true" data-variant="dark">4K Dark Midnight</button>
           </div>
 
           <!-- Wallpaper Image Viewer -->
           <div class="image-frame">
-            <img id="showcase-wallpaper-img" src="assets/macOS-macKali-Light.png" alt="macKali 4K UHD Light Mode Sunrise Abstract Wallpaper Preview" class="showcase-wallpaper" loading="lazy">
+            <img id="showcase-wallpaper-img" src="assets/macOS-macKali-Dark.png" alt="macKali 4K UHD Dark Mode Midnight Abstract Wallpaper Preview" class="showcase-wallpaper" loading="lazy">
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.9rem; color: var(--text-muted);">
-            <span id="showcase-wallpaper-caption">macOS-macKali-Light.png • 3840×2160 UHD • Dynamic Sunrise Abstract</span>
+            <span id="showcase-wallpaper-caption">macOS-macKali-Dark.png • 3840×2160 UHD • Dynamic Midnight Abstract</span>
             <span style="font-weight: 700; color: var(--text-main);">Bundled 4K Asset</span>
           </div>
 
@@ -505,12 +515,82 @@
       </div>
     </section>
 
+    <!-- Frequently Asked Questions Section -->
+    <section id="faq" class="section">
+      <div class="container">
+        <div class="section-heading-wrap">
+          <p class="section-label">Questions &amp; Answers</p>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-desc">
+            Everything you need to know about safety, rolling updates, security tools, and rollback mechanisms.
+          </p>
+        </div>
+
+        <div class="faq-stack">
+          <!-- FAQ Item 1 -->
+          <article class="faq-card open">
+            <button class="faq-question" aria-expanded="true">
+              <span>Does macKali affect Kali's penetration testing tools or security services?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              No. macKali is strictly a user-space desktop appearance suite. It never alters system packages, APT repositories, network services, penetration testing utilities, security daemons, or <code>/etc</code>. All changes reside inside your home directory (<code>~/.local/share</code>, <code>~/.config</code>) and user dconf keys.
+            </div>
+          </article>
+
+          <!-- FAQ Item 2 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>What happens when Kali Linux or GNOME Shell updates?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              macKali is architected for rolling distributions. It never pins packages or blocks GNOME updates. When your system updates, running <code>./install.sh --recheck</code> re-evaluates extension compatibility against the new GNOME version and official GNOME Extensions metadata, gracefully skipping unsupported extensions without breaking your themes or wallpapers.
+            </div>
+          </article>
+
+          <!-- FAQ Item 3 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>Does macKali require root or sudo privileges?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              No. The interactive installer and customization scripts run entirely rootless as a standard user. You do not need <code>sudo</code> to install cursors, wallpapers, themes, or extensions. If optional utilities like <code>curl</code> or <code>unzip</code> are missing, macKali detects them and explains how to install them rather than escalating privileges automatically.
+            </div>
+          </article>
+
+          <!-- FAQ Item 4 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>How do I restore my previous desktop or completely uninstall?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              Before applying any modifications, macKali automatically creates an isolated backup in <code>~/.config/mackali/backups/</code>. You can restore your previous appearance anytime with <code>./scripts/restore.sh</code>, or run <code>./scripts/uninstall.sh --purge</code> to remove all macKali assets and configurations cleanly without affecting your personal files.
+            </div>
+          </article>
+
+          <!-- FAQ Item 5 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>Does macKali support both Wayland and X11 sessions?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              Yes. Wallpapers, GTK themes, WhiteSur cursors, and Dash to Dock function identically on both Wayland and X11 sessions. Optional 3D desktop effects (such as Compiz Windows Effect or Desktop Cube) require compatible compositing and are guarded by explicit opt-in checks.
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <!-- Documentation Hub Section -->
     <section id="docs" class="section">
       <div class="container">
         <div class="section-heading-wrap">
           <p class="section-label">Documentation</p>
-          <h2 class="section-title">Comprehensive Guides & Specs</h2>
+          <h2 class="section-title">Comprehensive Guides &amp; Specs</h2>
           <p class="section-desc">
             Read complete technical documentation, architecture blueprints, and recovery instructions directly in the repository.
           </p>
@@ -535,7 +615,7 @@
 
           <a href="https://github.com/realmadede/macKali/blob/main/docs/extensions.md" class="doc-tile" target="_blank" rel="noopener noreferrer">
             <h3 class="doc-tile-title">
-              <span>Extensions & Compatibility</span>
+              <span>Extensions &amp; Compatibility</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
             </h3>
             <p class="doc-tile-desc">Manifest schema, GNOME Shell 50.3 verification logs, and upstream EGO API query mechanics.</p>
@@ -551,7 +631,7 @@
 
           <a href="https://github.com/realmadede/macKali/blob/main/docs/troubleshooting.md" class="doc-tile" target="_blank" rel="noopener noreferrer">
             <h3 class="doc-tile-title">
-              <span>Troubleshooting & FAQ</span>
+              <span>Troubleshooting &amp; FAQ</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
             </h3>
             <p class="doc-tile-desc">Resolutions for Wayland vs X11 differences, graphics acceleration, and extension conflicts.</p>
@@ -559,7 +639,7 @@
 
           <a href="https://github.com/realmadede/macKali/blob/main/docs/safety-and-removal.md" class="doc-tile" target="_blank" rel="noopener noreferrer">
             <h3 class="doc-tile-title">
-              <span>Safety & Clean Removal</span>
+              <span>Safety &amp; Clean Removal</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
             </h3>
             <p class="doc-tile-desc">Zero-trace purge commands, dconf restore details, and emergency virtual console (TTY) recovery.</p>
@@ -592,6 +672,7 @@
               <li><a href="#presets">Presets</a></li>
               <li><a href="#compatibility">Compatibility</a></li>
               <li><a href="#installation">Install</a></li>
+              <li><a href="#faq">FAQ</a></li>
             </ul>
           </div>
 

@@ -1,0 +1,83 @@
+/* ==============================================================================
+ * macKali macOS Traffic Light Window Controls for GTK 4 / Libadwaita
+ * ============================================================================== */
+
+/* Container & Spacing */
+windowcontrols {
+  border-spacing: 7px;
+  padding: 0 8px;
+}
+
+/* Base Circular Button Geometry & Click Target */
+windowcontrols button {
+  min-width: 13px;
+  min-height: 13px;
+  margin: 0 1px;
+  padding: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: none;
+  background-clip: padding-box;
+  transition: all 120ms ease;
+}
+
+/* Close: Red Circular Button */
+windowcontrols button.close {
+  background-color: #ff5f56;
+  border-color: #e0443e;
+}
+windowcontrols button.close:hover {
+  background-color: #ff5f56;
+}
+windowcontrols button.close:active {
+  background-color: #bf4942;
+}
+
+/* Minimize: Yellow Circular Button */
+windowcontrols button.minimize {
+  background-color: #ffbd2e;
+  border-color: #dea123;
+}
+windowcontrols button.minimize:hover {
+  background-color: #ffbd2e;
+}
+windowcontrols button.minimize:active {
+  background-color: #bf8e22;
+}
+
+/* Maximize: Green Circular Button */
+windowcontrols button.maximize {
+  background-color: #27c93f;
+  border-color: #1aab29;
+}
+windowcontrols button.maximize:hover {
+  background-color: #27c93f;
+}
+windowcontrols button.maximize:active {
+  background-color: #1d9730;
+}
+
+/* Inactive / Backdrop Windows */
+windowcontrols button:backdrop {
+  opacity: 0.45;
+}
+
+/* Inner Glyph Symbols (Revealed on Hover) */
+windowcontrols button > image {
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.72);
+  transition: opacity 120ms ease;
+}
+
+windowcontrols:hover button > image,
+windowcontrols button:hover > image {
+  opacity: 0.85;
+}
+
+windowcontrols button:active > image {
+  opacity: 1;
+}
+
+windowcontrols button:backdrop > image {
+  opacity: 0;
+}

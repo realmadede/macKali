@@ -134,10 +134,11 @@ cp -p "$REPO_ROOT/config/dock/"* "$STAGE_DIR/config/dock/" 2>/dev/null || true
 cp -p "$REPO_ROOT/config/gnome/"* "$STAGE_DIR/config/gnome/" 2>/dev/null || true
 cp -p "$REPO_ROOT/config/keybindings/"* "$STAGE_DIR/config/keybindings/" 2>/dev/null || true
 
-# Themes (Wallpapers and Cursors)
-mkdir -p "$STAGE_DIR/themes/wallpapers" "$STAGE_DIR/themes/cursors"
+# Themes (Wallpapers, Cursors, GTK)
+mkdir -p "$STAGE_DIR/themes/wallpapers" "$STAGE_DIR/themes/cursors" "$STAGE_DIR/themes/gtk"
 cp -p "$REPO_ROOT/themes/wallpapers/"*.png "$STAGE_DIR/themes/wallpapers/"
 cp -rp "$REPO_ROOT/themes/cursors/"* "$STAGE_DIR/themes/cursors/"
+cp -rp "$REPO_ROOT/themes/gtk/"* "$STAGE_DIR/themes/gtk/" 2>/dev/null || true
 
 # Assets & Documentation
 mkdir -p "$STAGE_DIR/assets" "$STAGE_DIR/docs"

@@ -29,6 +29,10 @@ while [[ $# -gt 0 ]]; do
       RESET_DEFAULTS=true
       shift
       ;;
+    --yes|-y)
+      # Non-interactive confirmation
+      shift
+      ;;
     --help|-h)
       echo "Usage: $0 [OPTIONS]"
       echo "Completely remove macKali assets and restore Kali Linux defaults."
@@ -95,8 +99,23 @@ if [ -f "$MANIFEST_FILE" ] && has_cmd jq; then
   mapfile -t TRACKED < <(jq -r '.[]' "$MANIFEST_FILE" 2>/dev/null || true)
   for item in "${TRACKED[@]}"; do
     if [ -e "$item" ]; then
-      log_info "Removing tracked item: $item"
-      rm -rf "$item"
+      if [[ "$item" == */gtk-4.0/gtk.css || "$item" == */gtk-3.0/gtk.css ]]; then
+        if grep -qF "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$item" 2>/dev/null; then
+          log_info "Reverting macKali traffic lights styling from $item..."
+          python3 -c "
+with open('$item', 'r') as f: content = f.read()
+import re
+new_c = re.sub(r'\n?/\* === BEGIN MACKALI TRAFFIC LIGHTS === \*/.*?/\* === END MACKALI TRAFFIC LIGHTS === \*/\n?', '', content, flags=re.DOTALL)
+if new_c.strip():
+    with open('$item', 'w') as f: f.write(new_c.strip() + '\n')
+else:
+    import os; os.remove('$item')
+" 2>/dev/null || rm -f "$item"
+        fi
+      else
+        log_info "Removing tracked item: $item"
+        rm -rf "$item"
+      fi
     fi
   done
   log_success "Tracked macKali files removed."
@@ -142,7 +161,7 @@ elif [ "$RESET_DEFAULTS" = true ]; then
     "$REPO_ROOT/scripts/extensions-manager.sh" --restore || true
   elif has_cmd dconf; then
     log_info "Reverting macKali extension configurations in dconf..."
-    local dock_backup="$HOME/.config/macKali/extensions/backups/dash-to-dock-pre-mackali.dconf"
+    dock_backup="$HOME/.config/macKali/extensions/backups/dash-to-dock-pre-mackali.dconf"
     if [ -f "$dock_backup" ] && [ -s "$dock_backup" ]; then
       dconf reset -f /org/gnome/shell/extensions/dash-to-dock/ 2>/dev/null || true
       dconf load /org/gnome/shell/extensions/dash-to-dock/ < "$dock_backup" 2>/dev/null || true

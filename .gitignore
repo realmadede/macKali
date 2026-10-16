@@ -3,7 +3,7 @@
 # Website and release build output
 /website
 website/dist/
-dist/
+/dist/
 *.tar.gz
 SHA256SUMS
 

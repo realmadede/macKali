@@ -90,30 +90,51 @@ case "$ACTION" in
   install)
     log_step "Installing WhiteSur GTK & Shell themes..."
     if [ "$DRY_RUN" = true ]; then
-      log_info "[DRY-RUN] Would clone $UPSTREAM_REPO (depth 1) into temporary build directory."
-      log_info "[DRY-RUN] Would execute upstream user-level installer to ~/.local/share/themes."
+      log_info "[DRY-RUN] Would install precompiled WhiteSur GTK themes to $THEME_DIR."
       log_info "[DRY-RUN] Would track installed theme directories in $MANIFEST_FILE."
       exit 0
     fi
 
-    if ! has_cmd git; then
-      log_error "git is required to fetch WhiteSur GTK theme repository."
-      exit 1
+    mkdir -p "$THEME_DIR"
+
+    # Check for bundled precompiled distribution archives first
+    bundled_found=false
+    if [ -d "$REPO_ROOT/themes/gtk/dist" ]; then
+      for theme_tar in "$REPO_ROOT/themes/gtk/dist"/WhiteSur-*.tar.xz; do
+        if [ -f "$theme_tar" ]; then
+          log_info "Extracting bundled theme archive: $(basename "$theme_tar")..."
+          tar -xf "$theme_tar" -C "$THEME_DIR"
+          bundled_found=true
+        fi
+      done
     fi
 
-    TMP_DIR="$(mktemp -d /tmp/whitesur-gtk-XXXXXX)"
-    trap 'rm -rf "$TMP_DIR"' EXIT
+    if [ "$bundled_found" = false ]; then
+      if ! has_cmd git; then
+        log_error "git is required to fetch WhiteSur GTK theme repository."
+        exit 1
+      fi
 
-    log_info "Cloning WhiteSur GTK theme repository (shallow clone)..."
-    git clone --depth 1 "$UPSTREAM_REPO" "$TMP_DIR/repo"
+      TMP_DIR="$(mktemp -d /tmp/whitesur-gtk-XXXXXX)"
+      trap 'rm -rf "$TMP_DIR"' EXIT
 
-    log_info "Running user-level theme installer (dest: $THEME_DIR)..."
-    mkdir -p "$THEME_DIR"
-    (
-      cd "$TMP_DIR/repo"
-      # Run user-level install into ~/.local/share/themes without touching root
-      ./install.sh -d "$THEME_DIR" -t default -N glassy -s standard
-    )
+      log_info "Cloning WhiteSur GTK theme repository (shallow clone)..."
+      git clone --depth 1 "$UPSTREAM_REPO" "$TMP_DIR/repo"
+
+      if [ -d "$TMP_DIR/repo/release" ]; then
+        log_info "Extracting upstream precompiled release packages..."
+        for theme_tar in "$TMP_DIR/repo/release"/WhiteSur-*.tar.xz; do
+          if [ -f "$theme_tar" ]; then
+            tar -xf "$theme_tar" -C "$THEME_DIR"
+          fi
+        done
+      else
+        (
+          cd "$TMP_DIR/repo"
+          ./install.sh -d "$THEME_DIR" -t default -N glassy -s standard
+        )
+      fi
+    fi
 
     for theme in WhiteSur-Dark WhiteSur-Light WhiteSur-Dark-solid WhiteSur-Light-solid; do
       if [ -d "$THEME_DIR/$theme" ]; then

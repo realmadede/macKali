@@ -703,6 +703,191 @@ test_in_app_update_checker() {
 }
 run_test "Phase 5: In-app release update checker (--check-update and SemVer evaluation)" test_in_app_update_checker
 
+# Test 42: Traffic lights stylesheet availability and parser syntax validation
+test_traffic_lights_css_syntax() {
+  [ -f "$REPO_ROOT/config/gnome/traffic-lights-gtk4.css" ] || return 1
+  [ -f "$REPO_ROOT/config/gnome/traffic-lights-gtk3.css" ] || return 1
+
+  # Test GTK4 parsing with Python
+  python3 -c "
+import gi
+gi.require_version('Gtk', '4.0')
+from gi.repository import Gtk
+with open('$REPO_ROOT/config/gnome/traffic-lights-gtk4.css') as f:
+    css = f.read()
+p = Gtk.CssProvider()
+p.load_from_data(css.encode('utf-8'))
+" || return 1
+
+  # Test GTK3 parsing with Python
+  python3 -c "
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+with open('$REPO_ROOT/config/gnome/traffic-lights-gtk3.css') as f:
+    css = f.read()
+p = Gtk.CssProvider()
+p.load_from_data(css.encode('utf-8'))
+" || return 1
+
+  return 0
+}
+run_test "Traffic lights styling availability and CSS syntax validation" test_traffic_lights_css_syntax
+
+# Test 43: Traffic lights CLI preview without modifying filesystem or configuration
+test_traffic_lights_preview() {
+  local fake_home="$SANDBOX/preview_home"
+  mkdir -p "$fake_home"
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights --preview >/dev/null || return 1
+  if [ -e "$fake_home/.config" ] || [ -e "$fake_home/.local" ]; then
+    echo "Files were unexpectedly created during --preview"
+    return 1
+  fi
+  return 0
+}
+run_test "Traffic lights CLI preview mode without system modifications" test_traffic_lights_preview
+
+# Test 44: Traffic lights safe application, GTK theme integration, and scoped CSS generation
+test_traffic_lights_application() {
+  local fake_home="$SANDBOX/apply_home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  # Verify gtk-4.0/gtk.css and gtk-3.0/gtk.css were created with scoped block
+  [ -f "$fake_home/.config/gtk-4.0/gtk.css" ] || return 1
+  [ -f "$fake_home/.config/gtk-3.0/gtk.css" ] || return 1
+  grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-3.0/gtk.css" || return 1
+
+  # Verify snapshot was created
+  [ -f "$fake_home/.config/macKali/traffic_lights_snapshot.json" ] || return 1
+
+  # Verify WhiteSur GTK themes were installed into user directory
+  [ -d "$fake_home/.local/share/themes/WhiteSur-Dark" ] || return 1
+  [ -d "$fake_home/.local/share/themes/WhiteSur-Light" ] || return 1
+
+  return 0
+}
+run_test "Traffic lights safe application and GTK theme integration" test_traffic_lights_application
+
+# Test 45: Traffic lights restoration and snapshot rollback
+test_traffic_lights_reversion() {
+  local fake_home="$SANDBOX/apply_home"
+
+  # Revert traffic lights
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --revert-traffic-lights >/dev/null || return 1
+
+  # Verify newly created stylesheets were cleanly removed
+  [ ! -f "$fake_home/.config/gtk-4.0/gtk.css" ] || return 1
+  [ ! -f "$fake_home/.config/gtk-3.0/gtk.css" ] || return 1
+
+  # Verify snapshot was removed
+  [ ! -f "$fake_home/.config/macKali/traffic_lights_snapshot.json" ] || return 1
+
+  return 0
+}
+run_test "Traffic lights restoration and rollback of previous settings" test_traffic_lights_reversion
+
+# Test 46: User CSS preservation in gtk-4.0 and gtk-3.0 across application and reversion
+test_user_css_preservation() {
+  local fake_home="$SANDBOX/preserve_home"
+  mkdir -p "$fake_home/.config/gtk-4.0" "$fake_home/.config/gtk-3.0"
+
+  local user_gtk4="/* User custom style */\nwindow.special { border: 2px solid cyan; }\n"
+  local user_gtk3="/* User custom GTK3 */\ntextview { font-size: 14pt; }\n"
+  echo -e "$user_gtk4" > "$fake_home/.config/gtk-4.0/gtk.css"
+  echo -e "$user_gtk3" > "$fake_home/.config/gtk-3.0/gtk.css"
+
+  # Apply traffic lights
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  # Verify user CSS is still present alongside traffic lights
+  grep -q "window.special" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -q "textview" "$fake_home/.config/gtk-3.0/gtk.css" || return 1
+
+  # Revert traffic lights
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --revert-traffic-lights >/dev/null || return 1
+
+  # Verify traffic lights block is removed while user CSS remains completely intact
+  ! grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -q "window.special" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -q "textview" "$fake_home/.config/gtk-3.0/gtk.css" || return 1
+
+  return 0
+}
+run_test "Preservation of pre-existing user CSS across traffic lights lifecycle" test_user_css_preservation
+
+# Test 47: Preservation of unrelated appearance configuration (wallpapers, cursors, icons)
+test_unrelated_appearance_preservation() {
+  local fake_home="$SANDBOX/unrelated_home"
+  mkdir -p "$fake_home/.config/macKali"
+
+  # Create mock snapshot representing existing user configuration
+  cat <<EOF > "$fake_home/.config/macKali/appearance_snapshot.json"
+{
+  "timestamp": "20261016_120000",
+  "color_scheme": "prefer-dark",
+  "button_layout": "appmenu:minimize,maximize,close",
+  "gtk_theme": "Kali-Dark",
+  "shell_theme": "WhiteSur-Dark",
+  "icon_theme": "WhiteSur-dark",
+  "cursor_theme": "WhiteSur-cursors",
+  "picture_uri": "file:///path/to/my-wallpaper.png",
+  "picture_uri_dark": "file:///path/to/my-wallpaper-dark.png"
+}
+EOF
+
+  # Apply traffic lights
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  # Confirm appearance_snapshot.json was NOT destroyed or overwritten
+  grep -q "my-wallpaper.png" "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+  grep -q "WhiteSur-cursors" "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+
+  return 0
+}
+run_test "Preservation of unrelated user appearance configuration" test_unrelated_appearance_preservation
+
+# Test 48: Correct button positioning and layout option validation
+test_button_positioning() {
+  # Test --buttons left / right flags in dry-run
+  local out_left
+  out_left="$("$REPO_ROOT/scripts/appearance.sh" --buttons left --preview 2>&1)"
+  echo "$out_left" | grep -q "close,minimize,maximize:" || return 1
+
+  local out_right
+  out_right="$("$REPO_ROOT/scripts/appearance.sh" --buttons right --preview 2>&1)"
+  echo "$out_right" | grep -q "appmenu:minimize,maximize,close" || return 1
+
+  return 0
+}
+run_test "Window button layout positioning validation" test_button_positioning
+
+# Test 49: Uninstallation preserves user CSS when removing tracked items
+test_uninstall_preserves_user_css() {
+  local fake_home="$SANDBOX/uninstall_home"
+  mkdir -p "$fake_home/.config/gtk-4.0" "$fake_home/.config/macKali"
+
+  local user_css="/* Custom user CSS */\nbutton.my-btn { padding: 4px; }\n"
+  echo -e "$user_css" > "$fake_home/.config/gtk-4.0/gtk.css"
+
+  # Apply traffic lights into fake_home
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  # Run uninstall in fake_home with --reset-defaults
+  HOME="$fake_home" "$REPO_ROOT/scripts/uninstall.sh" --yes >/dev/null || return 1
+
+  # User custom CSS must still be present
+  [ -f "$fake_home/.config/gtk-4.0/gtk.css" ] || return 1
+  grep -q "button.my-btn" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  ! grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+
+  return 0
+}
+run_test "Uninstallation cleans traffic lights while preserving user custom CSS" test_uninstall_preserves_user_css
+
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"
 echo "============================================================"

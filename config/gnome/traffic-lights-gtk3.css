@@ -1,0 +1,99 @@
+/* ==============================================================================
+ * macKali macOS Traffic Light Window Controls for GTK 3
+ * ============================================================================== */
+
+/* Container & Headerbar Spacing */
+headerbar > box.start,
+headerbar > box.left {
+  padding: 0 8px;
+}
+
+/* Base Circular Button Geometry & Click Target */
+headerbar button.titlebutton,
+titlebar button.titlebutton {
+  min-width: 13px;
+  min-height: 13px;
+  margin: 0 4px;
+  padding: 0;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: none;
+  background-clip: padding-box;
+  transition: all 120ms ease;
+}
+
+/* Close: Red Circular Button */
+headerbar button.titlebutton.close,
+titlebar button.titlebutton.close {
+  background-color: #ff5f56;
+  border-color: #e0443e;
+}
+headerbar button.titlebutton.close:hover,
+titlebar button.titlebutton.close:hover {
+  background-color: #ff5f56;
+}
+headerbar button.titlebutton.close:active,
+titlebar button.titlebutton.close:active {
+  background-color: #bf4942;
+}
+
+/* Minimize: Yellow Circular Button */
+headerbar button.titlebutton.minimize,
+titlebar button.titlebutton.minimize {
+  background-color: #ffbd2e;
+  border-color: #dea123;
+}
+headerbar button.titlebutton.minimize:hover,
+titlebar button.titlebutton.minimize:hover {
+  background-color: #ffbd2e;
+}
+headerbar button.titlebutton.minimize:active,
+titlebar button.titlebutton.minimize:active {
+  background-color: #bf8e22;
+}
+
+/* Maximize: Green Circular Button */
+headerbar button.titlebutton.maximize,
+titlebar button.titlebutton.maximize {
+  background-color: #27c93f;
+  border-color: #1aab29;
+}
+headerbar button.titlebutton.maximize:hover,
+titlebar button.titlebutton.maximize:hover {
+  background-color: #27c93f;
+}
+headerbar button.titlebutton.maximize:active,
+titlebar button.titlebutton.maximize:active {
+  background-color: #1d9730;
+}
+
+/* Inactive / Backdrop Windows */
+headerbar button.titlebutton:backdrop,
+titlebar button.titlebutton:backdrop {
+  opacity: 0.45;
+}
+
+/* Inner Glyph Symbols (Revealed on Hover) */
+headerbar button.titlebutton > image,
+titlebar button.titlebutton > image {
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.72);
+  transition: opacity 120ms ease;
+}
+
+headerbar:hover button.titlebutton > image,
+headerbar button.titlebutton:hover > image,
+titlebar:hover button.titlebutton > image,
+titlebar button.titlebutton:hover > image {
+  opacity: 0.85;
+}
+
+headerbar button.titlebutton:active > image,
+titlebar button.titlebutton:active > image {
+  opacity: 1;
+}
+
+headerbar button.titlebutton:backdrop > image,
+titlebar button.titlebutton:backdrop > image {
+  opacity: 0;
+}

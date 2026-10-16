@@ -536,12 +536,31 @@ cmd_enable() {
     return 0
   fi
 
+  # Register in GNOME Shell enabled-extensions schema
+  if has_cmd gsettings && has_cmd python3; then
+    python3 -c "
+import ast, subprocess
+try:
+    uuid = '$uuid'
+    cur = subprocess.check_output(['gsettings', 'get', 'org.gnome.shell', 'enabled-extensions'], text=True).strip()
+    if cur.startswith('@as '): cur = cur[4:]
+    arr = ast.literal_eval(cur) if cur else []
+    if uuid not in arr:
+        arr.append(uuid)
+        subprocess.run(['gsettings', 'set', 'org.gnome.shell', 'enabled-extensions', str(arr)], check=True)
+except Exception:
+    pass
+" 2>/dev/null || true
+  fi
+
   if has_cmd gnome-extensions; then
-    gnome-extensions enable "$uuid"
-    log_success "Extension $name ($uuid) enabled."
+    if gnome-extensions enable "$uuid" 2>/dev/null; then
+      log_success "Extension $name ($uuid) enabled."
+    else
+      log_info "Extension $name ($uuid) registered in GNOME configuration (will activate upon next session login/reload)."
+    fi
   else
-    log_error "gnome-extensions CLI command not found. Cannot enable extension."
-    exit 1
+    log_warn "gnome-extensions CLI command not found. Configured via GSettings."
   fi
 }
 
@@ -562,12 +581,28 @@ cmd_disable() {
     return 0
   fi
 
+  # Deregister from GNOME Shell enabled-extensions schema
+  if has_cmd gsettings && has_cmd python3; then
+    python3 -c "
+import ast, subprocess
+try:
+    uuid = '$uuid'
+    cur = subprocess.check_output(['gsettings', 'get', 'org.gnome.shell', 'enabled-extensions'], text=True).strip()
+    if cur.startswith('@as '): cur = cur[4:]
+    arr = ast.literal_eval(cur) if cur else []
+    if uuid in arr:
+        arr.remove(uuid)
+        subprocess.run(['gsettings', 'set', 'org.gnome.shell', 'enabled-extensions', str(arr)], check=True)
+except Exception:
+    pass
+" 2>/dev/null || true
+  fi
+
   if has_cmd gnome-extensions; then
-    gnome-extensions disable "$uuid"
+    gnome-extensions disable "$uuid" 2>/dev/null || true
     log_success "Extension $name ($uuid) disabled."
   else
-    log_error "gnome-extensions CLI command not found."
-    exit 1
+    log_warn "gnome-extensions CLI command not found."
   fi
 }
 

@@ -483,18 +483,29 @@ step_customization_and_compatibility() {
       "DOCK_EXT"    "Dash to Dock macOS Bottom Layout" "ON"
     )
 
+    local magic_default="OFF"
+    local wobbly_default="OFF"
+    local cube_default="OFF"
+    if [ "$SELECTED_PRESET" = "full" ]; then
+      magic_default="ON"
+      wobbly_default="ON"
+      cube_default="ON"
+    elif [ "$SELECTED_PRESET" = "balanced" ]; then
+      magic_default="ON"
+    fi
+
     if [ "$SELECTED_PRESET" = "balanced" ] || [ "$SELECTED_PRESET" = "full" ]; then
       if [ "$COMPAT_MAGIC" != "UNSUPPORTED" ]; then
-        check_items+=("MAGIC_LAMP" "Genie Lamp Animation (Optional Opt-in)" "OFF")
+        check_items+=("MAGIC_LAMP" "Genie Lamp Animation" "$magic_default")
       fi
     fi
 
     if [ "$SELECTED_PRESET" = "full" ]; then
       if [ "$COMPAT_WOBBLY" != "UNSUPPORTED" ]; then
-        check_items+=("WOBBLY" "Compiz Wobbly Windows (Optional Opt-in)" "OFF")
+        check_items+=("WOBBLY" "Compiz Wobbly Windows" "$wobbly_default")
       fi
       if [ "$COMPAT_CUBE" != "UNSUPPORTED" ]; then
-        check_items+=("CUBE" "Desktop Workspace 3D Cube (Experimental Opt-in)" "OFF")
+        check_items+=("CUBE" "Desktop Workspace 3D Cube" "$cube_default")
       fi
     fi
 

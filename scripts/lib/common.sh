@@ -261,24 +261,17 @@ check_for_updates() {
   if [ -n "$mock_tag" ]; then
     latest_tag="$mock_tag"
   elif has_cmd curl; then
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
+    local releases_url="https://api.github.com/repos/${repo}/releases?per_page=5"
     local resp
-    resp="$(curl -fsSL --max-time "$timeout" -H "Accept: application/vnd.github.v3+json" -H "User-Agent: macKali-Updater" "$api_url" 2>/dev/null || true)"
+    resp="$(curl -fsSL --max-time "$timeout" -H "Accept: application/vnd.github.v3+json" -H "User-Agent: macKali-Updater" "$releases_url" 2>/dev/null || true)"
     if [ -n "$resp" ] && has_cmd jq; then
-      latest_tag="$(echo "$resp" | jq -r '.tag_name // empty' 2>/dev/null || true)"
-    elif [ -n "$resp" ]; then
-      latest_tag="$(echo "$resp" | grep -oP '"tag_name":\s*"\K[^"]+' || true)"
-    fi
-
-    # Fallback to general releases list if /releases/latest is not found (e.g. repo only has prereleases such as v1.0.0-rc.1)
-    if [ -z "$latest_tag" ]; then
-      local releases_url="https://api.github.com/repos/${repo}/releases?per_page=5"
-      resp="$(curl -fsSL --max-time "$timeout" -H "Accept: application/vnd.github.v3+json" -H "User-Agent: macKali-Updater" "$releases_url" 2>/dev/null || true)"
-      if [ -n "$resp" ] && has_cmd jq; then
+      if [[ "$clean_current" == *-* ]]; then
         latest_tag="$(echo "$resp" | jq -r '.[0].tag_name // empty' 2>/dev/null || true)"
-      elif [ -n "$resp" ]; then
-        latest_tag="$(echo "$resp" | grep -m1 -oP '"tag_name":\s*"\K[^"]+' || true)"
+      else
+        latest_tag="$(echo "$resp" | jq -r 'map(select(.prerelease == false))[0].tag_name // .[0].tag_name // empty' 2>/dev/null || true)"
       fi
+    elif [ -n "$resp" ]; then
+      latest_tag="$(echo "$resp" | grep -m1 -oP '"tag_name":\s*"\K[^"]+' || true)"
     fi
   fi
 

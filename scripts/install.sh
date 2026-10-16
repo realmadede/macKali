@@ -143,7 +143,7 @@ check_not_root
 
 # Handle --check-update
 if [ "$ACTION" = "check_update" ]; then
-  check_for_updates 3 "check"
+  check_for_updates 6 "check"
   exit 0
 fi
 

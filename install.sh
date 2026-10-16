@@ -16,7 +16,7 @@ case "$1" in
     # shellcheck disable=SC1091
     source "$SCRIPT_DIR/scripts/lib/common.sh"
     REPO_ROOT="$SCRIPT_DIR"
-    check_for_updates 3 "check" "$@"
+    check_for_updates 6 "check" "$@"
     exit 0
     ;;
   --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)

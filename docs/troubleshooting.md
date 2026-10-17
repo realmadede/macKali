@@ -142,4 +142,59 @@ If an experimental extension or Wayland compositor issue locks the graphical int
    Press `Ctrl + Alt + F2` (or `Ctrl + Alt + F1` depending on display manager).
    The desktop will resume without the offending extension.
 
+---
+
+## 7. Application-Specific Traffic Lights & Titlebar Setup
+
+While GTK 4, Libadwaita, and GTK 3 applications display circular traffic lights automatically, browsers, Electron suites, and Qt apps require one-time configuration to adopt native system window controls:
+
+### Google Chrome, Chromium & Brave
+1. **Method 1:** Right-click an empty space in the top tab strip (next to the `+` button) and check **"Use system title bar and borders"**.
+2. **Method 2:** Navigate to `Settings` &rarr; `Appearance` and enable **"Use system title bar and borders"**.
+3. Window controls immediately move to the top-left in authentic macOS Red, Yellow, and Green circles.
+
+### Mozilla Firefox, LibreWolf & Waterfox
+1. Right-click any blank area of the navigation bar or tab strip and select **"Customize Toolbar..."**.
+2. In the bottom-left corner of the window, check the **"Title Bar"** checkbox.
+3. Click **"Done"** to apply. Firefox will now use the native system header with top-left circular controls.
+
+### Visual Studio Code, VSCodium & Cursor
+1. Open Settings (`Ctrl + ,` or File &rarr; Preferences &rarr; Settings).
+2. Search for `window.titleBarStyle` in the search bar.
+3. Change the dropdown setting from `custom` to **`native`**.
+4. Reload or restart the editor to enjoy full native titlebars with traffic lights.
+
+### Electron Applications (Discord, Slack, Obsidian, Spotify)
+- **In-App Option:** In the application's Preferences or Window settings, set the titlebar style to **"Native"**.
+- **Wayland Flag Option:** Start the application with `--enable-features=UseOzonePlatform --ozone-platform=wayland` for native Wayland compositor integration.
+
+### Sandboxed Flatpak & Snap Applications
+Flatpak containers are sandboxed from reading `~/.config/gtk-4.0` by default. Grant read-only access to user themes:
+```bash
+flatpak override --user --filesystem=xdg-config/gtk-4.0:ro
+```
+Or grant *Filesystem &rarr; User Configuration* access via the **Flatseal** GUI utility.
+
+### Qt 5 & Qt 6 Applications (Wireshark, VirtualBox)
+- Interior controls (menus, buttons, tabs, tables, packet lists) are themed via Kvantum (`./scripts/providers/qt-provider.sh --install`).
+- Window buttons are placed on the top-left in macOS layout order (`close,minimize,maximize:`).
+- On GNOME Wayland, Qt 6 uses its internal client-side decoration plugin with monochrome icons. If server-side decorations are desired, launch via Xwayland:
+  ```bash
+  QT_QPA_PLATFORM=xcb wireshark &
+  ```
+
+---
+
+## 8. Supported Linux Distributions & Desktop Environment Tiers
+
+macKali adheres to POSIX shell standards and standard FreeDesktop paths (`~/.config`, `~/.local/share`). It runs across:
+
+* **Supported Distributions:** Debian (12/13/Testing/Sid), Ubuntu (22.04 LTS, 24.04 LTS, 24.10), Fedora Workstation (39 to 42+), Arch Linux / Manjaro, and Pop!_OS.
+* **Desktop Environment Tiers:**
+  * **Tier 1 — Full Experience (GNOME Shell 42 to 50+):** Full native GTK 4/Libadwaita traffic lights, Dash to Dock centered bottom layout, dynamic dark/light mode, and verified extension bundles.
+  * **Tier 2 — Supported via Fallbacks (XFCE):** Configures `xfwm4` window borders, WhiteSur XFCE themes, and left-hand button layouts (`CHM|`).
+  * **Tier 3 — Partial / Appearance Only (KDE Plasma, Cinnamon, MATE):** Cursors, 4K wallpapers, and GTK application stylesheets install cleanly; shell-specific components are skipped gracefully.
+
+---
+
 For full disaster recovery steps and manual commands, see [docs/safety-and-removal.md](safety-and-removal.md).

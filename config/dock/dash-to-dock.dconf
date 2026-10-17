@@ -8,7 +8,8 @@ dash-max-icon-size=48
 icon-size-fixed=false
 show-trash=true
 show-mounts=true
-show-apps-at-top=false
+show-apps-at-top=false./scripts/providers/qt-provider.sh --install --theme light
+zsh: no such file or directory: ./scripts/providers/qt-provider.sh
 custom-theme-shrink=true
 transparency-mode='DYNAMIC'
 running-indicator-style='DOTS'

@@ -43,8 +43,48 @@ run_test() {
 SANDBOX="$(mktemp -d /tmp/mackali-test-XXXXXX)"
 cleanup() {
   rm -rf "$SANDBOX"
+  rm -f /tmp/mackali-mock-gsettings-store* 2>/dev/null || true
 }
 trap cleanup EXIT
+
+# Isolate gsettings so test executions never leak modifications to host desktop session
+MOCK_BIN="$SANDBOX/bin"
+mkdir -p "$MOCK_BIN"
+REAL_GSETTINGS_BIN="$(command -v gsettings || true)"
+export REAL_GSETTINGS_BIN
+
+cat <<'EOF' > "$MOCK_BIN/gsettings"
+#!/usr/bin/env bash
+STORE_FILE="${GSETTINGS_MOCK_STORE:-/tmp/mackali-mock-gsettings-store}"
+case "$1" in
+  set)
+    mkdir -p "$(dirname "$STORE_FILE")"
+    grep -v "^$2.$3=" "$STORE_FILE" 2>/dev/null > "$STORE_FILE.tmp" || true
+    echo "$2.$3=$4" >> "$STORE_FILE.tmp"
+    mv "$STORE_FILE.tmp" "$STORE_FILE"
+    exit 0
+    ;;
+  get)
+    if [ -f "$STORE_FILE" ] && grep -q "^$2.$3=" "$STORE_FILE" 2>/dev/null; then
+      grep "^$2.$3=" "$STORE_FILE" | head -n1 | cut -d'=' -f2-
+      exit 0
+    fi
+    if [ -n "$REAL_GSETTINGS_BIN" ]; then
+      exec "$REAL_GSETTINGS_BIN" get "$2" "$3"
+    fi
+    echo "''"
+    exit 0
+    ;;
+  *)
+    if [ -n "$REAL_GSETTINGS_BIN" ]; then
+      exec "$REAL_GSETTINGS_BIN" "$@"
+    fi
+    exit 0
+    ;;
+esac
+EOF
+chmod +x "$MOCK_BIN/gsettings"
+export PATH="$MOCK_BIN:$PATH"
 
 echo "============================================================"
 echo "                 macKali Automated Test Suite               "
@@ -70,6 +110,7 @@ test_shell_syntax() {
     "$REPO_ROOT/scripts/providers/wallpaper-provider.sh"
     "$REPO_ROOT/scripts/providers/gtk-provider.sh"
     "$REPO_ROOT/scripts/providers/icon-provider.sh"
+    "$REPO_ROOT/scripts/providers/qt-provider.sh"
     "$REPO_ROOT/themes/cursors/build.sh"
     "$REPO_ROOT/themes/cursors/install.sh"
   )
@@ -172,10 +213,12 @@ run_test "Wallpaper provider bundled assets and dry-run" test_wallpaper_provider
 test_providers_check() {
   "$REPO_ROOT/scripts/providers/gtk-provider.sh" --check >/dev/null
   "$REPO_ROOT/scripts/providers/icon-provider.sh" --check >/dev/null
+  "$REPO_ROOT/scripts/providers/qt-provider.sh" --check >/dev/null
   "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install --dry-run >/dev/null
   "$REPO_ROOT/scripts/providers/icon-provider.sh" --install --dry-run >/dev/null
+  "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --dry-run >/dev/null
 }
-run_test "GTK and Icon providers non-destructive checks and dry-runs" test_providers_check
+run_test "GTK, Icon, and Qt providers non-destructive checks and dry-runs" test_providers_check
 
 # Test 10: Isolated Backup and Restore
 test_backup_restore() {
@@ -590,6 +633,7 @@ test_archive_contents() {
     "scripts/lib/common.sh"
     "scripts/providers/gtk-provider.sh"
     "scripts/providers/icon-provider.sh"
+    "scripts/providers/qt-provider.sh"
     "themes/wallpapers/macOS-macKali-Light.png"
     "themes/wallpapers/macOS-macKali-Dark.png"
     "themes/cursors/install.sh"
@@ -1188,6 +1232,69 @@ test_release_archive_assets_inclusion() {
   return 0
 }
 run_test "Release archive inclusion of circular traffic light assets and stylesheets" test_release_archive_assets_inclusion
+
+# Test 59: Individual button hover isolation and 1:1 strict circular geometry
+test_traffic_lights_isolated_hover_and_square_geometry() {
+  local gtk4_file="$REPO_ROOT/config/gnome/traffic-lights-gtk4.css"
+  local gtk3_file="$REPO_ROOT/config/gnome/traffic-lights-gtk3.css"
+
+  # Verify 1:1 circular geometry constraints (prevents pill elongation)
+  grep -q "min-width: 11px;" "$gtk4_file" || return 1
+  grep -q "min-height: 11px;" "$gtk4_file" || return 1
+  grep -q "margin: 8px 3px;" "$gtk4_file" || return 1
+  grep -q "border-radius: 9999px;" "$gtk4_file" || return 1
+  grep -q "min-width: 11px;" "$gtk3_file" || return 1
+  grep -q "min-height: 11px;" "$gtk3_file" || return 1
+  grep -q "margin: 8px 3px;" "$gtk3_file" || return 1
+  grep -q "border-radius: 9999px;" "$gtk3_file" || return 1
+
+  # Verify child widget visual suppression without icon-lookup assertions
+  grep -q "opacity: 0;" "$gtk4_file" || return 1
+  grep -q "color: transparent;" "$gtk4_file" || return 1
+  grep -q "opacity: 0;" "$gtk3_file" || return 1
+  grep -q "color: transparent;" "$gtk3_file" || return 1
+  ! grep -q -- "-gtk-icon-size: 0;" "$gtk4_file" || return 1
+  ! grep -q -- "-gtk-icon-size: 0;" "$gtk3_file" || return 1
+
+  # Verify no container-level hover group triggers
+  ! grep -q "windowcontrols:hover button\." "$gtk4_file" || return 1
+  ! grep -q "windowcontrols:hover button\." "$gtk3_file" || return 1
+  ! grep -q "headerbar:hover button\.titlebutton\." "$gtk3_file" || return 1
+  ! grep -q "titlebar:hover button\.titlebutton\." "$gtk3_file" || return 1
+
+  return 0
+}
+run_test "Individual button hover isolation and 1:1 strict circular geometry" test_traffic_lights_isolated_hover_and_square_geometry
+
+# Test 60: Modular Qt and Kvantum provider lifecycle in isolated sandbox
+test_qt_provider_sandbox_lifecycle() {
+  local fake_home="$SANDBOX/qt_test_home"
+  mkdir -p "$fake_home"
+
+  # Test dry-run
+  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --dry-run >/dev/null || return 1
+  [ ! -d "$fake_home/.config/Kvantum" ] || return 1
+
+  # Test install
+  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null || return 1
+  [ -f "$fake_home/.config/Kvantum/WhiteSurDark/WhiteSurDark.kvconfig" ] || return 1
+  [ -f "$fake_home/.config/Kvantum/kvantum.kvconfig" ] || return 1
+  [ -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+  grep -q "theme=WhiteSurDark" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
+  grep -q "QT_STYLE_OVERRIDE=kvantum" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+
+  # Test check
+  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --check >/dev/null || return 1
+
+  # Test uninstall
+  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --uninstall >/dev/null || return 1
+  [ ! -d "$fake_home/.config/Kvantum/WhiteSurDark" ] || return 1
+  [ ! -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+
+  return 0
+}
+run_test "Modular Qt and Kvantum provider lifecycle in isolated sandbox" test_qt_provider_sandbox_lifecycle
+
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

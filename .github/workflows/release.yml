@@ -1,6 +1,6 @@
 name: macKali Release Packaging & Verification
 
-on:
+"on":
   workflow_dispatch:
     inputs:
       publish:
@@ -24,6 +24,10 @@ jobs:
   build-verify-release:
     name: Build, Verify & Package Release
     runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ""
+      RELEASE_TAG: ""
+      IS_PRERELEASE: "false"
 
     steps:
       - name: Checkout repository
@@ -84,11 +88,14 @@ jobs:
           echo "RELEASE_VERSION=${AUTHORITATIVE_VER}" >> "$GITHUB_ENV"
           echo "RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
           echo "IS_PRERELEASE=${IS_PRERELEASE}" >> "$GITHUB_ENV"
+          echo "release_version=${AUTHORITATIVE_VER}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
 
       - name: Verify shell script permissions & syntax
         run: |
-          chmod +x install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
-          bash -n install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
+          chmod +x install.sh build.sh scripts/*.sh scripts/lib/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
+          bash -n install.sh build.sh scripts/*.sh scripts/lib/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
 
       - name: Run automated test suite
         run: |
@@ -97,11 +104,12 @@ jobs:
       - name: Package release archive & generate checksums
         run: |
           ./scripts/package-release.sh --output-dir dist
+          ls -lh dist/
 
       - name: Upload release artifacts for inspection
         uses: actions/upload-artifact@v4
         with:
-          name: mackali-${{ env.RELEASE_TAG }}-artifacts
+          name: mackali-${{ steps.version-check.outputs.release_tag }}-artifacts
           path: dist/
           retention-days: 14
 
@@ -111,9 +119,13 @@ jobs:
           (github.event_name == 'workflow_dispatch' && inputs.publish == true)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRAFT: ${{ inputs.draft }}
+          RELEASE_TAG: ${{ steps.version-check.outputs.release_tag }}
+          IS_PRERELEASE: ${{ steps.version-check.outputs.is_prerelease }}
         run: |
           DRAFT_FLAG=""
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.draft == true }}" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$INPUT_DRAFT" = "true" ]; then
             DRAFT_FLAG="--draft"
           fi
 

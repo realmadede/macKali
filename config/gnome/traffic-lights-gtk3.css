@@ -11,14 +11,14 @@ windowcontrols {
   padding: 0 8px;
 }
 
-/* Base Circular Button Geometry & Click Target (min-width: 11px) */
+/* Base Circular Button Geometry & Click Target (11px diameter circular aspect ratio) */
 button.titlebutton,
 headerbar button.titlebutton,
 titlebar button.titlebutton,
 windowcontrols button {
   min-width: 11px;
   min-height: 11px;
-  margin: 0 3px;
+  margin: 8px 3px;
   padding: 0;
   border-radius: 9999px;
   border: 1px solid rgba(0, 0, 0, 0.18);
@@ -31,18 +31,14 @@ windowcontrols button {
   transition: all 120ms ease;
 }
 
-/* Suppress default inner glyphs and labels (no symbols on hover) */
+/* Suppress default inner glyphs and labels (no symbols on hover, zero layout footprint) */
 button.titlebutton image,
 button.titlebutton label,
 button.titlebutton:hover image,
 button.titlebutton:hover label,
-headerbar:hover button.titlebutton image,
-titlebar:hover button.titlebutton image,
 windowcontrols button image,
 windowcontrols button label,
 windowcontrols button picture,
-windowcontrols:hover button image,
-windowcontrols:hover button picture,
 windowcontrols button:hover image,
 windowcontrols button:hover picture {
   opacity: 0;
@@ -63,11 +59,8 @@ windowcontrols button.close {
 }
 button.titlebutton.close:hover,
 headerbar button.titlebutton.close:hover,
-headerbar:hover button.titlebutton.close,
 titlebar button.titlebutton.close:hover,
-titlebar:hover button.titlebutton.close,
-windowcontrols button.close:hover,
-windowcontrols:hover button.close {
+windowcontrols button.close:hover {
   background-color: #ff726b;
   border-color: #ff9d97;
   box-shadow: 0 0 5px rgba(255, 95, 86, 0.8);
@@ -101,11 +94,8 @@ windowcontrols button.minimize {
 }
 button.titlebutton.minimize:hover,
 headerbar button.titlebutton.minimize:hover,
-headerbar:hover button.titlebutton.minimize,
 titlebar button.titlebutton.minimize:hover,
-titlebar:hover button.titlebutton.minimize,
-windowcontrols button.minimize:hover,
-windowcontrols:hover button.minimize {
+windowcontrols button.minimize:hover {
   background-color: #ffc94d;
   border-color: #ffde82;
   box-shadow: 0 0 5px rgba(255, 189, 46, 0.8);
@@ -139,11 +129,8 @@ windowcontrols button.maximize {
 }
 button.titlebutton.maximize:hover,
 headerbar button.titlebutton.maximize:hover,
-headerbar:hover button.titlebutton.maximize,
 titlebar button.titlebutton.maximize:hover,
-titlebar:hover button.titlebutton.maximize,
-windowcontrols button.maximize:hover,
-windowcontrols:hover button.maximize {
+windowcontrols button.maximize:hover {
   background-color: #38db50;
   border-color: #68ea7c;
   box-shadow: 0 0 5px rgba(39, 201, 63, 0.8);
@@ -169,10 +156,10 @@ windowcontrols button.maximize:backdrop {
 /* Maximize / Restore Toggle States */
 .fullscreen button.titlebutton.maximize:hover,
 .maximized button.titlebutton.maximize:hover,
-.fullscreen headerbar:hover button.titlebutton.maximize,
-.maximized headerbar:hover button.titlebutton.maximize,
-.fullscreen windowcontrols:hover button.maximize,
-.maximized windowcontrols:hover button.maximize {
+.fullscreen headerbar button.titlebutton.maximize:hover,
+.maximized headerbar button.titlebutton.maximize:hover,
+.fullscreen windowcontrols button.maximize:hover,
+.maximized windowcontrols button.maximize:hover {
   background-color: #38db50;
   border-color: #68ea7c;
   box-shadow: 0 0 5px rgba(39, 201, 63, 0.8);

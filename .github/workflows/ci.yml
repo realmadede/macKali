@@ -1,6 +1,6 @@
 name: macKali CI
 
-on:
+"on":
   push:
     branches: [ main ]
   pull_request:
@@ -30,8 +30,8 @@ jobs:
 
       - name: Verify shell script permissions & syntax
         run: |
-          chmod +x install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
-          bash -n install.sh build.sh scripts/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
+          chmod +x install.sh build.sh scripts/*.sh scripts/lib/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
+          bash -n install.sh build.sh scripts/*.sh scripts/lib/*.sh scripts/providers/*.sh themes/cursors/*.sh tests/*.sh
 
       - name: Run automated test suite
         run: |
@@ -41,4 +41,4 @@ jobs:
         run: |
           ./install.sh --help
           ./install.sh --check
-          dbus-run-session -- ./install.sh --dry-run
+          dbus-run-session -- ./install.sh --dry-run --no-update-check

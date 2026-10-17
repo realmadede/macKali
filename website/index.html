@@ -720,6 +720,7 @@
             <ul class="card-feature-list">
               <li class="feature-bullet-item"><strong>In-App Setting:</strong> Look under <em>Appearance</em> or <em>Window</em> settings and switch the title bar style to <strong>Native</strong>.</li>
               <li class="feature-bullet-item"><strong>Wayland Native Launch:</strong> Start the app with <code>--enable-features=UseOzonePlatform --ozone-platform=wayland</code> for native compositor integration.</li>
+              <li class="feature-bullet-item"><strong>Frameless Window Toggle:</strong> In Obsidian, switch <em>Window frame style</em> to <strong>Native</strong> (under <em>Appearance &rarr; Window</em>).</li>
             </ul>
           </article>
 
@@ -730,11 +731,12 @@
             </div>
             <h3 class="card-title">Sandboxed Flatpak &amp; Snap Applications</h3>
             <p class="card-body-text">
-              Containerized applications are sandboxed from reading <code>~/.config/gtk-4.0</code> by default. To theme Flatpak applications:
+              Containerized applications are sandboxed from reading host desktop configurations by default. Grant theming permissions with:
             </p>
             <ul class="card-feature-list">
-              <li class="feature-bullet-item"><strong>One-Time Override:</strong> Run <code>flatpak override --user --filesystem=xdg-config/gtk-4.0:ro</code> in your terminal.</li>
-              <li class="feature-bullet-item"><strong>Graphical Override:</strong> Open the <strong>Flatseal</strong> utility and grant <em>Filesystem &rarr; User Configuration</em> read access.</li>
+              <li class="feature-bullet-item"><strong>Flatpak Theming:</strong> Run <code>flatpak override --user --filesystem=xdg-config/gtk-4.0:ro</code> to grant GTK and traffic lights stylesheet access.</li>
+              <li class="feature-bullet-item"><strong>Snap Theming:</strong> Connect the theme slot with <code>sudo snap connect &lt;app&gt;:gtk-3-themes whitesur-gtk-theme</code>.</li>
+              <li class="feature-bullet-item"><strong>GUI Management:</strong> In <strong>Flatseal</strong>, select any app and toggle on <em>Filesystem &rarr; User Configuration</em> read access.</li>
             </ul>
           </article>
 
@@ -745,12 +747,12 @@
             </div>
             <h3 class="card-title">Qt 5 &amp; Qt 6 Applications (Wireshark, VirtualBox)</h3>
             <p class="card-body-text">
-              Qt applications use Kvantum for interior widget theming while handling window controls on the top-left:
+              Qt applications leverage the Kvantum engine for macOS widgets while aligning buttons to the top-left:
             </p>
             <ul class="card-feature-list">
-              <li class="feature-bullet-item"><strong>Interior Widget Theming:</strong> Running <code>./scripts/providers/qt-provider.sh --install</code> styles all buttons, menus, packet lists, and dialogs in WhiteSur style.</li>
-              <li class="feature-bullet-item"><strong>Top-Left Layout:</strong> Window controls automatically position on the top-left (<code>close,minimize,maximize:</code>).</li>
-              <li class="feature-bullet-item"><strong>Server-Side Frame Option:</strong> Launch with <code>QT_QPA_PLATFORM=xcb &lt;app&gt;</code> to let Mutter decorate the window via Xwayland.</li>
+              <li class="feature-bullet-item"><strong>Interior Widget Theming:</strong> Run <code>./scripts/providers/qt-provider.sh --install</code> to style buttons, tabs, tables, and dialogs.</li>
+              <li class="feature-bullet-item"><strong>Top-Left Controls:</strong> Window buttons automatically adopt top-left macOS placement (<code>close,minimize,maximize:</code>).</li>
+              <li class="feature-bullet-item"><strong>Server-Side Decorations:</strong> Launch via <code>QT_QPA_PLATFORM=xcb &lt;app&gt;</code> to route titlebars through Mutter on Xwayland.</li>
             </ul>
           </article>
         </div>

@@ -62,7 +62,7 @@ html[data-theme="light"],
 
   /* Layout */
   --container-max: 1120px;
-  --nav-max: 920px;
+  --nav-max: 1140px;
 }
 
 /* Craft Palette - Dark Mode Overrides */
@@ -152,6 +152,29 @@ code, pre {
   font-family: var(--font-mono);
 }
 
+code {
+  font-size: 0.86em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--text-main);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-medium);
+  border-bottom: 2px solid var(--border-medium);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--text-main);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
 /* Keyboard accessibility */
 :focus-visible {
   outline: 2px solid var(--border-focus);
@@ -199,8 +222,10 @@ code, pre {
 }
 
 .site-nav-pill {
+  position: relative;
   pointer-events: auto;
   max-width: var(--nav-max);
+  width: 100%;
   margin: 0 auto;
   background: var(--bg-nav);
   backdrop-filter: blur(20px);
@@ -208,18 +233,19 @@ code, pre {
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-nav);
-  padding: 8px 12px 8px 20px;
+  padding: 6px 12px 6px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   transition: all 0.25s ease;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.15rem;
+  gap: 8px;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-main);
@@ -227,23 +253,28 @@ code, pre {
 }
 
 .brand-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
   list-style: none;
-  gap: clamp(12px, 2vw, 24px);
+  gap: clamp(8px, 1.2vw, 16px);
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;
 }
 
 .nav-link {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-muted);
+  white-space: nowrap;
   transition: color 0.18s ease;
+  padding: 4px 2px;
 }
 
 .nav-link:hover {
@@ -253,7 +284,7 @@ code, pre {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -261,8 +292,8 @@ code, pre {
   background: transparent;
   border: 1px solid var(--border-light);
   color: var(--text-muted);
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
@@ -280,13 +311,14 @@ code, pre {
 .btn-pill-cta {
   background: var(--accent-primary);
   color: var(--text-inverse);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
   transition: all 0.2s ease;
 }
 
@@ -647,8 +679,9 @@ code, pre {
 
 .feature-bullet-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
+  line-height: 1.55;
 }
 
 .feature-bullet-item::before {
@@ -656,8 +689,30 @@ code, pre {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--text-main);
+  background: var(--accent-primary);
   flex-shrink: 0;
+  margin-top: 7px;
+}
+
+/* App-Specific Traffic Lights Card Optimization */
+#app-setup .craft-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+#app-setup .card-body-text {
+  margin-bottom: 16px;
+  min-height: 48px;
+}
+
+#app-setup .card-feature-list {
+  margin-top: 0;
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
+  gap: 12px;
+  flex-grow: 1;
 }
 
 /* --------------------------------------------------------------------------
@@ -1173,10 +1228,60 @@ code, pre {
   }
 }
 
-/* Tablet Breakpoint (Under 980px) */
-@media (max-width: 980px) {
-  .card-span-7, .card-span-5 {
+/* Large Tablet / Small Desktop Breakpoint (Under 1080px) */
+@media (max-width: 1080px) {
+  .nav-links {
+    gap: 8px;
+  }
+  .nav-link {
+    font-size: 0.84rem;
+  }
+}
+
+/* Tablet & Mobile Nav Drawer Breakpoint (Under 1040px) */
+@media (max-width: 1040px) {
+  .nav-links {
+    display: none;
+  }
+  .nav-links.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-elevated);
+    padding: 20px 24px;
+    gap: 12px;
+    z-index: 1001;
+  }
+  .nav-links.active .nav-link {
+    font-size: 1rem;
+    padding: 8px 0;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .nav-links.active li:last-child .nav-link {
+    border-bottom: none;
+  }
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Medium Tablet Breakpoint (Under 920px) */
+@media (max-width: 920px) {
+  .card-span-7, .card-span-5, .card-span-6, .card-span-4 {
     grid-column: span 12;
+  }
+  #app-setup .card-body-text {
+    min-height: 0;
   }
   .presets-grid {
     grid-template-columns: 1fr;
@@ -1191,39 +1296,12 @@ code, pre {
   }
 }
 
-/* Mobile Breakpoint (Under 860px) */
-@media (max-width: 860px) {
-  .nav-links {
-    display: none;
-  }
-  .nav-links.active {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 60px;
-    left: 12px;
-    right: 12px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-medium);
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-elevated);
-    padding: 24px;
-    gap: 16px;
-  }
-  .mobile-menu-btn {
-    display: block;
-  }
-  .btn-pill-cta span {
-    display: none;
-  }
-}
-
 /* Small Smartphone Breakpoint (Under 640px) */
 @media (max-width: 640px) {
   .cards-grid {
     grid-template-columns: 1fr;
   }
-  .card-span-6, .card-span-4, .card-span-12 {
+  .card-span-6, .card-span-4, .card-span-12, .card-span-7, .card-span-5 {
     grid-column: span 1;
   }
   .steps-row {
@@ -1246,6 +1324,22 @@ code, pre {
   .footer-nav-groups {
     flex-direction: column;
     gap: 24px;
+  }
+}
+
+/* Extra Small Phone Breakpoint (Under 480px) */
+@media (max-width: 480px) {
+  .site-nav-pill {
+    padding: 6px 10px 6px 14px;
+  }
+  .brand span {
+    font-size: 0.98rem;
+  }
+  .btn-pill-cta span {
+    display: none;
+  }
+  .btn-pill-cta {
+    padding: 6px 10px;
   }
 }
 

@@ -112,6 +112,19 @@ else:
     import os; os.remove('$item')
 " 2>/dev/null || rm -f "$item"
         fi
+      elif [[ "$item" == */gtk-4.0/settings.ini || "$item" == */gtk-3.0/settings.ini ]]; then
+        log_info "Reverting macKali settings configuration from $item..."
+        python3 -c "
+import configparser
+config = configparser.ConfigParser()
+config.read('$item')
+if config.has_section('Settings'):
+    if config.has_option('Settings', 'gtk-decoration-layout'):
+        config.remove_option('Settings', 'gtk-decoration-layout')
+    # If section is empty or only had our keys, remove file if empty
+    with open('$item', 'w') as f:
+        config.write(f, space_around_delimiters=False)
+" 2>/dev/null || rm -f "$item"
       else
         log_info "Removing tracked item: $item"
         rm -rf "$item"
@@ -139,6 +152,7 @@ elif [ "$RESET_DEFAULTS" = true ]; then
 
     log_info "Resetting window button-layout to default..."
     gsettings reset org.gnome.desktop.wm.preferences button-layout 2>/dev/null || true
+    gsettings reset org.gnome.desktop.wm.preferences theme 2>/dev/null || true
 
     log_info "Resetting interface font and theme settings..."
     gsettings reset org.gnome.desktop.interface icon-theme 2>/dev/null || true

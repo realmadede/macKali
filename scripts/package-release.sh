@@ -131,7 +131,7 @@ mkdir -p "$STAGE_DIR/config/animations" "$STAGE_DIR/config/dock" "$STAGE_DIR/con
 [ -f "$REPO_ROOT/config/README.md" ] && cp -p "$REPO_ROOT/config/README.md" "$STAGE_DIR/config/"
 cp -p "$REPO_ROOT/config/animations/"* "$STAGE_DIR/config/animations/" 2>/dev/null || true
 cp -p "$REPO_ROOT/config/dock/"* "$STAGE_DIR/config/dock/" 2>/dev/null || true
-cp -p "$REPO_ROOT/config/gnome/"* "$STAGE_DIR/config/gnome/" 2>/dev/null || true
+cp -rp "$REPO_ROOT/config/gnome/"* "$STAGE_DIR/config/gnome/" 2>/dev/null || true
 cp -p "$REPO_ROOT/config/keybindings/"* "$STAGE_DIR/config/keybindings/" 2>/dev/null || true
 
 # Themes (Wallpapers, Cursors, GTK)

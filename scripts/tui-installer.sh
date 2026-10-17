@@ -478,7 +478,7 @@ step_customization_and_compatibility() {
   if [ "$UI_BACKEND" = "whiptail" ] || [ "$UI_BACKEND" = "dialog" ]; then
     local check_items=(
       "CURSORS"     "WhiteSur macOS Cursor Theme" "ON"
-      "APPEARANCE"  "macOS Left Window Controls & GTK Theme" "ON"
+      "APPEARANCE"  "macOS Circular Traffic Lights (Red, Yellow, Green) & Theme" "ON"
       "WALLPAPERS"  "macOS Bundled 4K Light & Dark Wallpapers" "ON"
       "DOCK_EXT"    "Dash to Dock macOS Bottom Layout" "ON"
     )
@@ -607,7 +607,7 @@ Preset Tier:       $SELECTED_PRESET
 Execution Mode:    $exec_mode
 Theme Mode:        $SELECTED_MODE
 WhiteSur Cursors:  $( [ "$DO_CURSORS" = true ] && echo "Yes" || echo "No" )
-Window Controls:   $( [ "$DO_APPEARANCE" = true ] && echo "Left Traffic Lights" || echo "No" )
+Window Controls:   $( [ "$DO_APPEARANCE" = true ] && echo "macOS Circular Traffic Lights (Red, Yellow, Green)" || echo "No" )
 4K Wallpapers:     $( [ "$DO_WALLPAPERS" = true ] && echo "Yes" || echo "No" )
 Dock & Extensions: $ext_summary
 Safety Backup:     $( [ "$DO_BACKUP" = true ] && echo "Yes" || echo "No" )
@@ -629,7 +629,11 @@ step_execute_and_report() {
   local install_cmd=("$REPO_ROOT/scripts/install.sh" "--preset" "$SELECTED_PRESET")
 
   [ "$DO_BACKUP" = true ] && install_cmd+=("--backup")
-  [ "$DO_APPEARANCE" = true ] && install_cmd+=("--appearance" "--mode" "$SELECTED_MODE")
+  if [ "$DO_APPEARANCE" = true ]; then
+    install_cmd+=("--appearance" "--mode" "$SELECTED_MODE")
+  else
+    install_cmd+=("--no-appearance")
+  fi
   [ "$DO_WALLPAPERS" = true ] && install_cmd+=("--wallpaper")
   [ "$DO_EXTENSIONS" = true ] && install_cmd+=("--extensions")
   [ "$OPT_MAGIC_LAMP" = true ] && install_cmd+=("--with-magic-lamp")

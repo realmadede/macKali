@@ -126,6 +126,12 @@ if [ -f "$SOURCE_DIR/backup-meta.json" ] && has_cmd jq && has_cmd gsettings; the
     gsettings set org.gnome.desktop.interface gtk-theme "$GTK_VAL" || true
   fi
 
+  WM_VAL="$(jq -r '.wm_theme // empty' "$SOURCE_DIR/backup-meta.json")"
+  if [ -n "$WM_VAL" ] && [ "$WM_VAL" != "null" ]; then
+    log_info "Restoring window manager theme: $WM_VAL"
+    gsettings set org.gnome.desktop.wm.preferences theme "$WM_VAL" || true
+  fi
+
   COLOR_VAL="$(jq -r '.color_scheme // empty' "$SOURCE_DIR/backup-meta.json")"
   if [ -n "$COLOR_VAL" ] && [ "$COLOR_VAL" != "null" ]; then
     log_info "Restoring color-scheme: $COLOR_VAL"
@@ -156,6 +162,60 @@ if [ -f "$SOURCE_DIR/backup-meta.json" ] && has_cmd jq && has_cmd gsettings; the
     gsettings set org.gnome.shell.extensions.user-theme name "$SHELL_VAL" || true
   fi
 fi
+
+# 2.5 Restore GTK CSS and settings
+for ver in 4.0 3.0; do
+  css_file="$HOME/.config/gtk-${ver}/gtk.css"
+  bak_css="$SOURCE_DIR/gtk${ver//./}.css"
+  if [ -f "$bak_css" ]; then
+    mkdir -p "$(dirname "$css_file")"
+    cp "$bak_css" "$css_file"
+  elif [ -f "$css_file" ]; then
+    python3 -c "
+import os
+p = '$css_file'
+if os.path.exists(p):
+    with open(p, 'r') as f:
+        content = f.read()
+    start = '/* === BEGIN MACKALI TRAFFIC LIGHTS === */'
+    end = '/* === END MACKALI TRAFFIC LIGHTS === */'
+    if start in content and end in content:
+        s_idx = content.find(start)
+        e_idx = content.find(end) + len(end)
+        new_content = content[:s_idx].rstrip() + '\n' + content[e_idx:].lstrip()
+        if not new_content.strip():
+            os.remove(p)
+        else:
+            with open(p, 'w') as f:
+                f.write(new_content)
+" 2>/dev/null || true
+  fi
+
+  ini_file="$HOME/.config/gtk-${ver}/settings.ini"
+  bak_ini="$SOURCE_DIR/gtk${ver//./}-settings.ini"
+  if [ -f "$bak_ini" ]; then
+    mkdir -p "$(dirname "$ini_file")"
+    cp "$bak_ini" "$ini_file"
+  elif [ -f "$ini_file" ]; then
+    python3 -c "
+import configparser, os
+p = '$ini_file'
+if os.path.exists(p):
+    cfg = configparser.ConfigParser()
+    cfg.read(p)
+    if cfg.has_section('Settings'):
+        if cfg.has_option('Settings', 'gtk-decoration-layout'):
+            cfg.remove_option('Settings', 'gtk-decoration-layout')
+        if not cfg.options('Settings'):
+            cfg.remove_section('Settings')
+        if not cfg.sections():
+            os.remove(p)
+        else:
+            with open(p, 'w') as f:
+                cfg.write(f, space_around_delimiters=False)
+" 2>/dev/null || true
+  fi
+done
 
 # 3. Restore extension enabled states
 if [ -f "$SOURCE_DIR/enabled_extensions.txt" ] && has_cmd gnome-extensions; then

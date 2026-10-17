@@ -1,92 +1,124 @@
 /* ==============================================================================
  * macKali macOS Traffic Light Window Controls for GTK 4 / Libadwaita
+ * Authentic Circular Red (#ff5f56), Yellow (#ffbd2e), Green (#27c93f)
  * ============================================================================== */
 
 /* Container & Spacing */
 windowcontrols {
-  border-spacing: 6px;
-  padding: 0 6px;
+  border-spacing: 7px;
+  padding: 0 8px;
 }
 
-/* Base Circular Button Geometry & Click Target */
+/* Base Circular Button Geometry & Click Target (min-width: 11px) */
 windowcontrols button {
   min-width: 11px;
   min-height: 11px;
-  margin: 0 1px;
+  margin: 0;
   padding: 0;
   border-radius: 9999px;
   border: 1px solid rgba(0, 0, 0, 0.18);
   box-shadow: none;
   background-clip: padding-box;
-  background-image: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  color: transparent;
   transition: all 120ms ease;
 }
 
-/* Close: Red Circular Button */
-windowcontrols button.close {
-  background-color: #ff5f56;
-  border-color: #e0443e;
-}
-windowcontrols button.close:hover {
-  background-color: #ff5f56;
-  border-color: #c03630;
-}
-windowcontrols button.close:active {
-  background-color: #bf4942;
-}
-
-/* Minimize: Yellow Circular Button */
-windowcontrols button.minimize {
-  background-color: #ffbd2e;
-  border-color: #dea123;
-}
-windowcontrols button.minimize:hover {
-  background-color: #ffbd2e;
-  border-color: #b88214;
-}
-windowcontrols button.minimize:active {
-  background-color: #bf8e22;
-}
-
-/* Maximize: Green Circular Button */
-windowcontrols button.maximize {
-  background-color: #27c93f;
-  border-color: #1aab29;
-}
-windowcontrols button.maximize:hover {
-  background-color: #27c93f;
-  border-color: #128820;
-}
-windowcontrols button.maximize:active {
-  background-color: #1d9730;
-}
-
-/* Inactive / Backdrop Windows */
-windowcontrols button:backdrop {
-  opacity: 0.45;
-}
-
-/* Completely suppress all inner glyph symbols/icons (no Kali icon on hover) */
+/* Suppress default inner glyphs, labels, and pictures (no symbols on hover) */
 windowcontrols button image,
 windowcontrols button picture,
 windowcontrols button label,
-windowcontrols:hover button image,
-windowcontrols:hover button picture,
 windowcontrols button:hover image,
 windowcontrols button:hover picture,
+windowcontrols button:hover label,
+windowcontrols:hover button image,
+windowcontrols:hover button picture,
+windowcontrols:hover button label,
 windowcontrols button:active image,
-windowcontrols button:active picture {
+windowcontrols button:active picture,
+windowcontrols button:active label {
   opacity: 0;
   color: transparent;
   background-image: none;
   box-shadow: none;
 }
 
-/* Ensure pure circular dots without hover backgrounds or icons */
-windowcontrols button,
-windowcontrols button:hover,
-windowcontrols button:active {
-  background-image: none;
-  box-shadow: none;
-  color: transparent;
+/* Close: Red Circular Button (#ff5f56) */
+windowcontrols button.close {
+  background-color: #ff5f56;
+  border-color: #e0443e;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxyZWN0IHk9IjYuMTAzNWUtNyIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeT0iMS42OTMxZS01IiBvcGFjaXR5PSIwIiBzdHJva2Utd2lkdGg9Ii40NzQzMiIgc3R5bGU9InBhaW50LW9yZGVyOm1hcmtlcnMgc3Ryb2tlIGZpbGwiLz4KIDxwYXRoIGQ9Im04IDE1YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iI2U5NTI0YSIgZmlsbC1ydWxlPSJldmVub2RkIi8+Cjwvc3ZnPg==');
+}
+windowcontrols button.close:hover,
+windowcontrols:hover button.close {
+  background-color: #ff5f56;
+  border-color: #c03630;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMDUgMTUuMDAyYzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktNyAwLTMuODY2LTMuMTM0LTYuOTk5OS02Ljk5OTktNi45OTk5LTMuODY2IDAtNyAzLjEzMzktNyA2Ljk5OTkgMCAzLjg2NiAzLjEzNCA3IDcgNyIgZmlsbD0iI2U5NTI0YSIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiA8L3N2Zz4=');
+}
+windowcontrols button.close:active {
+  background-color: #bf4942;
+  border-color: #a02822;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSAwIDAgMy43Nzk1IC0zMjIgLTU4MC41MikiPgogIDxnIHRyYW5zZm9ybT0ibWF0cml4KC4zNDAxOCAwIDAgLjM0MDE4IDg0LjkzMSAxNTMuMzMpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiPgogICAgPGcgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICA8cGF0aCBkPSJtMTIuMDAzIDEwNDUuOWMzLjAwNjggMCA1LjQ0NDQtMi40Mzc1IDUuNDQ0NC01LjQ0NDRzLTIuNDM3Ni01LjQ0NDUtNS40NDQ0LTUuNDQ0NWMtMy4wMDY5IDAtNS40NDQ1IDIuNDM3Ni01LjQ0NDUgNS40NDQ1czIuNDM3NiA1LjQ0NDQgNS40NDQ1IDUuNDQ0NCIgZmlsbD0iI2NiNGU0MyIgc3Ryb2tlLXdpZHRoPSIuNzc3NzgiLz4KICAgIDwvZz4KICAgPC9nPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
+}
+windowcontrols button.close:backdrop {
+  opacity: 0.55;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIGlkPSJ0aXRsZWJ1dHRvbi1taW5pbWl6ZS1iYWNrZHJvcCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTI1MywyNjguNjQpIj4KICA8cmVjdCB4PSIyNTMiIHk9Ii0yNjguNjQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgcnk9IjEuNjkzMWUtNSIgb3BhY2l0eT0iMCIgc3Ryb2tlLXdpZHRoPSIuNDc0MzIiIHN0eWxlPSJwYWludC1vcmRlcjptYXJrZXJzIHN0cm9rZSBmaWxsIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU0LC0yNjcuNjQpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICA8cGF0aCBkPSJtMTIgMTA0Ny40YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iIzVkNWQ1ZCIvPgogICA8L2c+CiAgPC9nPgogPC9nPgogPC9zdmc+');
+}
+
+/* Minimize: Yellow Circular Button (#ffbd2e) */
+windowcontrols button.minimize {
+  background-color: #ffbd2e;
+  border-color: #dea123;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxyZWN0IHk9IjYuMTAzNWUtNyIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeT0iMS42OTMxZS01IiBvcGFjaXR5PSIwIiBzdHJva2Utd2lkdGg9Ii40NzQzMiIgc3R5bGU9InBhaW50LW9yZGVyOm1hcmtlcnMgc3Ryb2tlIGZpbGwiLz4KIDxwYXRoIGQ9Im04IDE1YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iI2YxYWUxYiIgZmlsbC1ydWxlPSJldmVub2RkIi8+Cjwvc3ZnPg==');
+}
+windowcontrols button.minimize:hover,
+windowcontrols:hover button.minimize {
+  background-color: #ffbd2e;
+  border-color: #b88214;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im03Ljk5OTkgMTUuMDA0YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktNyAwLTMuODY2LTMuMTM0MS03LjAwMDEtNi45OTk5LTcuMDAwMS0zLjg2NiAwLTcuMDAwMSAzLjEzNC03LjAwMDEgNy4wMDAxIDAgMy44NjU5IDMuMTM0MSA3IDcuMDAwMSA3IiBmaWxsPSIjZjFhZTFiIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iLjc3Nzk3Ii8+CiA8L3N2Zz4=');
+}
+windowcontrols button.minimize:active {
+  background-color: #bf8e22;
+  border-color: #9e6f0f;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSwwLDAsMy43Nzk1LC0yNjUsLTU4NS41MikiPgogIDxnIHRyYW5zZm9ybT0ibWF0cml4KC4yNjQ2NSAwIDAgLjI2NDY1IDcwLjY0MyAxNTQuOTIpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICA8cGF0aCBkPSJtMTEuMDAzIDEwNDguNGMzLjg2NSAwIDYuOTk4Mi0zLjEzMzIgNi45OTgyLTYuOTk4M3MtMy4xMzMzLTYuOTk4NC02Ljk5ODItNi45OTg0Yy0zLjg2NSAwLTYuOTk4MyAzLjEzMzItNi45OTgzIDYuOTk4NCAwIDMuODY1IDMuMTMzMyA2Ljk5ODMgNi45OTgzIDYuOTk4MyIgZmlsbD0iI2NhYTEyNCIgc3Ryb2tlLXdpZHRoPSIuNzc3NzgiLz4KICAgPC9nPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
+}
+windowcontrols button.minimize:backdrop {
+  opacity: 0.55;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIGlkPSJ0aXRsZWJ1dHRvbi1taW5pbWl6ZS1iYWNrZHJvcCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTI1MyAyNjguNjQpIj4KICA8cmVjdCB4PSIyNTMiIHk9Ii0yNjguNjQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgcnk9IjEuNjkzMWUtNSIgb3BhY2l0eT0iMCIgc3Ryb2tlLXdpZHRoPSIuNDc0MzIiIHN0eWxlPSJwYWludC1vcmRlcjptYXJrZXJzIHN0cm9rZSBmaWxsIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU0LC0yNjcuNjQpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICA8cGF0aCBkPSJtMTIgMTA0Ny40YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iIzVkNWQ1ZCIvPgogICA8L2c+CiAgPC9nPgogPC9nPgogPC9zdmc+');
+}
+
+/* Maximize: Green Circular Button (#27c93f) */
+windowcontrols button.maximize {
+  background-color: #27c93f;
+  border-color: #1aab29;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxyZWN0IHk9IjYuMTAzNWUtNyIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeT0iMS42OTMxZS01IiBvcGFjaXR5PSIwIiBzdHJva2Utd2lkdGg9Ii40NzQzMiIgc3R5bGU9InBhaW50LW9yZGVyOm1hcmtlcnMgc3Ryb2tlIGZpbGwiLz4KIDxwYXRoIGQ9Im04IDE1YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iIzU5YzgzNyIgZmlsbC1ydWxlPSJldmVub2RkIi8+Cjwvc3ZnPg==');
+}
+windowcontrols button.maximize:hover,
+windowcontrols:hover button.maximize {
+  background-color: #27c93f;
+  border-color: #128820;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMTkgMTQuOTk5YzMuODY2MSAwIDctMy4xMzM5IDctNyAwLTMuODY2MS0zLjEzNC03LTctNy0zLjg2NjEgMC03IDMuMTM0LTcgNyAwIDMuODY2MSAzLjEzNCA3IDcgNyIgZmlsbD0iIzU5YzgzNyIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2Utd2lkdGg9IjIuOTM5NiIvPgogPC9zdmc+');
+}
+windowcontrols button.maximize:active {
+  background-color: #1d9730;
+  border-color: #0f751f;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSwwLDAsMy43Nzk1LC0yOTYsLTU4Ni41MikiPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMS45MDYsMzEuMjIxKSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgPHBhdGggZD0ibTkyLjM0IDEyNy45M2MxLjAyMjkgMCAxLjg1MjEtMC44MjkyMyAxLjg1MjEtMS44NTIxIDAtMS4wMjI5LTAuODI5MjEtMS44NTIxLTEuODUyMS0xLjg1MjEtMS4wMjI5IDAtMS44NTIxIDAuODI5MjMtMS44NTIxIDEuODUyMSAwIDEuMDIyOSAwLjgyOTIxIDEuODUyMSAxLjg1MjEgMS44NTIxIiBmaWxsPSIjMjBhOTMyIiBzdHJva2Utd2lkdGg9Ii43Nzc4MSIvPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
+}
+windowcontrols button.maximize:backdrop {
+  opacity: 0.55;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIGlkPSJ0aXRsZWJ1dHRvbi1taW5pbWl6ZS1iYWNrZHJvcCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTI1MywyNjguNjQpIj4KICA8cmVjdCB4PSIyNTMiIHk9Ii0yNjguNjQiIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgcnk9IjEuNjkzMWUtNSIgb3BhY2l0eT0iMCIgc3Ryb2tlLXdpZHRoPSIuNDc0MzIiIHN0eWxlPSJwYWludC1vcmRlcjptYXJrZXJzIHN0cm9rZSBmaWxsIi8+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU0LC0yNjcuNjQpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICA8cGF0aCBkPSJtMTIgMTA0Ny40YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktN3MtMy4xMzQtNy02Ljk5OTktN2MtMy44NjYgMC03LjAwMDEgMy4xMzQtNy4wMDAxIDdzMy4xMzQgNyA3LjAwMDEgNyIgZmlsbD0iIzVkNWQ1ZCIvPgogICA8L2c+CiAgPC9nPgogPC9nPgogPC9zdmc+');
+}
+
+/* Maximize / Restore Toggle States */
+.fullscreen windowcontrols button.maximize:hover,
+.maximized windowcontrols button.maximize:hover,
+.fullscreen windowcontrols:hover button.maximize,
+.maximized windowcontrols:hover button.maximize {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMTkgMTQuOTk5YzMuODY2MSAwIDctMy4xMzM5IDctN3MtMy4xMzQtNy03LTdjLTMuODY2MSAwLTcgMy4xMzQtNyA3IDAgMy44NjYxIDMuMTM0IDcgNyA3IiBmaWxsPSIjNTljODM3IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iMi45Mzk2Ii8+CiA8L3N2Zz4=');
+}
+.fullscreen windowcontrols button.maximize:active,
+.maximized windowcontrols button.maximize:active {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSAwIDAgMy43Nzk1IC0zNDEgLTQ2OC41MikiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgPHBhdGggZD0ibTkyLjM0IDEyNy45M2MxLjAyMjkgMCAxLjg1MjEtMC44MjkyMyAxLjg1MjEtMS44NTIxIDAtMS4wMjI5LTAuODI5MjEtMS44NTIxLTEuODUyMS0xLjg1MjEtMS4wMjI5IDAtMS44NTIxIDAuODI5MjMtMS44NTIxIDEuODUyMSAwIDEuMDIyOSAwLjgyOTIxIDEuODUyMSAxLjg1MjEgMS44NTIxIiBmaWxsPSIjMjBhOTMyIiBzdHJva2Utd2lkdGg9Ii43Nzc4MSIvPgogPC9nPgogPC9zdmc+');
 }

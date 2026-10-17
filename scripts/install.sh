@@ -14,7 +14,7 @@ PRESET="balanced"
 DRY_RUN=false
 DO_BACKUP=false
 CURSORS_ONLY=false
-APPLY_APPEARANCE=false
+APPLY_APPEARANCE=true
 APPEARANCE_MODE="dark"
 APPLY_EXTENSIONS=false
 DOCK_ONLY=false
@@ -63,8 +63,12 @@ while [[ $# -gt 0 ]]; do
       PRESET="$2"
       shift 2
       ;;
-    --appearance)
+    --appearance|--traffic-lights)
       APPLY_APPEARANCE=true
+      shift
+      ;;
+    --no-appearance|--no-traffic-lights)
+      APPLY_APPEARANCE=false
       shift
       ;;
     --mode)
@@ -97,6 +101,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cursors-only)
       CURSORS_ONLY=true
+      APPLY_APPEARANCE=false
+      APPLY_WALLPAPER=false
+      APPLY_EXTENSIONS=false
       shift
       ;;
     --backup)
@@ -211,8 +218,8 @@ else
   "$REPO_ROOT/themes/cursors/install.sh"
 fi
 
-# 2. Apply Wallpaper if requested or in full preset
-if [ "$APPLY_WALLPAPER" = true ] || [ "$APPLY_APPEARANCE" = true ]; then
+# 2. Apply Wallpaper if requested
+if [ "$APPLY_WALLPAPER" = true ]; then
   echo ""
   log_step "Applying macOS 4K Wallpapers..."
   if [ "$DRY_RUN" = true ]; then
@@ -222,10 +229,10 @@ if [ "$APPLY_WALLPAPER" = true ] || [ "$APPLY_APPEARANCE" = true ]; then
   fi
 fi
 
-# 3. Apply Appearance Settings if requested
-if [ "$APPLY_APPEARANCE" = true ]; then
+# 3. Apply Appearance Settings & Circular Traffic Lights
+if [ "$APPLY_APPEARANCE" = true ] && [ "$CURSORS_ONLY" != true ]; then
   echo ""
-  log_step "Configuring macOS Appearance..."
+  log_step "Configuring macOS Appearance & Circular Traffic Lights..."
   PRESET_NAME="macos-dark"
   [ "$APPEARANCE_MODE" = "light" ] && PRESET_NAME="macos-light"
   if [ "$DRY_RUN" = true ]; then

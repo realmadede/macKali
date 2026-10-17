@@ -19,7 +19,7 @@ case "$1" in
     check_for_updates 6 "check" "$@"
     exit 0
     ;;
-  --check|--preset|--dry-run|--backup|--appearance|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)
+  --check|--preset|--dry-run|--backup|--appearance|--no-appearance|--traffic-lights|--no-traffic-lights|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
     ;;
   --uninstall|--reset-defaults|--purge)

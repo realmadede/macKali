@@ -589,6 +589,11 @@ test_archive_contents() {
     "extensions/presets/balanced.json"
     "config/dock/dash-to-dock.dconf"
     "assets/preview.png"
+    "config/gnome/traffic-lights-gtk4.css"
+    "config/gnome/traffic-lights-gtk3.css"
+    "config/gnome/assets/titlebutton-close.svg"
+    "config/gnome/assets/titlebutton-minimize.svg"
+    "config/gnome/assets/titlebutton-maximize.svg"
     "docs/installation.md"
     "docs/architecture.md"
   )
@@ -924,6 +929,257 @@ test_uninstall_preserves_user_css() {
   return 0
 }
 run_test "Uninstallation cleans traffic lights while preserving user custom CSS" test_uninstall_preserves_user_css
+
+# Test 50: Default installation workflow and presets include traffic lights (Requirements 1, 2, 3, 4)
+test_default_install_presets_include_traffic_lights() {
+  local out_default out_min out_bal out_full
+  out_default="$("$REPO_ROOT/scripts/install.sh" --dry-run 2>&1)"
+  echo "$out_default" | grep -q "Configuring macOS Appearance & Circular Traffic Lights" || return 1
+  echo "$out_default" | grep -q "macOS Top-Left (GTK3 & GTK4)" || return 1
+
+  out_min="$("$REPO_ROOT/scripts/install.sh" --preset minimal --dry-run 2>&1)"
+  echo "$out_min" | grep -q "Configuring macOS Appearance & Circular Traffic Lights" || return 1
+  echo "$out_min" | grep -q "macOS Top-Left (GTK3 & GTK4)" || return 1
+
+  out_bal="$("$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run 2>&1)"
+  echo "$out_bal" | grep -q "Configuring macOS Appearance & Circular Traffic Lights" || return 1
+  echo "$out_bal" | grep -q "macOS Top-Left (GTK3 & GTK4)" || return 1
+
+  out_full="$("$REPO_ROOT/scripts/install.sh" --preset full --dry-run 2>&1)"
+  echo "$out_full" | grep -q "Configuring macOS Appearance & Circular Traffic Lights" || return 1
+  echo "$out_full" | grep -q "macOS Top-Left (GTK3 & GTK4)" || return 1
+
+  local out_root
+  out_root="$("$REPO_ROOT/install.sh" --dry-run 2>&1)"
+  echo "$out_root" | grep -q "Configuring macOS Appearance & Circular Traffic Lights" || return 1
+  echo "$out_root" | grep -q "macOS Top-Left (GTK3 & GTK4)" || return 1
+  return 0
+}
+run_test "Default installation and all presets include circular traffic lights" test_default_install_presets_include_traffic_lights
+
+# Test 51: Window button ordering, left-side placement and three-button completeness (Requirement 5)
+test_traffic_lights_button_order() {
+  local preview_out
+  preview_out="$("$REPO_ROOT/scripts/appearance.sh" --traffic-lights --preview 2>&1)"
+  echo "$preview_out" | grep -q "close,minimize,maximize:" || return 1
+
+  local fake_home="$SANDBOX/order_home"
+  mkdir -p "$fake_home"
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+  grep -q "gtk-decoration-layout=close,minimize,maximize:" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-decoration-layout=close,minimize,maximize:" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+
+  return 0
+}
+run_test "Traffic lights correct button order (close,minimize,maximize:) and left placement" test_traffic_lights_button_order
+
+# Test 52: Circular control asset integrity and SVG geometry (Requirement 6)
+test_circular_assets_integrity() {
+  local asset_dir="$REPO_ROOT/config/gnome/assets"
+  [ -d "$asset_dir" ] || return 1
+
+  local required_svgs=(
+    "titlebutton-close.svg"
+    "titlebutton-close-hover.svg"
+    "titlebutton-close-active.svg"
+    "titlebutton-minimize.svg"
+    "titlebutton-minimize-hover.svg"
+    "titlebutton-minimize-active.svg"
+    "titlebutton-maximize.svg"
+    "titlebutton-maximize-hover.svg"
+    "titlebutton-maximize-active.svg"
+    "titlebutton-close-backdrop.svg"
+    "titlebutton-minimize-backdrop.svg"
+    "titlebutton-maximize-backdrop.svg"
+  )
+  for svg in "${required_svgs[@]}"; do
+    [ -s "$asset_dir/$svg" ] || return 1
+  done
+
+  # Validate circular geometry: SVGs must define a circle (cx, cy, r) or equal-aspect circular path
+  python3 - <<'PYEOF' || return 1
+import xml.etree.ElementTree as ET
+import glob, sys
+
+svg_files = glob.glob('config/gnome/assets/*.svg')
+if not svg_files:
+    sys.exit(1)
+
+for f in svg_files:
+    tree = ET.parse(f)
+    root = tree.getroot()
+    vb = root.attrib.get('viewBox', '').split()
+    if vb and len(vb) == 4:
+        w, h = float(vb[2]), float(vb[3])
+        if w != h:
+            sys.exit(f"{f}: Non-square viewBox {vb} violates circular design")
+    circles = root.findall('.//{http://www.w3.org/2000/svg}circle')
+    if circles:
+        for c in circles:
+            r = float(c.attrib.get('r', 0))
+            if r <= 0:
+                sys.exit(f"{f}: Invalid circle radius {r}")
+PYEOF
+
+  # Check that stylesheets use transparent border, centered background and 14px size
+  grep -q "background-size: 14px 14px" "$REPO_ROOT/config/gnome/traffic-lights-gtk4.css" || return 1
+  grep -q "background-size: 14px 14px" "$REPO_ROOT/config/gnome/traffic-lights-gtk3.css" || return 1
+  grep -q "background-position: center" "$REPO_ROOT/config/gnome/traffic-lights-gtk4.css" || return 1
+  grep -q "background-position: center" "$REPO_ROOT/config/gnome/traffic-lights-gtk3.css" || return 1
+
+  return 0
+}
+run_test "Circular control asset selection and vector SVG geometry integrity" test_circular_assets_integrity
+
+# Test 53: GTK3 and GTK4 settings.ini integration (Requirements 7 & 8)
+test_gtk3_gtk4_settings_ini_integration() {
+  local fake_home="$SANDBOX/settings_home"
+  mkdir -p "$fake_home/.config/gtk-4.0" "$fake_home/.config/gtk-3.0"
+
+  cat <<'EOF' > "$fake_home/.config/gtk-4.0/settings.ini"
+[Settings]
+gtk-font-name=Cantarell 11
+gtk-xft-antialias=1
+EOF
+  cat <<'EOF' > "$fake_home/.config/gtk-3.0/settings.ini"
+[Settings]
+gtk-icon-theme-name=Adwaita
+EOF
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  grep -q "gtk-decoration-layout=close,minimize,maximize:" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-decoration-layout=close,minimize,maximize:" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+  grep -q "gtk-theme-name=WhiteSur" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-theme-name=WhiteSur" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+
+  # Check that pre-existing user settings were preserved
+  grep -q "gtk-font-name=Cantarell 11" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-icon-theme-name=Adwaita" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+
+  return 0
+}
+run_test "GTK3 and GTK4 settings.ini configuration and user setting preservation" test_gtk3_gtk4_settings_ini_integration
+
+# Test 54: Unsupported toolkit fallback (WM theme, settings.ini, XFWM4) (Requirement 9)
+test_unsupported_toolkit_fallback() {
+  local fake_home="$SANDBOX/fallback_home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  [ -f "$fake_home/.config/macKali/traffic_lights_snapshot.json" ] || return 1
+  python3 -c "
+import json
+with open('$fake_home/.config/macKali/traffic_lights_snapshot.json') as f:
+    snap = json.load(f)
+assert 'previous_wm_theme' in snap
+assert 'gtk4_settings_existed' in snap
+assert 'gtk3_settings_existed' in snap
+" || return 1
+
+  [ -f "$fake_home/.config/gtk-3.0/settings.ini" ] || return 1
+  [ -f "$fake_home/.config/gtk-4.0/settings.ini" ] || return 1
+  return 0
+}
+run_test "Unsupported toolkit fallback mechanisms (WM theme, settings.ini fallback)" test_unsupported_toolkit_fallback
+
+# Test 55: Light and dark mode theme switching behavior (Requirement 10)
+test_light_and_dark_mode_behavior() {
+  local fake_home="$SANDBOX/mode_home"
+  mkdir -p "$fake_home"
+
+  # Apply dark mode
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --mode dark --traffic-lights -y >/dev/null || return 1
+  grep -q "gtk-theme-name=WhiteSur-Dark" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-theme-name=WhiteSur-Dark" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+
+  # Apply light mode
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --mode light --traffic-lights -y >/dev/null || return 1
+  grep -q "gtk-theme-name=WhiteSur-Light" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-theme-name=WhiteSur-Light" "$fake_home/.config/gtk-3.0/settings.ini" || return 1
+
+  return 0
+}
+run_test "Light and dark mode traffic lights and GTK theme configuration" test_light_and_dark_mode_behavior
+
+# Test 56: Idempotent installation across repeated runs (Requirement 11)
+test_traffic_lights_idempotency() {
+  local fake_home="$SANDBOX/idempotent_home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  local count_gtk4 count_gtk3
+  count_gtk4=$(grep -Fc "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css")
+  count_gtk3=$(grep -Fc "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-3.0/gtk.css")
+  [ "$count_gtk4" -eq 1 ] || { echo "Duplicate blocks in gtk-4.0: $count_gtk4"; return 1; }
+  [ "$count_gtk3" -eq 1 ] || { echo "Duplicate blocks in gtk-3.0: $count_gtk3"; return 1; }
+
+  local count_ini4 count_ini3
+  count_ini4=$(grep -c "gtk-decoration-layout" "$fake_home/.config/gtk-4.0/settings.ini")
+  count_ini3=$(grep -c "gtk-decoration-layout" "$fake_home/.config/gtk-3.0/settings.ini")
+  [ "$count_ini4" -eq 1 ] || { echo "Duplicate entries in gtk-4.0 settings.ini: $count_ini4"; return 1; }
+  [ "$count_ini3" -eq 1 ] || { echo "Duplicate entries in gtk-3.0 settings.ini: $count_ini3"; return 1; }
+
+  return 0
+}
+run_test "Idempotent traffic lights installation across repeated invocations" test_traffic_lights_idempotency
+
+# Test 57: Safe targeted restoration without affecting unrelated settings (Requirements 12 & 13)
+test_targeted_restoration_isolation() {
+  local fake_home="$SANDBOX/isolated_restore_home"
+  mkdir -p "$fake_home/.config/gtk-4.0" "$fake_home/.config/macKali"
+
+  cat <<'EOF' > "$fake_home/.config/macKali/appearance_snapshot.json"
+{
+  "timestamp": "20261016_010000",
+  "picture_uri": "file:///home/user/Pictures/custom-mac.jpg",
+  "picture_uri_dark": "file:///home/user/Pictures/custom-mac-dark.jpg",
+  "cursor_theme": "WhiteSur-cursors",
+  "icon_theme": "WhiteSur-dark"
+}
+EOF
+
+  local custom_css="window { background-color: #222; }\n"
+  echo -e "$custom_css" > "$fake_home/.config/gtk-4.0/gtk.css"
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+  HOME="$fake_home" "$REPO_ROOT/scripts/appearance.sh" --revert-traffic-lights >/dev/null || return 1
+
+  ! grep -Fq "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+  grep -q "background-color: #222;" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+
+  grep -q "custom-mac.jpg" "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+  grep -q "WhiteSur-cursors" "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+
+  return 0
+}
+run_test "Safe targeted restoration leaves unrelated appearance settings untouched" test_targeted_restoration_isolation
+
+# Test 58: Release archive inclusion of required traffic light assets (Requirement 14)
+test_release_archive_assets_inclusion() {
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  if [ ! -d "$payload" ]; then
+    local test_dist="$SANDBOX/dist"
+    mkdir -p "$SANDBOX/extract_test"
+    if [ -f "$test_dist/macKali-v1.0.0-rc.1.tar.gz" ]; then
+      tar -xzf "$test_dist/macKali-v1.0.0-rc.1.tar.gz" -C "$SANDBOX/extract_test"
+    fi
+  fi
+  [ -d "$payload" ] || return 1
+  [ -d "$payload/config/gnome/assets" ] || return 1
+  [ -s "$payload/config/gnome/assets/titlebutton-close.svg" ] || return 1
+  [ -s "$payload/config/gnome/assets/titlebutton-minimize.svg" ] || return 1
+  [ -s "$payload/config/gnome/assets/titlebutton-maximize.svg" ] || return 1
+  [ -s "$payload/config/gnome/traffic-lights-gtk4.css" ] || return 1
+  [ -s "$payload/config/gnome/traffic-lights-gtk3.css" ] || return 1
+
+  return 0
+}
+run_test "Release archive inclusion of circular traffic light assets and stylesheets" test_release_archive_assets_inclusion
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"

@@ -17,6 +17,8 @@ MANIFEST_FILE="$HOME/.config/macKali/file-manifest.json"
 STATE_DIR="$HOME/.config/macKali"
 GTK4_CSS="$HOME/.config/gtk-4.0/gtk.css"
 GTK3_CSS="$HOME/.config/gtk-3.0/gtk.css"
+GTK4_SETTINGS="$HOME/.config/gtk-4.0/settings.ini"
+GTK3_SETTINGS="$HOME/.config/gtk-3.0/settings.ini"
 GTK4_TEMPLATE="$REPO_ROOT/config/gnome/traffic-lights-gtk4.css"
 GTK3_TEMPLATE="$REPO_ROOT/config/gnome/traffic-lights-gtk3.css"
 
@@ -75,8 +77,13 @@ while [[ $# -gt 0 ]]; do
       ;;
     --buttons)
       case "$2" in
-        left|mac|macos) REQ_BUTTON_LAYOUT="close,minimize,maximize:" ;;
-        right|kali|default) REQ_BUTTON_LAYOUT="appmenu:minimize,maximize,close" ;;
+        left|mac|macos)
+          REQ_BUTTON_LAYOUT="close,minimize,maximize:"
+          REQ_TRAFFIC_LIGHTS=true
+          ;;
+        right|kali|default)
+          REQ_BUTTON_LAYOUT="appmenu:minimize,maximize,close"
+          ;;
         *) log_error "Invalid button layout: $2 (choose left or right)"; exit 1 ;;
       esac
       shift 2
@@ -266,10 +273,76 @@ else:
   fi
 }
 
+# Apply decoration layout and GTK theme to settings.ini safely
+apply_settings_ini() {
+  local target_file="$1"
+  local theme_name="$2"
+  local backup_dest="$3"
+
+  mkdir -p "$(dirname "$target_file")"
+  mkdir -p "$(dirname "$backup_dest")"
+
+  if [ -f "$target_file" ]; then
+    if [ ! -f "$backup_dest" ]; then
+      cp -p "$target_file" "$backup_dest"
+    fi
+    python3 -c "
+import configparser
+config = configparser.ConfigParser()
+config.read('$target_file')
+if not config.has_section('Settings'):
+    config.add_section('Settings')
+config.set('Settings', 'gtk-decoration-layout', 'close,minimize,maximize:')
+if '$theme_name':
+    config.set('Settings', 'gtk-theme-name', '$theme_name')
+with open('$target_file', 'w') as f:
+    config.write(f, space_around_delimiters=False)
+" 2>/dev/null || true
+  else
+    cat <<EOF > "$target_file"
+[Settings]
+gtk-theme-name=$theme_name
+gtk-decoration-layout=close,minimize,maximize:
+EOF
+  fi
+
+  track_installed_file "$target_file"
+}
+
+# Revert settings.ini modification
+revert_settings_ini() {
+  local target_file="$1"
+  local was_created="${2:-false}"
+  local backup_dest="${3:-}"
+
+  if [ ! -f "$target_file" ]; then
+    return 0
+  fi
+
+  if [ "$was_created" = "true" ]; then
+    rm -f "$target_file"
+    log_info "Removed macKali-created settings: $target_file"
+  elif [ -n "$backup_dest" ] && [ -f "$backup_dest" ]; then
+    cp -p "$backup_dest" "$target_file"
+    log_info "Restored settings from backup: $target_file"
+  else
+    python3 -c "
+import configparser
+config = configparser.ConfigParser()
+config.read('$target_file')
+if config.has_section('Settings') and config.has_option('Settings', 'gtk-decoration-layout'):
+    config.remove_option('Settings', 'gtk-decoration-layout')
+    with open('$target_file', 'w') as f:
+        config.write(f, space_around_delimiters=False)
+" 2>/dev/null || true
+  fi
+}
+
 # Current settings reader
 read_current_settings() {
   CUR_COLOR_SCHEME="$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | tr -d "'" || echo "default")"
   CUR_BUTTON_LAYOUT="$(gsettings get org.gnome.desktop.wm.preferences button-layout 2>/dev/null | tr -d "'" || echo "default")"
+  CUR_WM_THEME="$(gsettings get org.gnome.desktop.wm.preferences theme 2>/dev/null | tr -d "'" || echo "default")"
   CUR_GTK_THEME="$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'" || echo "default")"
   CUR_ICON_THEME="$(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | tr -d "'" || echo "default")"
   CUR_CURSOR_THEME="$(gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null | tr -d "'" || echo "default")"
@@ -284,6 +357,12 @@ read_current_settings() {
   if grep -qF "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$GTK4_CSS" 2>/dev/null || grep -qF "/* === BEGIN MACKALI TRAFFIC LIGHTS === */" "$GTK3_CSS" 2>/dev/null; then
     CUR_TRAFFIC_LIGHTS="active"
   fi
+  CUR_XFWM4_LAYOUT=""
+  CUR_XFWM4_THEME=""
+  if has_cmd xfconf-query; then
+    CUR_XFWM4_LAYOUT="$(xfconf-query -c xfwm4 -p /general/button_layout 2>/dev/null || true)"
+    CUR_XFWM4_THEME="$(xfconf-query -c xfwm4 -p /general/theme 2>/dev/null || true)"
+  fi
 }
 
 # 1. Action: STATUS
@@ -296,6 +375,7 @@ if [ "$ACTION" = "status" ]; then
   echo "  - Window Buttons:     $CUR_BUTTON_LAYOUT"
   echo "  - Traffic Lights:     $CUR_TRAFFIC_LIGHTS (macOS Left Circular Controls)"
   echo "  - GTK Theme:          $CUR_GTK_THEME"
+  echo "  - WM Theme:           $CUR_WM_THEME"
   echo "  - Shell Theme:        $CUR_SHELL_THEME"
   echo "  - Icon Theme:         $CUR_ICON_THEME"
   echo "  - Cursor Theme:       $CUR_CURSOR_THEME (size: $CUR_CURSOR_SIZE)"
@@ -313,36 +393,62 @@ if [ "$ACTION" = "revert_traffic_lights" ]; then
   if [ "$DRY_RUN" = true ]; then
     log_info "[DRY-RUN] Would revert window button-layout to previous or default layout."
     log_info "[DRY-RUN] Would remove macKali traffic lights styling from $GTK4_CSS and $GTK3_CSS."
+    log_info "[DRY-RUN] Would restore GTK settings.ini configuration."
     exit 0
   fi
 
   old_buttons=""
   old_gtk=""
+  old_wm=""
+  old_xfwm4_layout=""
+  old_xfwm4_theme=""
   gtk4_created=false
   gtk3_created=false
+  gtk4_settings_created=false
+  gtk3_settings_created=false
   gtk4_backup="$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
   gtk3_backup="$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
+  gtk4_settings_backup="$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
+  gtk3_settings_backup="$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
 
   if [ -f "$TRAFFIC_SNAPSHOT_FILE" ] && has_cmd jq; then
     old_buttons="$(jq -r '.previous_button_layout // empty' "$TRAFFIC_SNAPSHOT_FILE")"
     old_gtk="$(jq -r '.previous_gtk_theme // empty' "$TRAFFIC_SNAPSHOT_FILE")"
+    old_wm="$(jq -r '.previous_wm_theme // empty' "$TRAFFIC_SNAPSHOT_FILE")"
+    old_xfwm4_layout="$(jq -r '.previous_xfwm4_layout // empty' "$TRAFFIC_SNAPSHOT_FILE")"
+    old_xfwm4_theme="$(jq -r '.previous_xfwm4_theme // empty' "$TRAFFIC_SNAPSHOT_FILE")"
     [ "$(jq -r '.gtk4_css_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk4_created=true
     [ "$(jq -r '.gtk3_css_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk3_created=true
+    [ "$(jq -r '.gtk4_settings_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk4_settings_created=true
+    [ "$(jq -r '.gtk3_settings_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk3_settings_created=true
   fi
 
   # Fallback to system default if prior state was not recorded
   [ -z "$old_buttons" ] && old_buttons="appmenu:minimize,maximize,close"
 
-  gsettings set org.gnome.desktop.wm.preferences button-layout "$old_buttons"
+  gsettings set org.gnome.desktop.wm.preferences button-layout "$old_buttons" 2>/dev/null || true
   log_success "Restored window button-layout: $old_buttons"
 
+  if [ -n "$old_wm" ] && [ "$old_wm" != "$CUR_WM_THEME" ]; then
+    gsettings set org.gnome.desktop.wm.preferences theme "$old_wm" 2>/dev/null || true
+    log_success "Restored wm theme: $old_wm"
+  fi
+
   if [ -n "$old_gtk" ] && [ "$old_gtk" != "$CUR_GTK_THEME" ]; then
-    gsettings set org.gnome.desktop.interface gtk-theme "$old_gtk"
+    gsettings set org.gnome.desktop.interface gtk-theme "$old_gtk" 2>/dev/null || true
     log_success "Restored gtk-theme: $old_gtk"
+  fi
+
+  if has_cmd xfconf-query; then
+    [ -n "$old_xfwm4_layout" ] && xfconf-query -c xfwm4 -p /general/button_layout -s "$old_xfwm4_layout" 2>/dev/null || true
+    [ -n "$old_xfwm4_theme" ] && xfconf-query -c xfwm4 -p /general/theme -s "$old_xfwm4_theme" 2>/dev/null || true
   fi
 
   revert_traffic_lights_css "$GTK4_CSS" "$gtk4_created" "$gtk4_backup"
   revert_traffic_lights_css "$GTK3_CSS" "$gtk3_created" "$gtk3_backup"
+
+  revert_settings_ini "$GTK4_SETTINGS" "$gtk4_settings_created" "$gtk4_settings_backup"
+  revert_settings_ini "$GTK3_SETTINGS" "$gtk3_settings_created" "$gtk3_settings_backup"
 
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
   log_success "macOS traffic lights reverted successfully."
@@ -386,6 +492,8 @@ if [ "$ACTION" = "revert" ]; then
 
   revert_traffic_lights_css "$GTK4_CSS" false "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
   revert_traffic_lights_css "$GTK3_CSS" false "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
+  revert_settings_ini "$GTK4_SETTINGS" false "$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
+  revert_settings_ini "$GTK3_SETTINGS" false "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
 
   log_success "Appearance reverted to snapshot state."
@@ -402,6 +510,7 @@ if [ "$ACTION" = "reset_defaults" ]; then
 
   gsettings reset org.gnome.desktop.interface color-scheme
   gsettings reset org.gnome.desktop.wm.preferences button-layout
+  gsettings reset org.gnome.desktop.wm.preferences theme 2>/dev/null || true
   gsettings reset org.gnome.desktop.interface gtk-theme
   gsettings reset org.gnome.desktop.interface icon-theme
   gsettings reset org.gnome.desktop.interface cursor-theme
@@ -414,6 +523,8 @@ if [ "$ACTION" = "reset_defaults" ]; then
 
   revert_traffic_lights_css "$GTK4_CSS"
   revert_traffic_lights_css "$GTK3_CSS"
+  revert_settings_ini "$GTK4_SETTINGS"
+  revert_settings_ini "$GTK3_SETTINGS"
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
 
   log_success "All appearance settings successfully reset to Kali Linux defaults."
@@ -425,13 +536,12 @@ read_current_settings
 
 if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
   REQ_BUTTON_LAYOUT="close,minimize,maximize:"
+  effective_scheme="${REQ_COLOR_SCHEME:-$CUR_COLOR_SCHEME}"
   if [ -z "$REQ_GTK_THEME" ]; then
-    if [[ "$CUR_GTK_THEME" != WhiteSur* ]]; then
-      if [ "$CUR_COLOR_SCHEME" = "prefer-light" ]; then
-        REQ_GTK_THEME="WhiteSur-Light"
-      else
-        REQ_GTK_THEME="WhiteSur-Dark"
-      fi
+    if [ "$effective_scheme" = "prefer-light" ]; then
+      REQ_GTK_THEME="WhiteSur-Light"
+    else
+      REQ_GTK_THEME="WhiteSur-Dark"
     fi
   fi
 fi
@@ -523,15 +633,24 @@ if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
   mkdir -p "$(dirname "$TRAFFIC_SNAPSHOT_FILE")"
   gtk4_existed=false
   gtk3_existed=false
+  gtk4_settings_existed=false
+  gtk3_settings_existed=false
   [ -f "$GTK4_CSS" ] && gtk4_existed=true
   [ -f "$GTK3_CSS" ] && gtk3_existed=true
+  [ -f "$GTK4_SETTINGS" ] && gtk4_settings_existed=true
+  [ -f "$GTK3_SETTINGS" ] && gtk3_settings_existed=true
   cat <<EOF > "$TRAFFIC_SNAPSHOT_FILE"
 {
   "timestamp": "$(date +"%Y%m%d_%H%M%S")",
   "previous_button_layout": "$CUR_BUTTON_LAYOUT",
   "previous_gtk_theme": "$CUR_GTK_THEME",
+  "previous_wm_theme": "$CUR_WM_THEME",
+  "previous_xfwm4_layout": "$CUR_XFWM4_LAYOUT",
+  "previous_xfwm4_theme": "$CUR_XFWM4_THEME",
   "gtk4_css_existed": $gtk4_existed,
-  "gtk3_css_existed": $gtk3_existed
+  "gtk3_css_existed": $gtk3_existed,
+  "gtk4_settings_existed": $gtk4_settings_existed,
+  "gtk3_settings_existed": $gtk3_settings_existed
 }
 EOF
 fi
@@ -555,6 +674,7 @@ if [ -n "$REQ_GTK_THEME" ]; then
     "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install
   fi
   gsettings set org.gnome.desktop.interface gtk-theme "$REQ_GTK_THEME" 2>/dev/null || true
+  gsettings set org.gnome.desktop.wm.preferences theme "$REQ_GTK_THEME" 2>/dev/null || true
   log_success "Set gtk-theme: $REQ_GTK_THEME"
 fi
 
@@ -563,9 +683,29 @@ if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
     log_info "Installing WhiteSur GTK themes via gtk-provider.sh..."
     "$REPO_ROOT/scripts/providers/gtk-provider.sh" --install
   fi
+
+  TARGET_THEME="WhiteSur-Dark"
+  if [ "$REQ_COLOR_SCHEME" = "prefer-light" ] || [ "$CUR_COLOR_SCHEME" = "prefer-light" ]; then
+    TARGET_THEME="WhiteSur-Light"
+  fi
+  [ -n "$REQ_GTK_THEME" ] && TARGET_THEME="$REQ_GTK_THEME"
+
+  gsettings set org.gnome.desktop.wm.preferences theme "$TARGET_THEME" 2>/dev/null || true
+
   log_step "Applying macOS traffic lights stylesheet overrides..."
   apply_traffic_lights_css "$GTK4_CSS" "$GTK4_TEMPLATE" "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
   apply_traffic_lights_css "$GTK3_CSS" "$GTK3_TEMPLATE" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
+
+  apply_settings_ini "$GTK4_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
+  apply_settings_ini "$GTK3_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
+
+  if has_cmd xfconf-query; then
+    xfconf-query -c xfwm4 -p /general/button_layout -s "CHM|" 2>/dev/null || true
+    xfconf-query -c xfwm4 -p /general/theme -s "$TARGET_THEME" 2>/dev/null || true
+    xfconf-query -c xsettings -p /Net/ThemeName -s "$TARGET_THEME" 2>/dev/null || true
+    xfconf-query -c xsettings -p /Gtk/DecorationLayout -s "close,minimize,maximize:" 2>/dev/null || true
+  fi
+
   log_success "Applied authentic macOS traffic lights to GTK3 & GTK4/Libadwaita applications."
 fi
 

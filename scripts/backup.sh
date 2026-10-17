@@ -63,6 +63,7 @@ fi
 CURRENT_CURSOR=""
 CURRENT_ICON=""
 CURRENT_GTK=""
+CURRENT_WM_THEME=""
 CURRENT_COLOR=""
 CURRENT_BUTTONS=""
 CURRENT_LIGHT_WP=""
@@ -73,6 +74,7 @@ if has_cmd gsettings; then
   CURRENT_CURSOR="$(gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null | tr -d "'" || echo "default")"
   CURRENT_ICON="$(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | tr -d "'" || echo "default")"
   CURRENT_GTK="$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'" || echo "default")"
+  CURRENT_WM_THEME="$(gsettings get org.gnome.desktop.wm.preferences theme 2>/dev/null | tr -d "'" || echo "default")"
   CURRENT_COLOR="$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | tr -d "'" || echo "default")"
   CURRENT_BUTTONS="$(gsettings get org.gnome.desktop.wm.preferences button-layout 2>/dev/null | tr -d "'" || echo "default")"
   CURRENT_LIGHT_WP="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'" || echo "default")"
@@ -81,6 +83,12 @@ if has_cmd gsettings; then
     CURRENT_SHELL="$(gsettings get org.gnome.shell.extensions.user-theme name 2>/dev/null | tr -d "'" || echo "default")"
   fi
 fi
+
+# 2.5 Backup GTK custom CSS and settings.ini if present
+[ -f "$HOME/.config/gtk-4.0/gtk.css" ] && cp "$HOME/.config/gtk-4.0/gtk.css" "$TARGET_DIR/gtk4.css"
+[ -f "$HOME/.config/gtk-3.0/gtk.css" ] && cp "$HOME/.config/gtk-3.0/gtk.css" "$TARGET_DIR/gtk3.css"
+[ -f "$HOME/.config/gtk-4.0/settings.ini" ] && cp "$HOME/.config/gtk-4.0/settings.ini" "$TARGET_DIR/gtk4-settings.ini"
+[ -f "$HOME/.config/gtk-3.0/settings.ini" ] && cp "$HOME/.config/gtk-3.0/settings.ini" "$TARGET_DIR/gtk3-settings.ini"
 
 # 3. Backup enabled extensions list
 ENABLED_EXTENSIONS=()
@@ -99,6 +107,7 @@ cat <<EOF > "$TARGET_DIR/backup-meta.json"
   "cursor_theme": "$CURRENT_CURSOR",
   "icon_theme": "$CURRENT_ICON",
   "gtk_theme": "$CURRENT_GTK",
+  "wm_theme": "$CURRENT_WM_THEME",
   "color_scheme": "$CURRENT_COLOR",
   "button_layout": "$CURRENT_BUTTONS",
   "picture_uri": "$CURRENT_LIGHT_WP",

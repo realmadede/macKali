@@ -191,30 +191,38 @@ run_test "Isolated backup creation & restore verification" test_backup_restore
 
 # Test 11: Cursor Installation & Uninstallation lifecycle
 test_cursor_lifecycle() {
+  local fake_home="$SANDBOX/cursor_home"
+  mkdir -p "$fake_home"
   # Install
-  "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
-  local target="$HOME/.local/share/icons/WhiteSur-cursors"
+  HOME="$fake_home" "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
+  local target="$fake_home/.local/share/icons/WhiteSur-cursors"
   [ -d "$target/cursors" ] || return 1
   [ -f "$target/index.theme" ] || return 1
+  [ -f "$fake_home/.icons/default/index.theme" ] || return 1
 
   # Uninstall
-  "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
+  HOME="$fake_home" "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
   [ ! -d "$target" ] || return 1
+  [ ! -f "$fake_home/.icons/default/index.theme" ] || return 1
+  return 0
 }
 run_test "Cursor installation & uninstallation lifecycle" test_cursor_lifecycle
 
 # Test 12: Reentrancy check (Running installation twice does not corrupt settings)
 test_reentrancy() {
+  local fake_home="$SANDBOX/reentrancy_home"
+  mkdir -p "$fake_home"
   # Run installer twice with dry-run
-  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
-  "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --preset balanced --dry-run >/dev/null
   # Run cursor installer twice
-  "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
-  "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
-  local target="$HOME/.local/share/icons/WhiteSur-cursors"
+  HOME="$fake_home" "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
+  HOME="$fake_home" "$REPO_ROOT/themes/cursors/install.sh" >/dev/null
+  local target="$fake_home/.local/share/icons/WhiteSur-cursors"
   [ -d "$target/cursors" ] || return 1
   # Clean up
-  "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
+  HOME="$fake_home" "$REPO_ROOT/themes/cursors/install.sh" --uninstall >/dev/null
+  return 0
 }
 run_test "Installer reentrancy and idempotency (no duplication on repeated runs)" test_reentrancy
 

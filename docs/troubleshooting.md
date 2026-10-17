@@ -197,4 +197,41 @@ macKali adheres to POSIX shell standards and standard FreeDesktop paths (`~/.con
 
 ---
 
+## 9. Running Inside Virtual Machines (VirtualBox, VMware, KVM)
+
+macKali runs completely inside virtualized environments. Because it operates entirely on FreeDesktop and GNOME standards without bare-metal hardware dependencies, it is fully compatible with VirtualBox, VMware Workstation, and QEMU/KVM.
+
+### VirtualBox Performance Configuration
+1. **Enable 3D Acceleration:** In VirtualBox, go to **Settings &rarr; Display**, check **"Enable 3D Acceleration"**, and allocate **128 MB or 256 MB VRAM**. Without 3D acceleration, GNOME falls back to software rendering (`llvmpipe`), causing window transitions and dock effects to stutter.
+2. **Install Guest Additions:** Ensure guest integration is active for auto-resizing and smooth vector cursor rendering:
+   ```bash
+   sudo apt update && sudo apt install -y virtualbox-guest-x11
+   ```
+3. **Recommended Presets for VMs:**
+   * **Balanced Preset (`./install.sh --preset balanced`):** Default recommendation for modern VMs (4GB+ RAM, 2-4 vCPUs).
+   * **Minimal Preset (`./install.sh --preset minimal`):** Best for low-resource VMs (2-4GB RAM). Delivers the complete macOS dark/light interface, circular traffic lights, and WhiteSur cursors with zero extension overhead.
+   * *Avoid 3D physics effects (`--with-cube` or `--with-wobbly`) inside VirtualBox unless PCI GPU passthrough is enabled.*
+4. **Theming the VirtualBox Manager App:** If you run the VirtualBox GUI application inside macKali, run `./scripts/providers/qt-provider.sh --install` to style its interior panels with the WhiteSur Qt/Kvantum theme.
+
+---
+
+## 10. Security Architecture, Integrity Auditing & Stealth Mode
+
+macKali contains **zero telemetry, zero tracking, zero background daemons, and zero credential scrapers**. It operates rootless in user space. However, on monitored enterprise networks, penetration test jumpboxes, or air-gapped environments, the following 5 behaviors are transparently documented:
+
+1. **Outbound GitHub Release Check:** By default, `./install.sh` issues an HTTP GET request to `https://api.github.com/repos/realmadede/macKali/releases/latest` with a 2-second timeout to alert you if an update is available.
+   * *Stealth Override:* Pass `--no-update-check` to disable all network calls.
+2. **Environment Configuration (`~/.config/environment.d/`):** The Qt provider writes `10-mackali-qt.conf` setting `QT_STYLE_OVERRIDE=kvantum` and `QT_QPA_PLATFORMTHEME=qt5ct`. Endpoint Detection & Response (EDR) or auditd tools monitoring `environment.d` will observe this user configuration write.
+3. **User GTK Stylesheet Injection:** Styles are appended to `~/.config/gtk-3.0/gtk.css` and `~/.config/gtk-4.0/gtk.css` between clear marker comments. File Integrity Monitors (FIM) like AIDE or OSSEC will report modified timestamps on these two files.
+4. **D-Bus GSettings Desktop Calls:** Window control order (`close,minimize,maximize:`) and Dash to Dock positions are applied via standard GSettings over the user D-Bus session.
+5. **Nautilus Process Refresh:** When switching themes, macKali may issue `nautilus -q` to refresh GNOME CSS stylesheets immediately without requiring a full logout. Process monitors will log a file manager termination and respawn event.
+
+### Total Stealth / Air-Gapped Installation
+For air-gapped or strictly monitored security environments:
+```bash
+./install.sh --preset minimal --no-update-check
+```
+
+---
+
 For full disaster recovery steps and manual commands, see [docs/safety-and-removal.md](safety-and-removal.md).

@@ -122,3 +122,22 @@ In the unlikely event that a combination of extensions causes GNOME Shell to fre
    gsettings reset org.gnome.desktop.interface cursor-theme
    ```
 5. Switch back to your graphical desktop: Press `Ctrl + Alt + F2` (or `Ctrl + Alt + F1`).
+
+---
+
+## 5. Security Transparency: Monitored Environments & Stealth Mode
+
+macKali is designed for security professionals and ethical hackers. To assist security audits, File Integrity Monitoring (FIM), and Endpoint Detection (EDR), all background interactions are listed below:
+
+| Interaction | Purpose | Impact & How to Audit |
+| :--- | :--- | :--- |
+| **GitHub Release API Query** | Checks for official version updates via `https://api.github.com/` (2s timeout). | Outbound HTTP GET. Disable with `--no-update-check`. |
+| **`~/.config/environment.d/`** | Configures Qt & Kvantum WhiteSur theming environment variables. | User configuration file `10-mackali-qt.conf`. Safe to inspect or delete. |
+| **`~/.config/gtk-*.0/gtk.css`** | Injects circular traffic light CSS rules between delimited comment markers. | Appends user CSS. Never modifies unrelated custom CSS. |
+| **D-Bus GSettings Calls** | Sets window button layout and dock layout. | Standard user D-Bus calls. No root escalation. |
+| **Nautilus Process Refresh** | Issues `nautilus -q` to reload GTK CSS without requiring user logout. | Safe process restart for instantaneous styling application. |
+
+**Stealth / Air-Gapped Flag:**
+```bash
+./install.sh --preset minimal --no-update-check
+```

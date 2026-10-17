@@ -902,6 +902,28 @@
               macKali features an automated in-app release update checker. Every time you run the installer or customization wizard, macKali performs an unobtrusive 2-second check against the official GitHub Releases API. If a newer release or security patch is available, an alert banner is displayed with instant upgrade instructions. You can also run <code>./install.sh --check-update</code> at any time. When Kali Linux upgrades GNOME, running <code>./install.sh --recheck</code> re-evaluates extension compatibility dynamically without reinstalling your wallpapers or themes.
             </div>
           </article>
+
+          <!-- FAQ Item 13 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>Can macKali run inside VirtualBox or other virtual machines?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              Yes, macKali runs completely inside VirtualBox, VMware, and QEMU/KVM. For the smoothest experience, enable <strong>3D Acceleration</strong> in VirtualBox VM settings (allocate 128MB or 256MB VRAM) and install guest integration (<code>sudo apt install -y virtualbox-guest-x11</code>). The recommended preset for virtual machines is <strong>Balanced</strong> (or <strong>Minimal</strong> for 2GB–4GB RAM VMs). In addition, if you run the VirtualBox manager application inside macKali, the Qt Provider (<code>qt-provider.sh</code>) themes its interface and dialogs with the WhiteSur macOS look.
+            </div>
+          </article>
+
+          <!-- FAQ Item 14 -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>What background activities or system modifications does macKali perform, and does it collect telemetry?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              macKali contains <strong>zero telemetry, zero tracking, zero background daemons, and zero credential scrapers</strong>. It runs rootless in user space. During installation, it performs a 2-second check against the official GitHub Releases API (disable with <code>--no-update-check</code> for air-gapped environments). It sets user configuration files (<code>~/.config/gtk-4.0/gtk.css</code>, <code>~/.config/environment.d/10-mackali-qt.conf</code>) and applies standard GSettings D-Bus window layouts. It <strong>never</strong> touches shell configs (<code>~/.zshrc</code>), Metasploit, Wireshark packet engines, proxies, or network interfaces.
+            </div>
+          </article>
         </div>
       </div>
     </section>

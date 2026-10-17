@@ -1,6 +1,7 @@
 /* ==============================================================================
  * macKali macOS Traffic Light Window Controls for GTK 3
  * Authentic Circular Red (#ff5f56), Yellow (#ffbd2e), Green (#27c93f)
+ * Clean Brightness & Border Highlight (Subtle Glow without Inner Glyphs)
  * ============================================================================== */
 
 /* Container & Headerbar Spacing */
@@ -67,8 +68,9 @@ titlebar button.titlebutton.close:hover,
 titlebar:hover button.titlebutton.close,
 windowcontrols button.close:hover,
 windowcontrols:hover button.close {
-  background-color: #ff5f56;
-  border-color: #c03630;
+  background-color: #ff726b;
+  border-color: #ff9d97;
+  box-shadow: 0 0 5px rgba(255, 95, 86, 0.8);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMDUgMTUuMDAyYzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktNyAwLTMuODY2LTMuMTM0LTYuOTk5OS02Ljk5OTktNi45OTk5LTMuODY2IDAtNyAzLjEzMzktNyA2Ljk5OTkgMCAzLjg2NiAzLjEzNCA3IDcgNyIgZmlsbD0iI2U5NTI0YSIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiA8L3N2Zz4=');
 }
 button.titlebutton.close:active,
@@ -76,7 +78,8 @@ headerbar button.titlebutton.close:active,
 titlebar button.titlebutton.close:active,
 windowcontrols button.close:active {
   background-color: #bf4942;
-  border-color: #a02822;
+  border-color: #8c2620;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSAwIDAgMy43Nzk1IC0zMjIgLTU4MC41MikiPgogIDxnIHRyYW5zZm9ybT0ibWF0cml4KC4zNDAxOCAwIDAgLjM0MDE4IDg0LjkzMSAxNTMuMzMpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiPgogICAgPGcgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICA8cGF0aCBkPSJtMTIuMDAzIDEwNDUuOWMzLjAwNjggMCA1LjQ0NDQtMi40Mzc1IDUuNDQ0NC01LjQ0NDRzLTIuNDM3Ni01LjQ0NDUtNS40NDQ0LTUuNDQ0NWMtMy4wMDY5IDAtNS40NDQ1IDIuNDM3Ni01LjQ0NDUgNS40NDQ1czIuNDM3NiA1LjQ0NDQgNS40NDQ1IDUuNDQ0NCIgZmlsbD0iI2NiNGU0MyIgc3Ryb2tlLXdpZHRoPSIuNzc3NzgiLz4KICAgIDwvZz4KICAgPC9nPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
 }
 button.titlebutton.close:backdrop,
@@ -103,8 +106,9 @@ titlebar button.titlebutton.minimize:hover,
 titlebar:hover button.titlebutton.minimize,
 windowcontrols button.minimize:hover,
 windowcontrols:hover button.minimize {
-  background-color: #ffbd2e;
-  border-color: #b88214;
+  background-color: #ffc94d;
+  border-color: #ffde82;
+  box-shadow: 0 0 5px rgba(255, 189, 46, 0.8);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im03Ljk5OTkgMTUuMDA0YzMuODY1OSAwIDYuOTk5OS0zLjEzNCA2Ljk5OTktNyAwLTMuODY2LTMuMTM0MS03LjAwMDEtNi45OTk5LTcuMDAwMS0zLjg2NiAwLTcuMDAwMSAzLjEzNC03LjAwMDEgNy4wMDAxIDAgMy44NjU5IDMuMTM0MSA3IDcuMDAwMSA3IiBmaWxsPSIjZjFhZTFiIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iLjc3Nzk3Ii8+CiA8L3N2Zz4=');
 }
 button.titlebutton.minimize:active,
@@ -112,7 +116,8 @@ headerbar button.titlebutton.minimize:active,
 titlebar button.titlebutton.minimize:active,
 windowcontrols button.minimize:active {
   background-color: #bf8e22;
-  border-color: #9e6f0f;
+  border-color: #8a620e;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSwwLDAsMy43Nzk1LC0yNjUsLTU4NS41MikiPgogIDxnIHRyYW5zZm9ybT0ibWF0cml4KC4yNjQ2NSAwIDAgLjI2NDY1IDcwLjY0MyAxNTQuOTIpIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3Ij4KICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTUsLTEwMzMuNCkiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgICA8cGF0aCBkPSJtMTEuMDAzIDEwNDguNGMzLjg2NSAwIDYuOTk4Mi0zLjEzMzIgNi45OTgyLTYuOTk4M3MtMy4xMzMzLTYuOTk4NC02Ljk5ODItNi45OTg0Yy0zLjg2NSAwLTYuOTk4MyAzLjEzMzItNi45OTgzIDYuOTk4NCAwIDMuODY1IDMuMTMzMyA2Ljk5ODMgNi45OTgzIDYuOTk4MyIgZmlsbD0iI2NhYTEyNCIgc3Ryb2tlLXdpZHRoPSIuNzc3NzgiLz4KICAgPC9nPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
 }
 button.titlebutton.minimize:backdrop,
@@ -139,8 +144,9 @@ titlebar button.titlebutton.maximize:hover,
 titlebar:hover button.titlebutton.maximize,
 windowcontrols button.maximize:hover,
 windowcontrols:hover button.maximize {
-  background-color: #27c93f;
-  border-color: #128820;
+  background-color: #38db50;
+  border-color: #68ea7c;
+  box-shadow: 0 0 5px rgba(39, 201, 63, 0.8);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMTkgMTQuOTk5YzMuODY2MSAwIDctMy4xMzM5IDctNyAwLTMuODY2MS0zLjEzNC03LTctNy0zLjg2NjEgMC03IDMuMTM0LTcgNyAwIDMuODY2MSAzLjEzNCA3IDcgNyIgZmlsbD0iIzU5YzgzNyIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2Utd2lkdGg9IjIuOTM5NiIvPgogPC9zdmc+');
 }
 button.titlebutton.maximize:active,
@@ -148,7 +154,8 @@ headerbar button.titlebutton.maximize:active,
 titlebar button.titlebutton.maximize:active,
 windowcontrols button.maximize:active {
   background-color: #1d9730;
-  border-color: #0f751f;
+  border-color: #0f681d;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSwwLDAsMy43Nzk1LC0yOTYsLTU4Ni41MikiPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMS45MDYsMzEuMjIxKSIgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgPHBhdGggZD0ibTkyLjM0IDEyNy45M2MxLjAyMjkgMCAxLjg1MjEtMC44MjkyMyAxLjg1MjEtMS44NTIxIDAtMS4wMjI5LTAuODI5MjEtMS44NTIxLTEuODUyMS0xLjg1MjEtMS4wMjI5IDAtMS44NTIxIDAuODI5MjMtMS44NTIxIDEuODUyMSAwIDEuMDIyOSAwLjgyOTIxIDEuODUyMSAxLjg1MjEgMS44NTIxIiBmaWxsPSIjMjBhOTMyIiBzdHJva2Utd2lkdGg9Ii43Nzc4MSIvPgogIDwvZz4KICA8L2c+Cjwvc3ZnPg==');
 }
 button.titlebutton.maximize:backdrop,
@@ -166,11 +173,17 @@ windowcontrols button.maximize:backdrop {
 .maximized headerbar:hover button.titlebutton.maximize,
 .fullscreen windowcontrols:hover button.maximize,
 .maximized windowcontrols:hover button.maximize {
+  background-color: #38db50;
+  border-color: #68ea7c;
+  box-shadow: 0 0 5px rgba(39, 201, 63, 0.8);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxwYXRoIGQ9Im04LjAwMTkgMTQuOTk5YzMuODY2MSAwIDctMy4xMzM5IDctN3MtMy4xMzQtNy03LTdjLTMuODY2MSAwLTcgMy4xMzQtNyA3IDAgMy44NjYxIDMuMTM0IDcgNyA3IiBmaWxsPSIjNTljODM3IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iMi45Mzk2Ii8+CiA8L3N2Zz4=');
 }
 .fullscreen button.titlebutton.maximize:active,
 .maximized button.titlebutton.maximize:active,
 .fullscreen headerbar button.titlebutton.maximize:active,
 .maximized headerbar button.titlebutton.maximize:active {
+  background-color: #1d9730;
+  border-color: #0f681d;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIDxnIHRyYW5zZm9ybT0ibWF0cml4KDMuNzc5NSAwIDAgMy43Nzk1IC0zNDEgLTQ2OC41MikiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CiAgPHBhdGggZD0ibTkyLjM0IDEyNy45M2MxLjAyMjkgMCAxLjg1MjEtMC44MjkyMyAxLjg1MjEtMS44NTIxIDAtMS4wMjI5LTAuODI5MjEtMS44NTIxLTEuODUyMS0xLjg1MjEtMS4wMjI5IDAtMS44NTIxIDAuODI5MjMtMS44NTIxIDEuODUyMSAwIDEuMDIyOSAwLjgyOTIxIDEuODUyMSAxLjg1MjEgMS44NTIxIiBmaWxsPSIjMjBhOTMyIiBzdHJva2Utd2lkdGg9Ii43Nzc4MSIvPgogPC9nPgogPC9zdmc+');
 }

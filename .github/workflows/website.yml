@@ -1,6 +1,6 @@
 name: macKali Website CI
 
-on:
+"on":
   push:
     branches: [ website ]
     paths:

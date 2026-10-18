@@ -17,6 +17,5 @@ __pycache__/
 *.swo
 *~
 
-# Local GitHub Ruleset configuration files (do not track)
+# Local GitHub Ruleset configuration file (do not track)
 /rulesets.json
-/ruleset-*.json

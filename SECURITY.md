@@ -6,9 +6,9 @@ The **macKali** project provides security updates and maintenance for the follow
 
 | Version | Status | Supported |
 | :--- | :--- | :---: |
-| `v1.0.x` (Stable) | Active Stable Release | ✅ Yes |
-| `v1.0.0-rc.1` | Historical Release Candidate | ❌ No (Upgrade to `v1.0.0+`) |
-| `< v1.0.0` | Pre-release / Development | ❌ No |
+| `v1.0.x` (Stable) | Active Stable Release |  Yes |
+| `v1.0.0-rc.1` | Historical Release Candidate |  No (Upgrade to `v1.0.0+`) |
+| `< v1.0.0` | Pre-release / Development |  No |
 
 ---
 

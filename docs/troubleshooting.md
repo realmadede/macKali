@@ -98,9 +98,12 @@ macKali creates automated backups prior to applying presets:
 ./scripts/restore.sh
 ```
 
-### Cleanly Remove macKali Assets & Reset Settings
+### Cleanly Remove macKali Assets & Restore Settings
 ```bash
-# Revert to latest backup:
+# Default scoped removal (reverses only macKali-owned files and settings):
+./scripts/uninstall.sh
+
+# Restore full desktop snapshot from latest backup archive:
 ./scripts/uninstall.sh --restore-backup
 
 # Or complete purge back to Kali Linux system defaults:
@@ -221,7 +224,7 @@ macKali contains **zero telemetry, zero tracking, zero background daemons, and z
 
 1. **Outbound GitHub Release Check:** By default, `./install.sh` issues an HTTP GET request to `https://api.github.com/repos/realmadede/macKali/releases/latest` with a 2-second timeout to alert you if an update is available.
    * *Stealth Override:* Pass `--no-update-check` to disable all network calls.
-2. **Environment Configuration (`~/.config/environment.d/`):** The Qt provider writes `10-mackali-qt.conf` setting `QT_STYLE_OVERRIDE=kvantum` and `QT_QPA_PLATFORMTHEME=qt5ct`. Endpoint Detection & Response (EDR) or auditd tools monitoring `environment.d` will observe this user configuration write.
+2. **Environment Configuration (`~/.config/environment.d/`):** When the Kvantum engine and complete theme assets are present, the Qt provider writes `10-mackali-qt.conf` setting `QT_STYLE_OVERRIDE=kvantum` (preserving any existing user-defined `QT_QPA_PLATFORM` or scaling variables). Endpoint Detection & Response (EDR) or auditd tools monitoring `environment.d` will observe this user configuration write.
 3. **User GTK Stylesheet Injection:** Styles are appended to `~/.config/gtk-3.0/gtk.css` and `~/.config/gtk-4.0/gtk.css` between clear marker comments. File Integrity Monitors (FIM) like AIDE or OSSEC will report modified timestamps on these two files.
 4. **D-Bus GSettings Desktop Calls:** Window control order (`close,minimize,maximize:`) and Dash to Dock positions are applied via standard GSettings over the user D-Bus session.
 5. **Nautilus Process Refresh:** When switching themes, macKali may issue `nautilus -q` to refresh GNOME CSS stylesheets immediately without requiring a full logout. Process monitors will log a file manager termination and respawn event.

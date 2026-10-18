@@ -44,5 +44,9 @@ This directory contains modular automation scripts for system inspection, instal
 
 ### 5. Uninstall Assets
 ```bash
-./scripts/uninstall.sh --restore-settings
+# Scoped reversal of macKali-managed changes:
+./scripts/uninstall.sh
+
+# Restore full desktop snapshot from latest backup:
+./scripts/uninstall.sh --restore-backup
 ```

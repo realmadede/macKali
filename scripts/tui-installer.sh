@@ -628,7 +628,11 @@ step_execute_and_report() {
 
   local install_cmd=("$REPO_ROOT/scripts/install.sh" "--preset" "$SELECTED_PRESET")
 
-  [ "$DO_BACKUP" = true ] && install_cmd+=("--backup")
+  if [ "$DO_BACKUP" = true ]; then
+    install_cmd+=("--backup")
+  else
+    install_cmd+=("--no-backup")
+  fi
   if [ "$DO_APPEARANCE" = true ]; then
     install_cmd+=("--appearance" "--mode" "$SELECTED_MODE")
   else

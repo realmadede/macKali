@@ -12,10 +12,12 @@ source "$SCRIPT_DIR/lib/common.sh"
 ACTION="interactive"
 PRESET="balanced"
 DRY_RUN=false
-DO_BACKUP=false
+DO_BACKUP=true
 CURSORS_ONLY=false
 APPLY_APPEARANCE=true
+TRAFFIC_LIGHTS_ONLY=false
 APPEARANCE_MODE="dark"
+MODE_EXPLICIT=false
 APPLY_EXTENSIONS=false
 DOCK_ONLY=false
 WITH_MAGIC_LAMP=false
@@ -63,16 +65,24 @@ while [[ $# -gt 0 ]]; do
       PRESET="$2"
       shift 2
       ;;
-    --appearance|--traffic-lights)
+    --appearance)
       APPLY_APPEARANCE=true
+      TRAFFIC_LIGHTS_ONLY=false
+      shift
+      ;;
+    --traffic-lights)
+      APPLY_APPEARANCE=true
+      TRAFFIC_LIGHTS_ONLY=true
       shift
       ;;
     --no-appearance|--no-traffic-lights)
       APPLY_APPEARANCE=false
+      TRAFFIC_LIGHTS_ONLY=false
       shift
       ;;
     --mode)
       APPEARANCE_MODE="$2"
+      MODE_EXPLICIT=true
       shift 2
       ;;
     --wallpaper)
@@ -110,6 +120,10 @@ while [[ $# -gt 0 ]]; do
       DO_BACKUP=true
       shift
       ;;
+    --no-backup)
+      DO_BACKUP=false
+      shift
+      ;;
     --dry-run)
       DRY_RUN=true
       shift
@@ -125,6 +139,7 @@ while [[ $# -gt 0 ]]; do
       echo "      --no-update-check  Disable automatic online release update checks"
       echo "      --preset NAME      Select preset (minimal, balanced, full) [default: balanced]"
       echo "      --appearance       Apply macOS appearance (color-scheme, window buttons, wallpapers)"
+      echo "      --traffic-lights   Apply only macOS circular traffic light window controls"
       echo "      --mode [dark|light] Set appearance color mode [default: dark]"
       echo "      --wallpaper        Apply bundled 4K macOS Light & Dark wallpapers"
       echo "      --extensions       Configure GNOME extensions corresponding to the preset"
@@ -133,7 +148,8 @@ while [[ $# -gt 0 ]]; do
       echo "      --with-wobbly      Opt-in to Compiz wobbly windows in Full preset"
       echo "      --with-cube        Opt-in to experimental Desktop Cube in Full preset"
       echo "      --cursors-only     Install only the WhiteSur cursor theme"
-      echo "      --backup           Create a timestamped backup before installation"
+      echo "      --backup           Create a timestamped backup before installation [default]"
+      echo "      --no-backup        Skip automatic desktop backup before installation"
       echo "      --dry-run          Preview installation operations without modifying system"
       echo "  -h, --help             Show this help message"
       exit 0
@@ -176,22 +192,25 @@ echo "  GNOME Version:   $GNOME_VERSION"
 echo "  Session Type:    $SESSION_TYPE"
 echo ""
 
-# Handle backup
-if [ "$DO_BACKUP" = true ]; then
-  if [ "$DRY_RUN" = true ]; then
-    log_info "[DRY-RUN] Would create backup via scripts/backup.sh"
-  else
-    "$SCRIPT_DIR/backup.sh"
-    echo ""
-  fi
-fi
-
-# Handle Presets
+# Handle Presets validation before making any modifications or backups
 PRESET_FILE="$REPO_ROOT/extensions/presets/$PRESET.json"
 if [ ! -f "$PRESET_FILE" ]; then
   log_error "Preset '$PRESET' not found at $PRESET_FILE"
   echo "Available presets: minimal, balanced, full"
   exit 1
+fi
+
+# Handle backup
+if [ "$DO_BACKUP" = true ]; then
+  if [ "$DRY_RUN" = true ]; then
+    log_info "[DRY-RUN] Would create backup via scripts/backup.sh"
+  else
+    if ! "$SCRIPT_DIR/backup.sh"; then
+      log_error "Backup creation failed. Aborting installation to protect existing desktop settings."
+      exit 1
+    fi
+    echo ""
+  fi
 fi
 
 log_step "Selected Preset: $(jq -r '.name' "$PRESET_FILE")"
@@ -211,11 +230,13 @@ echo "------------------------------------------------------------"
 echo ""
 
 # 1. Install Cursors
-log_step "Installing WhiteSur Cursor Theme..."
-if [ "$DRY_RUN" = true ]; then
-  log_info "[DRY-RUN] Would execute: $REPO_ROOT/themes/cursors/install.sh"
-else
-  "$REPO_ROOT/themes/cursors/install.sh"
+if [ "$TRAFFIC_LIGHTS_ONLY" != true ]; then
+  log_step "Installing WhiteSur Cursor Theme..."
+  if [ "$DRY_RUN" = true ]; then
+    log_info "[DRY-RUN] Would execute: $REPO_ROOT/themes/cursors/install.sh"
+  else
+    "$REPO_ROOT/themes/cursors/install.sh"
+  fi
 fi
 
 # 2. Apply Wallpaper if requested
@@ -233,12 +254,22 @@ fi
 if [ "$APPLY_APPEARANCE" = true ] && [ "$CURSORS_ONLY" != true ]; then
   echo ""
   log_step "Configuring macOS Appearance & Circular Traffic Lights..."
-  PRESET_NAME="macos-dark"
-  [ "$APPEARANCE_MODE" = "light" ] && PRESET_NAME="macos-light"
-  if [ "$DRY_RUN" = true ]; then
-    "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --preview
+  if [ "$TRAFFIC_LIGHTS_ONLY" = true ]; then
+    TL_CMD=("$SCRIPT_DIR/appearance.sh" "--traffic-lights")
+    [ "$MODE_EXPLICIT" = true ] && TL_CMD+=("--mode" "$APPEARANCE_MODE")
+    if [ "$DRY_RUN" = true ]; then
+      "${TL_CMD[@]}" --preview
+    else
+      "${TL_CMD[@]}" --yes
+    fi
   else
-    "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --yes
+    PRESET_NAME="macos-dark"
+    [ "$APPEARANCE_MODE" = "light" ] && PRESET_NAME="macos-light"
+    if [ "$DRY_RUN" = true ]; then
+      "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --preview
+    else
+      "$SCRIPT_DIR/appearance.sh" --preset "$PRESET_NAME" --yes
+    fi
   fi
 fi
 

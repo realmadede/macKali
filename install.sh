@@ -19,7 +19,7 @@ case "$1" in
     check_for_updates 6 "check" "$@"
     exit 0
     ;;
-  --check|--preset|--dry-run|--backup|--appearance|--no-appearance|--traffic-lights|--no-traffic-lights|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)
+  --check|--preset|--dry-run|--backup|--no-backup|--appearance|--no-appearance|--traffic-lights|--no-traffic-lights|--wallpaper|--mode|--extensions|--dock-only|--with-magic-lamp|--with-wobbly|--with-cube|--no-update-check)
     exec "$SCRIPT_DIR/scripts/install.sh" "$@"
     ;;
   --uninstall|--reset-defaults|--purge)
@@ -43,7 +43,8 @@ case "$1" in
     echo "  $0 --check-update   Check official GitHub releases for newer version"
     echo "  $0 --no-update-check Skip online release update check"
     echo "  $0 --preset <name>  Run macKali installer with preset (minimal, balanced, full)"
-    echo "  $0 --backup         Create desktop backup before installing"
+    echo "  $0 --backup         Create desktop backup before installing (default)"
+    echo "  $0 --no-backup      Skip automatic desktop backup before installing"
     echo "  $0 --dry-run        Simulate installation without making changes"
     echo ""
     echo "Advanced installer: ./scripts/install.sh --help"

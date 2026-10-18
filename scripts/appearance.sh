@@ -253,13 +253,7 @@ revert_traffic_lights_css() {
     return 0
   fi
 
-  if [ "$was_created" = "true" ]; then
-    rm -f "$target_file"
-    log_info "Removed macKali-created stylesheet: $target_file"
-  elif [ -n "$backup_dest" ] && [ -f "$backup_dest" ]; then
-    cp -p "$backup_dest" "$target_file"
-    log_info "Restored stylesheet from backup: $target_file"
-  elif grep -qF "$start_marker" "$target_file"; then
+  if grep -qF "$start_marker" "$target_file"; then
     python3 -c "
 with open('$target_file', 'r') as f: content = f.read()
 import re
@@ -270,6 +264,12 @@ else:
     import os; os.remove('$target_file')
 " 2>/dev/null || true
     log_info "Removed macKali traffic lights block from $target_file"
+  elif [ "$was_created" = "true" ]; then
+    rm -f "$target_file"
+    log_info "Removed macKali-created stylesheet: $target_file"
+  elif [ -n "$backup_dest" ] && [ -f "$backup_dest" ]; then
+    cp -p "$backup_dest" "$target_file"
+    log_info "Restored stylesheet from backup: $target_file"
   fi
 }
 
@@ -278,6 +278,7 @@ apply_settings_ini() {
   local target_file="$1"
   local theme_name="$2"
   local backup_dest="$3"
+  local force_theme="${4:-false}"
 
   mkdir -p "$(dirname "$target_file")"
   mkdir -p "$(dirname "$backup_dest")"
@@ -293,7 +294,7 @@ config.read('$target_file')
 if not config.has_section('Settings'):
     config.add_section('Settings')
 config.set('Settings', 'gtk-decoration-layout', 'close,minimize,maximize:')
-if '$theme_name':
+if '$theme_name' and ('$force_theme' == 'true' or not config.has_option('Settings', 'gtk-theme-name')):
     config.set('Settings', 'gtk-theme-name', '$theme_name')
 with open('$target_file', 'w') as f:
     config.write(f, space_around_delimiters=False)
@@ -327,12 +328,20 @@ revert_settings_ini() {
     log_info "Restored settings from backup: $target_file"
   else
     python3 -c "
-import configparser
+import configparser, os
+p = '$target_file'
 config = configparser.ConfigParser()
-config.read('$target_file')
-if config.has_section('Settings') and config.has_option('Settings', 'gtk-decoration-layout'):
-    config.remove_option('Settings', 'gtk-decoration-layout')
-    with open('$target_file', 'w') as f:
+config.read(p)
+if config.has_section('Settings'):
+    for k in ('gtk-decoration-layout', 'gtk-theme-name', 'gtk-cursor-theme-name', 'gtk-cursor-theme-size'):
+        if config.has_option('Settings', k):
+            config.remove_option('Settings', k)
+    if not config.options('Settings'):
+        config.remove_section('Settings')
+if not config.sections():
+    os.remove(p)
+else:
+    with open(p, 'w') as f:
         config.write(f, space_around_delimiters=False)
 " 2>/dev/null || true
   fi
@@ -450,6 +459,7 @@ if [ "$ACTION" = "revert_traffic_lights" ]; then
   revert_settings_ini "$GTK4_SETTINGS" "$gtk4_settings_created" "$gtk4_settings_backup"
   revert_settings_ini "$GTK3_SETTINGS" "$gtk3_settings_created" "$gtk3_settings_backup"
 
+  rm -f "$gtk4_backup" "$gtk3_backup" "$gtk4_settings_backup" "$gtk3_settings_backup"
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
   log_success "macOS traffic lights reverted successfully."
   exit 0
@@ -473,6 +483,7 @@ if [ "$ACTION" = "revert" ]; then
   OLD_COLOR="$(jq -r '.color_scheme // empty' "$SNAPSHOT_FILE")"
   OLD_BUTTONS="$(jq -r '.button_layout // empty' "$SNAPSHOT_FILE")"
   OLD_GTK="$(jq -r '.gtk_theme // empty' "$SNAPSHOT_FILE")"
+  OLD_WM="$(jq -r '.wm_theme // empty' "$SNAPSHOT_FILE")"
   OLD_ICON="$(jq -r '.icon_theme // empty' "$SNAPSHOT_FILE")"
   OLD_CURSOR="$(jq -r '.cursor_theme // empty' "$SNAPSHOT_FILE")"
   OLD_LIGHT_WP="$(jq -r '.picture_uri // empty' "$SNAPSHOT_FILE")"
@@ -482,6 +493,7 @@ if [ "$ACTION" = "revert" ]; then
   [ -n "$OLD_COLOR" ] && gsettings set org.gnome.desktop.interface color-scheme "$OLD_COLOR"
   [ -n "$OLD_BUTTONS" ] && gsettings set org.gnome.desktop.wm.preferences button-layout "$OLD_BUTTONS"
   [ -n "$OLD_GTK" ] && gsettings set org.gnome.desktop.interface gtk-theme "$OLD_GTK"
+  [ -n "$OLD_WM" ] && gsettings set org.gnome.desktop.wm.preferences theme "$OLD_WM" 2>/dev/null || true
   [ -n "$OLD_ICON" ] && gsettings set org.gnome.desktop.interface icon-theme "$OLD_ICON"
   [ -n "$OLD_CURSOR" ] && gsettings set org.gnome.desktop.interface cursor-theme "$OLD_CURSOR"
   [ -n "$OLD_LIGHT_WP" ] && gsettings set org.gnome.desktop.background picture-uri "$OLD_LIGHT_WP"
@@ -490,11 +502,24 @@ if [ "$ACTION" = "revert" ]; then
     gsettings set org.gnome.shell.extensions.user-theme name "$OLD_SHELL" || true
   fi
 
-  revert_traffic_lights_css "$GTK4_CSS" false "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
-  revert_traffic_lights_css "$GTK3_CSS" false "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
-  revert_settings_ini "$GTK4_SETTINGS" false "$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
-  revert_settings_ini "$GTK3_SETTINGS" false "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
+  gtk4_created=false
+  gtk3_created=false
+  gtk4_settings_created=false
+  gtk3_settings_created=false
+  if [ -f "$TRAFFIC_SNAPSHOT_FILE" ] && has_cmd jq; then
+    [ "$(jq -r '.gtk4_css_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk4_created=true
+    [ "$(jq -r '.gtk3_css_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk3_created=true
+    [ "$(jq -r '.gtk4_settings_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk4_settings_created=true
+    [ "$(jq -r '.gtk3_settings_existed // false' "$TRAFFIC_SNAPSHOT_FILE")" = "false" ] && gtk3_settings_created=true
+  fi
+
+  revert_traffic_lights_css "$GTK4_CSS" "$gtk4_created" "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
+  revert_traffic_lights_css "$GTK3_CSS" "$gtk3_created" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
+  revert_settings_ini "$GTK4_SETTINGS" "$gtk4_settings_created" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
+  revert_settings_ini "$GTK3_SETTINGS" "$gtk3_settings_created" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
+  rm -f "$STATE_DIR/backups/gtk-4.0-gtk.css.bak" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
+  rm -f "$SNAPSHOT_FILE"
 
   log_success "Appearance reverted to snapshot state."
   exit 0
@@ -525,6 +550,7 @@ if [ "$ACTION" = "reset_defaults" ]; then
   revert_traffic_lights_css "$GTK3_CSS"
   revert_settings_ini "$GTK4_SETTINGS"
   revert_settings_ini "$GTK3_SETTINGS"
+  rm -f "$STATE_DIR/backups/gtk-4.0-gtk.css.bak" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
   rm -f "$TRAFFIC_SNAPSHOT_FILE"
 
   log_success "All appearance settings successfully reset to Kali Linux defaults."
@@ -536,14 +562,6 @@ read_current_settings
 
 if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
   REQ_BUTTON_LAYOUT="close,minimize,maximize:"
-  effective_scheme="${REQ_COLOR_SCHEME:-$CUR_COLOR_SCHEME}"
-  if [ -z "$REQ_GTK_THEME" ]; then
-    if [ "$effective_scheme" = "prefer-light" ]; then
-      REQ_GTK_THEME="WhiteSur-Light"
-    else
-      REQ_GTK_THEME="WhiteSur-Dark"
-    fi
-  fi
 fi
 
 # Determine if any changes requested
@@ -609,8 +627,8 @@ if [ "$CONFIRM" = true ] && [ -t 0 ]; then
   fi
 fi
 
-# Save Per-Setting Snapshot before applying
-if [ ! -f "$SNAPSHOT_FILE" ] || [ -n "$REQ_COLOR_SCHEME" ] || [ -n "$REQ_WALLPAPER_MODE" ] || [ -n "$REQ_SHELL_THEME" ] || [ -n "$REQ_ICON_THEME" ] || [ -n "$REQ_CURSOR_THEME" ]; then
+# Save Per-Setting Baseline Snapshot before applying (never overwrite existing baseline)
+if [ ! -f "$SNAPSHOT_FILE" ] && { [ -n "$REQ_COLOR_SCHEME" ] || [ -n "$REQ_WALLPAPER_MODE" ] || [ -n "$REQ_SHELL_THEME" ] || [ -n "$REQ_ICON_THEME" ] || [ -n "$REQ_CURSOR_THEME" ]; }; then
   mkdir -p "$(dirname "$SNAPSHOT_FILE")"
   cat <<EOF > "$SNAPSHOT_FILE"
 {
@@ -618,6 +636,7 @@ if [ ! -f "$SNAPSHOT_FILE" ] || [ -n "$REQ_COLOR_SCHEME" ] || [ -n "$REQ_WALLPAP
   "color_scheme": "$CUR_COLOR_SCHEME",
   "button_layout": "$CUR_BUTTON_LAYOUT",
   "gtk_theme": "$CUR_GTK_THEME",
+  "wm_theme": "$CUR_WM_THEME",
   "shell_theme": "$CUR_SHELL_THEME",
   "icon_theme": "$CUR_ICON_THEME",
   "cursor_theme": "$CUR_CURSOR_THEME",
@@ -628,8 +647,8 @@ EOF
   log_success "Per-setting snapshot saved to $SNAPSHOT_FILE"
 fi
 
-# Save Traffic Lights Snapshot if requested
-if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
+# Save Traffic Lights Baseline Snapshot if requested (never overwrite existing baseline)
+if [ "$REQ_TRAFFIC_LIGHTS" = true ] && [ ! -f "$TRAFFIC_SNAPSHOT_FILE" ]; then
   mkdir -p "$(dirname "$TRAFFIC_SNAPSHOT_FILE")"
   gtk4_existed=false
   gtk3_existed=false
@@ -685,7 +704,7 @@ if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
   fi
 
   TARGET_THEME="WhiteSur-Dark"
-  if [ "$REQ_COLOR_SCHEME" = "prefer-light" ] || [ "$CUR_COLOR_SCHEME" = "prefer-light" ]; then
+  if [ "$REQ_COLOR_SCHEME" = "prefer-light" ] || { [ -z "$REQ_COLOR_SCHEME" ] && [ "$CUR_COLOR_SCHEME" = "prefer-light" ]; }; then
     TARGET_THEME="WhiteSur-Light"
   fi
   [ -n "$REQ_GTK_THEME" ] && TARGET_THEME="$REQ_GTK_THEME"
@@ -696,8 +715,12 @@ if [ "$REQ_TRAFFIC_LIGHTS" = true ]; then
   apply_traffic_lights_css "$GTK4_CSS" "$GTK4_TEMPLATE" "$STATE_DIR/backups/gtk-4.0-gtk.css.bak"
   apply_traffic_lights_css "$GTK3_CSS" "$GTK3_TEMPLATE" "$STATE_DIR/backups/gtk-3.0-gtk.css.bak"
 
-  apply_settings_ini "$GTK4_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak"
-  apply_settings_ini "$GTK3_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak"
+  FORCE_INI_THEME=false
+  if [ -n "$REQ_GTK_THEME" ] || [ -n "$REQ_COLOR_SCHEME" ]; then
+    FORCE_INI_THEME=true
+  fi
+  apply_settings_ini "$GTK4_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-4.0-settings.ini.bak" "$FORCE_INI_THEME"
+  apply_settings_ini "$GTK3_SETTINGS" "$TARGET_THEME" "$STATE_DIR/backups/gtk-3.0-settings.ini.bak" "$FORCE_INI_THEME"
 
   if has_cmd xfconf-query; then
     xfconf-query -c xfwm4 -p /general/button_layout -s "CHM|" 2>/dev/null || true

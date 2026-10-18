@@ -124,6 +124,11 @@ EOF
 # Save enabled extensions list as plain text
 printf "%s\n" "${ENABLED_EXTENSIONS[@]}" > "$TARGET_DIR/enabled_extensions.txt"
 
+if [ ! -s "$TARGET_DIR/backup-meta.json" ]; then
+  log_error "Backup verification failed: $TARGET_DIR/backup-meta.json was not written."
+  exit 1
+fi
+
 log_success "Backup completed successfully!"
 echo "  Location: $TARGET_DIR"
 echo "  To restore this backup at any time, run:"

@@ -43,7 +43,7 @@ run_test() {
 SANDBOX="$(mktemp -d /tmp/mackali-test-XXXXXX)"
 cleanup() {
   rm -rf "$SANDBOX"
-  rm -f /tmp/mackali-mock-gsettings-store* 2>/dev/null || true
+  rm -rf /tmp/mackali-mock-gsettings-store* /tmp/mackali-mock-dconf-store* /tmp/mackali-mock-ext-store* 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -64,27 +64,109 @@ case "$1" in
     mv "$STORE_FILE.tmp" "$STORE_FILE"
     exit 0
     ;;
+  reset)
+    if [ -f "$STORE_FILE" ]; then
+      grep -v "^$2.$3=" "$STORE_FILE" 2>/dev/null > "$STORE_FILE.tmp" || true
+      mv "$STORE_FILE.tmp" "$STORE_FILE"
+    fi
+    exit 0
+    ;;
   get)
     if [ -f "$STORE_FILE" ] && grep -q "^$2.$3=" "$STORE_FILE" 2>/dev/null; then
       grep "^$2.$3=" "$STORE_FILE" | head -n1 | cut -d'=' -f2-
       exit 0
     fi
-    if [ -n "$REAL_GSETTINGS_BIN" ]; then
-      exec "$REAL_GSETTINGS_BIN" get "$2" "$3"
-    fi
-    echo "''"
+    case "$2.$3" in
+      org.gnome.shell.favorite-apps) echo "['org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop']" ;;
+      org.gnome.desktop.interface.cursor-size) echo "24" ;;
+      *) echo "'default'" ;;
+    esac
+    exit 0
+    ;;
+  list-schemas)
+    echo "org.gnome.desktop.interface"
+    echo "org.gnome.desktop.wm.preferences"
+    echo "org.gnome.desktop.background"
+    echo "org.gnome.shell"
+    echo "org.gnome.shell.extensions.user-theme"
     exit 0
     ;;
   *)
-    if [ -n "$REAL_GSETTINGS_BIN" ]; then
-      exec "$REAL_GSETTINGS_BIN" "$@"
-    fi
     exit 0
     ;;
 esac
 EOF
 chmod +x "$MOCK_BIN/gsettings"
+
+cat <<'EOF' > "$MOCK_BIN/dconf"
+#!/usr/bin/env bash
+STORE_DIR="${DCONF_MOCK_DIR:-/tmp/mackali-mock-dconf-store}"
+mkdir -p "$STORE_DIR"
+key_file="$STORE_DIR/$(echo "${2:-root}" | tr '/' '_')"
+case "$1" in
+  dump)
+    if [ -f "$key_file" ]; then
+      cat "$key_file"
+    else
+      echo "[/]"
+    fi
+    exit 0
+    ;;
+  load)
+    cat > "$key_file"
+    exit 0
+    ;;
+  reset)
+    shift
+    [ "${1:-}" = "-f" ] && shift
+    key_file="$STORE_DIR/$(echo "${1:-root}" | tr '/' '_')"
+    rm -f "$key_file"
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+EOF
+chmod +x "$MOCK_BIN/dconf"
+
+cat <<'EOF' > "$MOCK_BIN/gnome-extensions"
+#!/usr/bin/env bash
+EXT_STORE="${GNOME_EXT_MOCK_STORE:-/tmp/mackali-mock-ext-store}"
+mkdir -p "$(dirname "$EXT_STORE")"
+touch "$EXT_STORE"
+case "$1" in
+  list)
+    cat "$EXT_STORE"
+    exit 0
+    ;;
+  enable)
+    grep -qxF "$2" "$EXT_STORE" 2>/dev/null || echo "$2" >> "$EXT_STORE"
+    exit 0
+    ;;
+  disable)
+    grep -vxF "$2" "$EXT_STORE" 2>/dev/null > "$EXT_STORE.tmp" || true
+    mv "$EXT_STORE.tmp" "$EXT_STORE"
+    exit 0
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+EOF
+chmod +x "$MOCK_BIN/gnome-extensions"
+
+cat <<'EOF' > "$MOCK_BIN/xrdb"
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$MOCK_BIN/xrdb"
+
 export PATH="$MOCK_BIN:$PATH"
+export HOME="$SANDBOX/default_home"
+export XDG_CONFIG_HOME="$SANDBOX/default_home/.config"
+export XDG_DATA_HOME="$SANDBOX/default_home/.local/share"
+mkdir -p "$HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
 
 echo "============================================================"
 echo "                 macKali Automated Test Suite               "
@@ -1269,35 +1351,320 @@ run_test "Individual button hover isolation and 1:1 strict circular geometry" te
 # Test 60: Modular Qt and Kvantum provider lifecycle in isolated sandbox
 test_qt_provider_sandbox_lifecycle() {
   local fake_home="$SANDBOX/qt_test_home"
-  mkdir -p "$fake_home"
+  local fake_sys="$SANDBOX/qt_sys_kvantum"
+  mkdir -p "$fake_home" "$fake_sys/KvMojave" "$fake_sys/KvMojaveLight"
+  echo -e "[General]\ntheme=KvMojave" > "$fake_sys/KvMojave/KvMojave.kvconfig"
+  echo "<svg></svg>" > "$fake_sys/KvMojave/KvMojave.svg"
+  echo -e "[General]\ntheme=KvMojaveLight" > "$fake_sys/KvMojaveLight/KvMojaveLight.kvconfig"
+  echo "<svg></svg>" > "$fake_sys/KvMojaveLight/KvMojaveLight.svg"
 
   # Test dry-run
-  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --dry-run >/dev/null || return 1
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --dry-run >/dev/null || return 1
   [ ! -d "$fake_home/.config/Kvantum" ] || return 1
 
   # Test install
-  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null || return 1
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null || return 1
   [ -f "$fake_home/.config/Kvantum/WhiteSurDark/WhiteSurDark.kvconfig" ] || return 1
+  [ -f "$fake_home/.config/Kvantum/WhiteSurDark/WhiteSurDark.svg" ] || return 1
   [ -f "$fake_home/.config/Kvantum/kvantum.kvconfig" ] || return 1
   [ -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
   grep -q "theme=WhiteSurDark" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
   grep -q "QT_STYLE_OVERRIDE=kvantum" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+  ! grep -q "QT_QPA_PLATFORM=xcb" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
 
   # Test check
-  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --check >/dev/null || return 1
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --check >/dev/null || return 1
 
   # Test uninstall
-  HOME="$fake_home" "$REPO_ROOT/scripts/providers/qt-provider.sh" --uninstall >/dev/null || return 1
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --uninstall >/dev/null || return 1
   [ ! -d "$fake_home/.config/Kvantum/WhiteSurDark" ] || return 1
   [ ! -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+  [ ! -f "$fake_home/.config/Kvantum/kvantum.kvconfig" ] || return 1
 
   return 0
 }
 run_test "Modular Qt and Kvantum provider lifecycle in isolated sandbox" test_qt_provider_sandbox_lifecycle
 
+# Test 61: Task 1: Non-interactive installer backup default and read-only exemption
+test_noninteractive_backup_default() {
+  local fake_home="$SANDBOX/backup_default_home"
+  mkdir -p "$fake_home"
+
+  # 1. Read-only / dry-run operations must NOT create backups
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --check --no-update-check >/dev/null || return 1
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --preset minimal --dry-run --no-update-check >/dev/null || return 1
+  [ ! -d "$fake_home/.config/macKali/backups" ] || return 1
+
+  # 2. Live non-interactive installation creates a backup by default
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --cursors-only --no-update-check >/dev/null || return 1
+  local bcount
+  bcount="$(find "$fake_home/.config/macKali/backups" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
+  [ "$bcount" -eq 1 ] || { echo "Expected 1 backup directory by default, got $bcount"; return 1; }
+
+  return 0
+}
+run_test "Non-interactive installer backup default and read-only exemption" test_noninteractive_backup_default
+
+# Test 62: Task 1: Explicit --no-backup opt-out in non-interactive installer
+test_noninteractive_backup_opt_out() {
+  local fake_home="$SANDBOX/backup_optout_home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --cursors-only --no-backup --no-update-check >/dev/null || return 1
+  [ ! -d "$fake_home/.config/macKali/backups" ] || return 1
+  [ -d "$fake_home/.local/share/icons/WhiteSur-cursors" ] || return 1
+
+  return 0
+}
+run_test "Explicit --no-backup opt-out skips backup creation cleanly" test_noninteractive_backup_opt_out
+
+# Test 63: Task 1: Backup failure aborts installation before modifying desktop settings
+test_backup_failure_aborts_install() {
+  local fake_home="$SANDBOX/backup_fail_home"
+  mkdir -p "$fake_home/.config/macKali"
+  # Create a regular file at backups path so mkdir -p inside backup.sh fails
+  touch "$fake_home/.config/macKali/backups"
+
+  if HOME="$fake_home" "$REPO_ROOT/scripts/install.sh" --cursors-only --no-update-check >/dev/null 2>&1; then
+    echo "Installer succeeded despite backup creation failure!"
+    return 1
+  fi
+
+  # Verify destructive/modifying steps were NOT executed
+  [ ! -d "$fake_home/.local/share/icons/WhiteSur-cursors" ] || return 1
+  return 0
+}
+run_test "Backup failure aborts installation before applying changes" test_backup_failure_aborts_install
+
+# Test 64: Task 2: Qt provider Wayland safety and missing dependency handling
+test_qt_provider_wayland_and_missing_deps() {
+  local fake_home="$SANDBOX/qt_deps_home"
+  local empty_sys="$SANDBOX/qt_empty_sys"
+  mkdir -p "$fake_home" "$empty_sys"
+
+  # 1. Missing Kvantum engine must refuse to enable Kvantum override
+  if HOME="$fake_home" XDG_SESSION_TYPE=wayland MACKALI_MOCK_KVANTUM_ENGINE=false MACKALI_SYS_KVANTUM_DIR="$empty_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null 2>&1; then
+    echo "Qt provider should fail when Kvantum engine is missing"
+    return 1
+  fi
+  [ ! -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+
+  # 2. Engine present, but theme resources (.kvconfig + .svg) missing -> must not create placeholder theme
+  if HOME="$fake_home" XDG_SESSION_TYPE=wayland MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$empty_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null 2>&1; then
+    echo "Qt provider should fail when complete theme resources (.svg) are missing"
+    return 1
+  fi
+  [ ! -d "$fake_home/.config/Kvantum/WhiteSurDark" ] || return 1
+  [ ! -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+
+  # 3. Wayland session with valid engine and resources must never write QT_QPA_PLATFORM=xcb
+  mkdir -p "$empty_sys/KvMojave"
+  echo -e "[General]\ntheme=KvMojave" > "$empty_sys/KvMojave/KvMojave.kvconfig"
+  echo "<svg></svg>" > "$empty_sys/KvMojave/KvMojave.svg"
+
+  HOME="$fake_home" XDG_SESSION_TYPE=wayland MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$empty_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install >/dev/null || return 1
+  grep -q "QT_STYLE_OVERRIDE=kvantum" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+  ! grep -q "QT_QPA_PLATFORM" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+
+  return 0
+}
+run_test "Qt provider Wayland safety, missing engine check, and no placeholder themes" test_qt_provider_wayland_and_missing_deps
+
+# Test 65: Task 3: Qt provider preservation of pre-existing kvantum.kvconfig and 10-mackali-qt.conf across repeated installs
+test_qt_provider_preexisting_preservation() {
+  local fake_home="$SANDBOX/qt_preserve_home"
+  local fake_sys="$SANDBOX/qt_preserve_sys"
+  mkdir -p "$fake_home/.config/Kvantum" "$fake_home/.config/environment.d" "$fake_sys/KvMojave" "$fake_sys/KvMojaveLight"
+  echo -e "[General]\ntheme=KvMojave" > "$fake_sys/KvMojave/KvMojave.kvconfig"
+  echo "<svg></svg>" > "$fake_sys/KvMojave/KvMojave.svg"
+  echo -e "[General]\ntheme=KvMojaveLight" > "$fake_sys/KvMojaveLight/KvMojaveLight.kvconfig"
+  echo "<svg></svg>" > "$fake_sys/KvMojaveLight/KvMojaveLight.svg"
+
+  # Create pre-existing user Kvantum config and Qt environment config
+  cat <<'EOF' > "$fake_home/.config/Kvantum/kvantum.kvconfig"
+[General]
+theme=KvArcDark
+
+[Applications]
+KvArcDark=qtcreator, vlc
+EOF
+
+  cat <<'EOF' > "$fake_home/.config/environment.d/10-mackali-qt.conf"
+# User custom Qt configuration
+QT_QPA_PLATFORM=wayland;xcb
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+EOF
+
+  # Run install twice (Dark then Light) to verify repeated installs do not overwrite baseline backup
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --theme dark >/dev/null || return 1
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --install --theme light >/dev/null || return 1
+
+  # Verify unrelated settings were preserved during install
+  grep -q "theme=WhiteSur" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
+  grep -q "KvArcDark=qtcreator, vlc" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
+  grep -q "QT_QPA_PLATFORM=wayland;xcb" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+  grep -q "QT_AUTO_SCREEN_SCALE_FACTOR=1" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+  grep -q "QT_STYLE_OVERRIDE=kvantum" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+
+  # Uninstall and verify exact original files are restored, not deleted
+  HOME="$fake_home" MACKALI_MOCK_KVANTUM_ENGINE=true MACKALI_SYS_KVANTUM_DIR="$fake_sys" "$REPO_ROOT/scripts/providers/qt-provider.sh" --uninstall >/dev/null || return 1
+  [ -f "$fake_home/.config/Kvantum/kvantum.kvconfig" ] || return 1
+  [ -f "$fake_home/.config/environment.d/10-mackali-qt.conf" ] || return 1
+  grep -q "theme=KvArcDark" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
+  grep -q "KvArcDark=qtcreator, vlc" "$fake_home/.config/Kvantum/kvantum.kvconfig" || return 1
+  grep -q "QT_QPA_PLATFORM=wayland;xcb" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+  ! grep -q "QT_STYLE_OVERRIDE=kvantum" "$fake_home/.config/environment.d/10-mackali-qt.conf" || return 1
+
+  return 0
+}
+run_test "Qt provider preservation of pre-existing user configs across repeated installs and uninstall" test_qt_provider_preexisting_preservation
+
+# Test 66: Task 4: Ordinary uninstallation performs scoped reversal without overwriting unrelated user changes
+test_scoped_uninstallation_preserves_unrelated() {
+  local fake_home="$SANDBOX/scoped_uninstall_home"
+  local mock_gsettings="$SANDBOX/scoped_gsettings_store"
+  local mock_dconf="$SANDBOX/scoped_dconf_store"
+  mkdir -p "$fake_home/.config/gtk-4.0"
+
+  # Seed initial desktop state before macKali
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.wm.preferences button-layout "appmenu:minimize,maximize,close"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri "file:///initial/wall.png"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.peripherals.mouse speed "0.5"
+
+  # Install macKali traffic lights
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" "$REPO_ROOT/scripts/install.sh" --traffic-lights --no-update-check >/dev/null || return 1
+
+  # Simulate user making unrelated desktop changes AFTER installing macKali
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.peripherals.mouse speed "0.85"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri "file:///user/later-custom-wallpaper.png"
+  echo "/* Unrelated app rule */ .custom-widget { color: green; }" >> "$fake_home/.config/gtk-4.0/gtk.css"
+
+  # Run ordinary uninstallation (default scoped mode, NOT full dconf dump restore)
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" "$REPO_ROOT/scripts/uninstall.sh" --yes >/dev/null || return 1
+
+  # Verify macKali traffic lights were reverted
+  local btn
+  btn="$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.wm.preferences button-layout | tr -d "'")"
+  [ "$btn" = "appmenu:minimize,maximize,close" ] || { echo "Button layout not reverted: $btn"; return 1; }
+
+  # Verify unrelated settings changed after install were NOT overwritten by broad dconf dump or reset
+  local mouse_speed later_wp
+  mouse_speed="$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.peripherals.mouse speed | tr -d "'")"
+  later_wp="$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.background picture-uri | tr -d "'")"
+  [ "$mouse_speed" = "0.85" ] || { echo "Unrelated mouse speed was overwritten: $mouse_speed"; return 1; }
+  [ "$later_wp" = "file:///user/later-custom-wallpaper.png" ] || { echo "Unrelated wallpaper change was overwritten: $later_wp"; return 1; }
+  grep -q "custom-widget" "$fake_home/.config/gtk-4.0/gtk.css" || return 1
+
+  return 0
+}
+run_test "Ordinary uninstallation reverses macKali changes without overwriting unrelated user settings" test_scoped_uninstallation_preserves_unrelated
+
+# Test 67: Task 4: Explicit full snapshot restoration (--restore-backup) restores full dconf archive
+test_explicit_full_snapshot_restore() {
+  local fake_home="$SANDBOX/full_restore_home"
+  local mock_gsettings="$SANDBOX/full_gsettings_store"
+  local mock_dconf="$SANDBOX/full_dconf_store"
+  mkdir -p "$fake_home"
+
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri "file:///snapshot/original.png"
+  echo -e "[/]\ncustom-key='snapshot-val'" | DCONF_MOCK_DIR="$mock_dconf" dconf load /org/gnome/desktop/
+
+  # Create backup snapshot
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" "$REPO_ROOT/scripts/backup.sh" >/dev/null || return 1
+
+  # Modify both gsettings and dconf
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri "file:///snapshot/modified.png"
+  echo -e "[/]\ncustom-key='modified-val'" | DCONF_MOCK_DIR="$mock_dconf" dconf load /org/gnome/desktop/
+
+  # Explicitly request full backup restore via uninstall.sh --restore-backup
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" "$REPO_ROOT/scripts/uninstall.sh" --restore-backup --yes >/dev/null || return 1
+
+  local restored_wp restored_dconf
+  restored_wp="$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.background picture-uri | tr -d "'")"
+  restored_dconf="$(DCONF_MOCK_DIR="$mock_dconf" dconf dump /org/gnome/desktop/)"
+  [ "$restored_wp" = "file:///snapshot/original.png" ] || return 1
+  echo "$restored_dconf" | grep -q "snapshot-val" || return 1
+
+  return 0
+}
+run_test "Explicit full snapshot restoration (--restore-backup) restores complete backup archive" test_explicit_full_snapshot_restore
+
+# Test 68: Task 5: Updating traffic-light styling on an existing installation preserves appearance preferences
+test_traffic_lights_preserves_appearance_prefs() {
+  local fake_home="$SANDBOX/tl_preserve_home"
+  local mock_gsettings="$SANDBOX/tl_gsettings_store"
+  local mock_dconf="$SANDBOX/tl_dconf_store"
+  local mock_ext="$SANDBOX/tl_ext_store"
+  mkdir -p "$fake_home/.config/gtk-4.0"
+
+  # Configure custom user appearance preferences
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri "'file:///custom/light-wp.jpg'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.background picture-uri-dark "'file:///custom/dark-wp.jpg'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface color-scheme "'prefer-light'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface icon-theme "'Papirus-Dark'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface cursor-theme "'Bibata-Modern-Ice'"
+  echo -e "[/]\ndock-position='LEFT'" | DCONF_MOCK_DIR="$mock_dconf" dconf load /org/gnome/shell/extensions/dash-to-dock/
+  echo "user-custom-ext@example.com" > "$mock_ext"
+
+  cat <<'EOF' > "$fake_home/.config/gtk-4.0/settings.ini"
+[Settings]
+gtk-theme-name=CustomUserTheme
+gtk-icon-theme-name=Papirus-Dark
+EOF
+
+  # 1. Update traffic lights via appearance.sh --traffic-lights
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" GNOME_EXT_MOCK_STORE="$mock_ext" \
+    "$REPO_ROOT/scripts/appearance.sh" --traffic-lights -y >/dev/null || return 1
+
+  # 2. Also test via install.sh --traffic-lights
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" DCONF_MOCK_DIR="$mock_dconf" GNOME_EXT_MOCK_STORE="$mock_ext" \
+    "$REPO_ROOT/scripts/install.sh" --traffic-lights --no-backup --no-update-check >/dev/null || return 1
+
+  # Verify wallpapers, color-scheme, icon theme, cursor theme, dock config, and extensions were NOT modified
+  [ "$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.background picture-uri)" = "'file:///custom/light-wp.jpg'" ] || return 1
+  [ "$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.background picture-uri-dark)" = "'file:///custom/dark-wp.jpg'" ] || return 1
+  [ "$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.interface color-scheme)" = "'prefer-light'" ] || return 1
+  [ "$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.interface icon-theme)" = "'Papirus-Dark'" ] || return 1
+  [ "$(GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings get org.gnome.desktop.interface cursor-theme)" = "'Bibata-Modern-Ice'" ] || return 1
+  DCONF_MOCK_DIR="$mock_dconf" dconf dump /org/gnome/shell/extensions/dash-to-dock/ | grep -q "dock-position='LEFT'" || return 1
+  grep -qxF "user-custom-ext@example.com" "$mock_ext" || return 1
+
+  # Verify gtk-theme-name in pre-existing settings.ini was NOT overwritten during traffic-lights-only update
+  grep -q "gtk-theme-name=CustomUserTheme" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+  grep -q "gtk-decoration-layout=close,minimize,maximize:" "$fake_home/.config/gtk-4.0/settings.ini" || return 1
+
+  return 0
+}
+run_test "Updating traffic lights preserves wallpapers, color-scheme, icons, cursors, dock, and extensions" test_traffic_lights_preserves_appearance_prefs
+
+# Test 69: Task 3 & 5: Repeated appearance installations preserve original baseline snapshot
+test_repeated_appearance_preserves_baseline() {
+  local fake_home="$SANDBOX/repeat_app_home"
+  local mock_gsettings="$SANDBOX/repeat_gsettings_store"
+  mkdir -p "$fake_home"
+
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface color-scheme "'default'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.interface icon-theme "'Kali-Dark'"
+  GSETTINGS_MOCK_STORE="$mock_gsettings" gsettings set org.gnome.desktop.wm.preferences button-layout "'appmenu:minimize,maximize,close'"
+
+  # Run preset install twice (dark then light)
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" "$REPO_ROOT/scripts/appearance.sh" --preset macos-dark -y >/dev/null || return 1
+  HOME="$fake_home" GSETTINGS_MOCK_STORE="$mock_gsettings" "$REPO_ROOT/scripts/appearance.sh" --preset macos-light -y >/dev/null || return 1
+
+  # Baseline snapshot must still hold the pre-macKali values ('default' and 'Kali-Dark'), NOT 'prefer-dark' or 'WhiteSur-dark'
+  grep -q '"color_scheme": "default"' "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+  grep -q '"icon_theme": "Kali-Dark"' "$fake_home/.config/macKali/appearance_snapshot.json" || return 1
+  grep -q '"previous_button_layout": "appmenu:minimize,maximize,close"' "$fake_home/.config/macKali/traffic_lights_snapshot.json" || return 1
+
+  return 0
+}
+run_test "Repeated appearance installations preserve original baseline snapshots" test_repeated_appearance_preserves_baseline
+
 
 echo "============================================================"
 echo -e "Test Results: ${C_GREEN}$PASSED passed${C_RESET}, ${C_RED}$FAILED failed${C_RESET}"
+echo -e "Note: Live GNOME Shell / Mutter compositor session visual rendering tests are marked ${C_CYAN}[PENDING]${C_RESET} on developer host for environment safety."
 echo "============================================================"
 
 if [ "$FAILED" -gt 0 ]; then

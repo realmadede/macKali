@@ -101,13 +101,19 @@ Verify that your OS version, GNOME Shell release, and system utilities meet requ
 
 ### Step 3: Run the Installer
 
-To run with a safety backup and the recommended `balanced` preset:
+Backups are enabled by default for non-interactive installations. To run with the recommended `balanced` preset:
 
 ```bash
-./scripts/install.sh --preset balanced --backup
+./scripts/install.sh --preset balanced
 ```
 
-To preview changes without touching files or settings:
+To explicitly opt out of creating a backup before installation:
+
+```bash
+./scripts/install.sh --preset balanced --no-backup
+```
+
+To preview changes without touching files or settings (no backup created during dry-run):
 
 ```bash
 ./scripts/install.sh --preset balanced --dry-run
@@ -190,14 +196,23 @@ When an update is detected, you can upgrade:
 
 ## Uninstallation & Rollback
 
-### Restore from Backup
-To rollback all GNOME settings to your pre-install state:
+### Scoped Uninstallation (Preserves Unrelated Changes)
+To reverse only macKali-managed files and settings while keeping any unrelated desktop changes made after installation:
+
+```bash
+./scripts/uninstall.sh
+```
+
+### Full Snapshot Restoration from Backup
+To restore the complete desktop `dconf` snapshot captured prior to installation:
 
 ```bash
 ./scripts/restore.sh
+# or
+./scripts/uninstall.sh --restore-backup
 ```
 
-### Clean Removal of Cursors & Purge
+### Clean Removal of Cursors & Complete Purge
 ```bash
 ./scripts/uninstall.sh --purge
 ```

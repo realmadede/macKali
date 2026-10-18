@@ -48,12 +48,28 @@ Even though macKali cannot destroy your OS, desktop customization carries practi
 
 ---
 
-## 3. How to Remove macKali Completely (Zero Dark Corners)
+## 3. How to Remove macKali Safely (Scoped Reversal vs. Full Restore)
 
-We believe in complete user transparency. You have three ways to remove macKali:
+We believe in complete user transparency. macKali distinguishes between **reversing macKali-managed changes** and **restoring an entire desktop snapshot**:
 
-### Option A: The One-Command Nuclear Purge (Recommended)
-This removes all installed cursor files, reverts all modified GNOME settings back to Kali Linux system defaults, and purges macKali backup caches:
+### Option A: Default Scoped Uninstallation (Recommended for Everyday Removal)
+Running `scripts/uninstall.sh` without destructive flags reverses **only** the files and settings managed by macKali (removing WhiteSur cursors, wallpapers, tracked theme assets, and reverting macKali's window button / appearance / extension state) while preserving any unrelated desktop settings or custom GTK/Qt configurations you modified after installing macKali:
+
+```bash
+./scripts/uninstall.sh
+```
+
+### Option B: Restore Full Desktop Snapshot (`--restore-backup`)
+If you want to restore the entire `dconf` desktop/shell/extensions snapshot captured by `scripts/backup.sh` prior to installation (note: this restores the complete point-in-time `dconf` tree from the backup archive):
+
+```bash
+./scripts/restore.sh
+# or during uninstallation:
+./scripts/uninstall.sh --restore-backup
+```
+
+### Option C: The One-Command Nuclear Purge (`--purge`)
+This removes all installed assets, resets modified GNOME settings back to stock Kali Linux system defaults, and deletes `~/.config/macKali` backup caches:
 
 ```bash
 ./scripts/uninstall.sh --purge
@@ -61,14 +77,7 @@ This removes all installed cursor files, reverts all modified GNOME settings bac
 ./install.sh --purge
 ```
 
-### Option B: Restore From Backup
-If you created a backup prior to installing, you can restore your exact previous desktop state:
-
-```bash
-./scripts/restore.sh
-```
-
-### Option C: 100% Manual Removal (No Scripts Required)
+### Option D: 100% Manual Removal (No Scripts Required)
 If you do not want to execute any macKali script to remove it, run these four native Linux commands in your terminal:
 
 ```bash

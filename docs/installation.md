@@ -45,10 +45,10 @@ Want to evaluate macKali without modifying your desktop first? Every installer w
 For production deployments, download the standalone macKali distribution archive and verify its cryptographic integrity using the official `SHA256SUMS` manifest before extracting:
 
 ### Step 1: Download Release Archive & Checksums
-Download the latest release candidate assets from GitHub:
+Download the latest official stable release assets from GitHub:
 
 ```bash
-VERSION="1.0.0-rc.1"
+VERSION="1.0.0"
 curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/macKali-v${VERSION}.tar.gz"
 curl -sLO "https://github.com/realmadede/macKali/releases/download/v${VERSION}/SHA256SUMS"
 ```
@@ -61,7 +61,7 @@ sha256sum -c SHA256SUMS
 ```
 Expected output:
 ```text
-macKali-v1.0.0-rc.1.tar.gz: OK
+macKali-v1.0.0.tar.gz: OK
 ```
 
 > [!IMPORTANT]
@@ -116,9 +116,9 @@ Verify that your OS version, GNOME Shell release, and system utilities meet requ
 
 | Preset | Target Experience | Included Components |
 | :--- | :--- | :--- |
-| `minimal` | Lightweight macOS layout | WhiteSur cursors, dock config schema, window buttons on left |
-| `balanced` | Authentic macOS polish | Minimal + Blur My Shell schema + Magic Lamp schema + GTK & Icons |
-| `full` | macOS + 3D Compiz effects | Balanced + Desktop Cube schema + Wobbly Windows schema |
+| `minimal` | Lightweight macOS layout | WhiteSur cursors, circular top-left traffic lights, GTK/Icon themes, Dash to Dock (`--extensions`) |
+| `balanced` | Authentic macOS polish | Minimal + Blur My Shell (`--extensions`) + optional Magic Lamp (`--with-magic-lamp`) |
+| `full` | macOS + 3D Compiz effects | Balanced + optional Magic Lamp, Compiz Windows (`--with-wobbly`), and Desktop Cube (`--with-cube`) |
 
 ### Step 3: Run the Installer
 

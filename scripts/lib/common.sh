@@ -46,9 +46,9 @@ get_mackali_version() {
   elif [ -f "./VERSION" ]; then
     raw="$(head -n 1 "./VERSION" | tr -d '[:space:]')"
   elif has_cmd git && [ -d "${search_dir:-.}/.git" ]; then
-    raw="$(git -C "${search_dir:-.}" describe --tags --always 2>/dev/null || echo "1.0.0-rc.1")"
+    raw="$(git -C "${search_dir:-.}" describe --tags --always 2>/dev/null || echo "1.0.0")"
   else
-    raw="1.0.0-rc.1"
+    raw="1.0.0"
   fi
   echo "${raw#v}"
 }

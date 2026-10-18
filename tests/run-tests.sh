@@ -657,6 +657,7 @@ test_changelog_structure() {
   [ -f "$REPO_ROOT/CHANGELOG.md" ] || return 1
   grep -q "# Changelog" "$REPO_ROOT/CHANGELOG.md" || return 1
   grep -q "## \[Unreleased\]" "$REPO_ROOT/CHANGELOG.md" || return 1
+  grep -q "## \[1.0.0\]" "$REPO_ROOT/CHANGELOG.md" || return 1
   grep -q "## \[1.0.0-rc.1\]" "$REPO_ROOT/CHANGELOG.md" || return 1
   grep -q "### Added" "$REPO_ROOT/CHANGELOG.md" || return 1
   return 0
@@ -669,7 +670,7 @@ test_packaging_script() {
   rm -rf "$test_dist"
   bash "$REPO_ROOT/scripts/package-release.sh" --output-dir "$test_dist" --no-check >/dev/null || return 1
   [ -d "$test_dist" ] || return 1
-  [ -f "$test_dist/macKali-v1.0.0-rc.1.tar.gz" ] || return 1
+  [ -f "$test_dist/macKali-v1.0.0.tar.gz" ] || return 1
   [ -f "$test_dist/SHA256SUMS" ] || return 1
   return 0
 }
@@ -693,9 +694,9 @@ test_archive_contents() {
   local extract_dir="$SANDBOX/extract_test"
   rm -rf "$extract_dir"
   mkdir -p "$extract_dir"
-  tar -xzf "$test_dist/macKali-v1.0.0-rc.1.tar.gz" -C "$extract_dir" || return 1
+  tar -xzf "$test_dist/macKali-v1.0.0.tar.gz" -C "$extract_dir" || return 1
 
-  local payload="$extract_dir/macKali-v1.0.0-rc.1"
+  local payload="$extract_dir/macKali-v1.0.0"
   [ -d "$payload" ] || return 1
 
   local required=(
@@ -751,7 +752,7 @@ run_test "Phase 5: Release archive content completeness and file permissions" te
 
 # Test 38: Phase 5: Release archive exclusion of development and temporary artifacts
 test_archive_exclusions() {
-  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0"
   [ -d "$payload" ] || return 1
 
   local forbidden=(
@@ -775,7 +776,7 @@ run_test "Phase 5: Release archive exclusion of development artifacts" test_arch
 
 # Test 39: Phase 5: Standalone execution of root entry points outside Git repository
 test_standalone_execution() {
-  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0"
   [ -d "$payload" ] || return 1
   [ ! -e "$payload/.git" ] || return 1
 
@@ -827,7 +828,7 @@ test_in_app_update_checker() {
 
   # 3. Test mock current release (up to date)
   local out_current
-  out_current="$(MOCK_LATEST_RELEASE="v1.0.0-rc.1" "$REPO_ROOT/install.sh" --check-update 2>&1)"
+  out_current="$(MOCK_LATEST_RELEASE="v1.0.0" "$REPO_ROOT/install.sh" --check-update 2>&1)"
   echo "$out_current" | grep -q "is up to date" || return 1
 
   # 4. Test --no-update-check suppression
@@ -1295,12 +1296,12 @@ run_test "Safe targeted restoration leaves unrelated appearance settings untouch
 
 # Test 58: Release archive inclusion of required traffic light assets (Requirement 14)
 test_release_archive_assets_inclusion() {
-  local payload="$SANDBOX/extract_test/macKali-v1.0.0-rc.1"
+  local payload="$SANDBOX/extract_test/macKali-v1.0.0"
   if [ ! -d "$payload" ]; then
     local test_dist="$SANDBOX/dist"
     mkdir -p "$SANDBOX/extract_test"
-    if [ -f "$test_dist/macKali-v1.0.0-rc.1.tar.gz" ]; then
-      tar -xzf "$test_dist/macKali-v1.0.0-rc.1.tar.gz" -C "$SANDBOX/extract_test"
+    if [ -f "$test_dist/macKali-v1.0.0.tar.gz" ]; then
+      tar -xzf "$test_dist/macKali-v1.0.0.tar.gz" -C "$SANDBOX/extract_test"
     fi
   fi
   [ -d "$payload" ] || return 1

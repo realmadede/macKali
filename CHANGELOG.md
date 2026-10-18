@@ -10,9 +10,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned / Upcoming
-- Final verification of the initial release candidate (`v1.0.0-rc.1`).
+- Comprehensive disposable-VM graphical validation across live Kali Linux GNOME Wayland and X11 environments (deferred from v1.0.0 initial release).
 - Community hardware testing feedback integration across diverse Kali rolling environments.
 - Optional automated screenshot pipeline for live desktop showcase captures.
+
+---
+
+## [1.0.0] - 2026-10-18
+
+### First Official Stable Release
+
+`v1.0.0` marks the first official stable release of **macKali**, delivering a modular, rootless macOS-inspired desktop customization suite for Kali Linux GNOME with hardened installation safety and scoped recovery.
+
+### Added & Finalized
+- **Modular macKali Desktop Customization**: Decoupled user-space providers for cursors (`themes/cursors/`), 4K day/night wallpapers (`scripts/providers/wallpaper-provider.sh`), GTK themes (`scripts/providers/gtk-provider.sh`), icon themes (`scripts/providers/icon-provider.sh`), and optional Qt/Kvantum styling (`scripts/providers/qt-provider.sh`).
+- **Interactive Installer & Structured Presets**: Guided terminal setup wizard (`scripts/tui-installer.sh`, `./install.sh --interactive`) supporting `whiptail`, `dialog`, and plain-terminal ANSI fallback across `minimal`, `balanced`, and `full` presets.
+- **WhiteSur Appearance & Cursor Integration**: Pre-built and source-buildable WhiteSur vector cursor theme paired with light and dark mode desktop appearance orchestration (`scripts/appearance.sh`).
+- **Circular Traffic-Light Window Controls**: Authentic top-left circular Close (`#ff5f56`), Minimize (`#ffbd2e`), and Maximize (`#27c93f`) titlebar controls (`close,minimize,maximize:`) with 1:1 circular SVG geometry and isolated per-button hover glow (no internal hover glyphs).
+- **GTK3 & GTK4 / Libadwaita Integration**: Scoped, delimited CSS injection in `~/.config/gtk-3.0/gtk.css` and `~/.config/gtk-4.0/gtk.css` alongside non-destructive `settings.ini` updates that preserve pre-existing user CSS rules and unrelated keys.
+- **Optional Qt / Kvantum Integration**: User-space Kvantum configuration (`scripts/providers/qt-provider.sh`) that verifies Kvantum engine and complete `.kvconfig` + `.svg` theme resources before activation, preserves pre-existing `kvantum.kvconfig` and `10-mackali-qt.conf` files, and never forces `QT_QPA_PLATFORM=xcb` on GNOME Wayland sessions.
+- **GNOME Extension Management & Dynamic Compatibility Detection**: Centralized extension manager (`scripts/extensions-manager.sh`) and compatibility checker (`scripts/compat-check.sh`) using a forward-compatible 4-tier evaluation model (`VERIFIED_COMPATIBLE`, `REPORTED_COMPATIBLE`, `UNSUPPORTED`, `COMPATIBILITY_UNKNOWN`) without artificial GNOME version ceilings. Experimental 3D effects (`--with-magic-lamp`, `--with-wobbly`, `--with-cube`) remain strictly opt-in.
+- **Automatic Backups & Hardened Installation Safety**: Non-interactive and interactive installations automatically create timestamped backups (`scripts/backup.sh`) by default before modifying settings, provide an explicit `--no-backup` opt-out, keep `--dry-run` and `--check` free of backup creation, and abort immediately if backup creation fails.
+- **Scoped Restoration vs. Full Snapshot Recovery**: Ordinary uninstallation (`scripts/uninstall.sh`) performs a scoped reversal of macKali-managed files and settings while preserving unrelated post-install desktop modifications; full point-in-time `dconf` snapshot restoration remains available via `./scripts/restore.sh` or `./scripts/uninstall.sh --restore-backup`.
+- **Reproducible Release Packaging & GitHub Actions Automation**: Deterministic release tarball and `SHA256SUMS` generation (`scripts/package-release.sh`), automated 69-test isolated verification suite (`tests/run-tests.sh`), in-app release update checker (`--check-update`), and tag-verified GitHub Actions release publishing (`.github/workflows/release.yml`).
+
+### Verification Notes
+- All 69 automated sandbox, parser, lifecycle, and packaging tests pass in isolated environments.
+- Comprehensive disposable-VM graphical validation across live Wayland/X11 sessions remains deferred following project owner verification on Kali Linux GNOME.
 
 ---
 

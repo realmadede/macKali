@@ -48,7 +48,59 @@ Even though macKali cannot destroy your OS, desktop customization carries practi
 
 ---
 
-## 3. How to Remove macKali Safely (Scoped Reversal vs. Full Restore)
+## 3. How to Test macKali Safely Before Installing (Zero-Risk Evaluation)
+
+If you want to evaluate macKali without risking your main Kali Linux desktop, you can test it progressively using four safe methods:
+
+### Tier 1: Zero-Touch Preview & Simulation (`--check`, `--dry-run`, `--preview`)
+macKali includes built-in read-only flags that inspect your system and print every action that *would* be taken without modifying any files or `dconf` settings:
+
+```bash
+# 1. Verify GNOME version, Wayland/X11 session, and required utilities:
+./install.sh --check
+
+# 2. Simulate a full or minimal installation (creates zero files and zero backups):
+./install.sh --dry-run --full
+./install.sh --dry-run --minimal
+
+# 3. Walk through the interactive wizard in dry-run mode:
+./install.sh --interactive --dry-run
+
+# 4. Preview window button layout and GTK3/GTK4 CSS paths only:
+./scripts/appearance.sh --preview
+```
+
+### Tier 2: Isolated Directory Sandbox (Temporary `HOME`)
+Because macKali runs entirely in user space (`~/.config` and `~/.local/share`) and never requires `sudo`, you can run the automated test suite or inspect generated configuration files inside a temporary `/tmp` sandbox:
+
+```bash
+# Run the 69-test isolated verification suite (uses mocked gsettings/dconf):
+./tests/run-tests.sh
+
+# Or simulate a dry-run inside a disposable temporary HOME directory:
+SANDBOX=$(mktemp -d)
+HOME="$SANDBOX" XDG_CONFIG_HOME="$SANDBOX/.config" XDG_DATA_HOME="$SANDBOX/.local/share" \
+  ./install.sh --dry-run --full
+rm -rf "$SANDBOX"
+```
+
+### Tier 3: Disposable Linux User Account (Live GNOME Preview)
+Because macKali only modifies user-level configuration files and user `dconf` keys—never system-wide `/usr/share` or `/etc` files—you can test the full live visual experience in a secondary Linux user account:
+
+1. Create a temporary test user account (e.g., `mackali-test`) in GNOME Settings → Users.
+2. Log into the `mackali-test` GNOME session and run `./install.sh --minimal` or `./install.sh --interactive`.
+3. Your primary user account's `~/.config`, themes, extensions, and GNOME settings remain **100% untouched**. Delete the temporary user account when finished.
+
+### Tier 4: Virtual Machine Snapshot (Full Compositor & Extension Test)
+To test everything—including 3D GNOME extensions, Kvantum/Qt application styling, and session logouts—with instant rollback:
+
+1. Boot a Kali Linux VirtualBox, VMware, or QEMU/KVM virtual machine and **take a VM snapshot**.
+2. Run `./install.sh --interactive` inside the VM to test the desktop and `./scripts/uninstall.sh`.
+3. Revert the VM snapshot in one click when finished.
+
+---
+
+## 4. How to Remove macKali Safely (Scoped Reversal vs. Full Restore)
 
 We believe in complete user transparency. macKali distinguishes between **reversing macKali-managed changes** and **restoring an entire desktop snapshot**:
 
@@ -99,7 +151,7 @@ Once executed, your desktop will immediately return to standard Kali Linux defau
 
 ---
 
-## 4. Emergency Recovery: What If GNOME Shell Freezes?
+## 5. Emergency Recovery: What If GNOME Shell Freezes?
 
 In the unlikely event that a combination of extensions causes GNOME Shell to freeze under Wayland:
 
@@ -134,7 +186,7 @@ In the unlikely event that a combination of extensions causes GNOME Shell to fre
 
 ---
 
-## 5. Security Transparency: Monitored Environments & Stealth Mode
+## 6. Security Transparency: Monitored Environments & Stealth Mode
 
 macKali is designed for security professionals and ethical hackers. To assist security audits, File Integrity Monitoring (FIM), and Endpoint Detection (EDR), all background interactions are listed below:
 

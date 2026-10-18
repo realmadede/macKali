@@ -19,6 +19,27 @@ This document covers both the **Automated** and **Manual** workflows for deployi
 
 ---
 
+## Try Before You Install (Pre-Flight & Dry-Run Mode)
+
+Want to evaluate macKali without modifying your desktop first? Every installer workflow supports read-only inspection and simulation flags that make **zero changes** to your files or GNOME settings:
+
+```bash
+# 1. Check GNOME compatibility and session readiness (0 changes):
+./install.sh --check
+
+# 2. Simulate the interactive wizard or full preset in Dry-Run mode (0 changes):
+./install.sh --interactive --dry-run
+./install.sh --dry-run --full
+
+# 3. Preview circular traffic-light CSS and window button rules only (0 changes):
+./scripts/appearance.sh --preview
+```
+
+> [!TIP]
+> Because macKali is 100% rootless and user-scoped (`~/.config` and `~/.local/share`), you can also test a live installation inside a **secondary Linux user account** or a **Virtual Machine snapshot** without touching your main desktop. See [How to Test macKali Safely Before Installing](safety-and-removal.md#3-how-to-test-mackali-safely-before-installing-zero-risk-evaluation) for the full 4-tier guide.
+
+---
+
 ## Workflow 1: Verified Release Archive (Recommended for Users)
 
 For production deployments, download the standalone macKali distribution archive and verify its cryptographic integrity using the official `SHA256SUMS` manifest before extracting:

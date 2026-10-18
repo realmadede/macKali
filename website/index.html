@@ -593,22 +593,59 @@
             </div>
 
             <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Step 2: Install Select Components on Demand</div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 12px;">
-              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; margin-bottom: 12px;">
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
                 <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• Cursors Only (~2 sec)</div>
                 <code style="font-size: 0.82rem; color: var(--accent-blue);">./install.sh</code>
               </div>
-              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
                 <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• macOS Dock Only (~3 sec)</div>
                 <code style="font-size: 0.82rem; color: var(--accent-blue);">./scripts/install.sh --dock-only</code>
               </div>
-              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px;">
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
                 <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• Check Upstream Updates (~1 sec)</div>
                 <code style="font-size: 0.82rem; color: var(--accent-blue);">./install.sh --check-update</code>
               </div>
             </div>
             <div style="font-size: 0.82rem; color: var(--text-faint);">
               Explore advanced flags and dconf schemas in the <a href="https://github.com/realmadede/macKali/blob/main/docs/manual-configuration.md" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">Manual Configuration Guide</a>.
+            </div>
+          </div>
+
+          <!-- Method C: Test Drive Before Installing (Zero-Touch Dry-Run & Sandbox) -->
+          <div style="margin-bottom: 28px; padding-top: 22px; border-top: 1px dashed var(--border-light);">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+              <span class="term-tag tag-verified" style="font-size: 0.8rem; padding: 4px 10px;">Zero-Risk Preview</span>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);">Method C: Test Drive Before Installing (Zero-Touch Dry-Run &amp; Sandbox)</h3>
+            </div>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.55;">
+              Want to inspect everything macKali does before touching your desktop? Run a <strong>100% read-only simulation</strong>—or test live in a secondary Linux user account or VM snapshot without affecting your primary workspace:
+            </p>
+
+            <div class="command-bar" style="margin-bottom: 14px;">
+              <code id="install-dryrun-cmd" class="command-text">./install.sh --check &amp;&amp; ./install.sh --interactive --dry-run</code>
+              <button class="btn-copy copy-btn" data-target="install-dryrun-cmd" aria-label="Copy zero-touch dry-run preview command">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; margin-bottom: 10px;">
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
+                <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• 1. Read-Only Audit (0 changes)</div>
+                <code style="font-size: 0.82rem; color: var(--accent-blue);">./install.sh --dry-run --full</code>
+              </div>
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
+                <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• 2. Traffic-Lights Preview</div>
+                <code style="font-size: 0.82rem; color: var(--accent-blue);">./scripts/appearance.sh --preview</code>
+              </div>
+              <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; min-width: 0;">
+                <div style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">• 3. Automated Sandbox Suite</div>
+                <code style="font-size: 0.82rem; color: var(--accent-blue);">./tests/run-tests.sh</code>
+              </div>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-faint);">
+              Because macKali is 100% user-scoped (no <code>sudo</code>), you can also test a live install inside a <strong>secondary Linux user account</strong> or <strong>VM snapshot</strong> while keeping your main account untouched.
             </div>
           </div>
 
@@ -779,6 +816,17 @@
             </button>
             <div class="faq-answer">
               No. macKali is strictly a user-space desktop appearance suite. It never alters system packages, APT repositories, network services, penetration testing utilities, security daemons, or <code>/etc</code>. All changes reside inside your home directory (<code>~/.local/share</code>, <code>~/.config</code>) and user dconf keys.
+            </div>
+          </article>
+
+          <!-- FAQ Item 1b: Safe Testing Before Installing -->
+          <article class="faq-card">
+            <button class="faq-question" aria-expanded="false">
+              <span>How can I test macKali safely before installing it on my main desktop?</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="faq-answer">
+              You can evaluate macKali with <strong>zero risk</strong> in four progressive ways: (1) <strong>Read-Only Dry-Run &amp; Check:</strong> Run <code>./install.sh --check</code> or <code>./install.sh --interactive --dry-run</code> to inspect compatibility and every planned action without modifying a single file or setting; (2) <strong>Temporary Sandbox:</strong> Run <code>./tests/run-tests.sh</code> to verify all 69 automated checks in an isolated <code>/tmp</code> directory; (3) <strong>Secondary Linux User Account:</strong> Because macKali is 100% rootless and user-scoped, testing it in a separate Linux user account leaves your primary account completely untouched; or (4) <strong>Virtual Machine Snapshot:</strong> Take a snapshot in VirtualBox/VMware, test the full preset, and revert in one click.
             </div>
           </article>
 

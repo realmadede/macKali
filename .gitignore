@@ -16,3 +16,7 @@ __pycache__/
 *.swp
 *.swo
 *~
+
+# Local GitHub Ruleset configuration files (do not track)
+/rulesets.json
+/ruleset-*.json
